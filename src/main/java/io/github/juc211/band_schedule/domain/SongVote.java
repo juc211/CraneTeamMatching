@@ -17,6 +17,9 @@ import lombok.NoArgsConstructor;
 @Table(name = "song_votes")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+/**
+ * 신청된 곡의 가능 여부를 판단.
+ */
 public class SongVote {
 
 	@Id
@@ -29,6 +32,7 @@ public class SongVote {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private PerformanceMember voterMember;
 
+	//가능 불가능 보류
 	@Enumerated(EnumType.STRING)
 	private Vote vote;
 

@@ -32,9 +32,6 @@ public class InputLink {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private Team team;
 
-	@Enumerated(EnumType.STRING)
-	private InputLinkType type;
-
 	private boolean active;
 
 	private LocalDateTime expiresAt;

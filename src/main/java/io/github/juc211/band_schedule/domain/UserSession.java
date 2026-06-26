@@ -8,7 +8,10 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserPart {
+/**
+ * 밴드 멤버에 해당하는 세션
+ */
+public class UserSession {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -16,6 +19,7 @@ public class UserPart {
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
+    //세션
     @Enumerated(EnumType.STRING)
     private Part part;
 }

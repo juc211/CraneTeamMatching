@@ -15,6 +15,9 @@ import lombok.NoArgsConstructor;
 @Table(name = "teams")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+/**
+ * 한 공연 안에서 나눠질 팀(1곡 = 1팀으로 구성)
+ */
 public class Team {
 
 	@Id

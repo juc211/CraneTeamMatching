@@ -55,13 +55,13 @@ class DomainEntityMappingTests {
 		assertLazyManyToOne(FinalSchedule.class, "team");
 		assertLazyManyToOne(InputLink.class, "performance");
 		assertLazyManyToOne(InputLink.class, "team");
-		assertLazyManyToOne(UserPart.class, "user");
+		assertLazyManyToOne(UserSession.class, "user");
 	}
 
 	private List<Class<?>> entityTypes() {
 		return List.of(
 				User.class,
-				UserPart.class,
+				UserSession.class,
 				Performance.class,
 				PerformanceMember.class,
 				Team.class,

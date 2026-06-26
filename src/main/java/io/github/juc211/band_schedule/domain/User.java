@@ -13,6 +13,9 @@ import lombok.NoArgsConstructor;
 @Table(name = "users")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+/**
+ * 밴드 멤버 전원(동아리 인원 전원)
+ */
 public class User {
 
 	@Id

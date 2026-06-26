@@ -15,6 +15,9 @@ import lombok.NoArgsConstructor;
 @Table(name = "performances")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+/**
+ * 공연 (축제, 정기공연 등)
+ */
 public class Performance {
 
 	@Id
@@ -25,6 +28,7 @@ public class Performance {
 
 	private LocalDate performanceDate;
 
+	//관리자 URL 접근 토큰
 	private String adminToken;
 
 	private LocalDateTime createdAt;

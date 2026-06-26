@@ -16,6 +16,9 @@ import lombok.NoArgsConstructor;
 @Table(name = "song_requests")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+/**
+ * 팀 멤버드
+ */
 public class SongRequest {
 
 	@Id
@@ -31,6 +34,7 @@ public class SongRequest {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private PerformanceMember requestedByMember;
 
+	//song ([곡 명 - 가수] 형식)
 	private String song;
 
 	private LocalDateTime createdAt;
