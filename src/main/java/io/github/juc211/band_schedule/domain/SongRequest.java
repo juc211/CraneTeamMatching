@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 /**
- * 팀 멤버드
+ * 곡 신청
  */
 public class SongRequest {
 
@@ -38,4 +38,19 @@ public class SongRequest {
 	private String song;
 
 	private LocalDateTime createdAt;
+
+	public static SongRequest create(Performance performance, Team team, PerformanceMember requestedByMember, String song) {
+		SongRequest songRequest = new SongRequest();
+		songRequest.performance = performance;
+		songRequest.team = team;
+		songRequest.requestedByMember = requestedByMember;
+		songRequest.song = song;
+		songRequest.createdAt = LocalDateTime.now();
+		return songRequest;
+	}
+
+	public void update(Team team, String song) {
+		this.team = team;
+		this.song = song;
+	}
 }

@@ -30,4 +30,17 @@ public class Team {
 	private String name;
 
 	private String confirmedSong;
+
+	public static Team create(Performance performance, String name, String confirmedSong) {
+		Team team = new Team();
+		team.performance = performance;
+		team.name = name;
+		team.confirmedSong = confirmedSong;
+		return team;
+	}
+
+	public void update(String name, String confirmedSong) {
+		this.name = name;
+		this.confirmedSong = confirmedSong;
+	}
 }

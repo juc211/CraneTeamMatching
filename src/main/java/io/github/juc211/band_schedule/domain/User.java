@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 /**
- * 밴드 멤버 전원(동아리 인원 전원)
+ * 밴드 멤버 전원(동아리 세션 인원 전원) - 인원 변경 시 db 수정
  */
 public class User {
 
@@ -24,4 +24,18 @@ public class User {
 
 	private String name;
 
+	//8개 숫자로 이루어진 학번
+	private String studentNumber;
+
+	public static User create(String name, String studentNumber) {
+		User user = new User();
+		user.name = name;
+		user.studentNumber = studentNumber;
+		return user;
+	}
+
+	public void update(String name, String studentNumber) {
+		this.name = name;
+		this.studentNumber = studentNumber;
+	}
 }

@@ -37,4 +37,18 @@ public class SongVote {
 	private Vote vote;
 
 	private String reason;
+
+	public static SongVote create(SongRequest songRequest, PerformanceMember voterMember, Vote vote, String reason) {
+		SongVote songVote = new SongVote();
+		songVote.songRequest = songRequest;
+		songVote.voterMember = voterMember;
+		songVote.vote = vote;
+		songVote.reason = reason;
+		return songVote;
+	}
+
+	public void update(Vote vote, String reason) {
+		this.vote = vote;
+		this.reason = reason;
+	}
 }

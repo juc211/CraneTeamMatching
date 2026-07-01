@@ -26,4 +26,11 @@ public class PerformanceMember {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	private User user;
+
+	public static PerformanceMember create(Performance performance, User user) {
+		PerformanceMember performanceMember = new PerformanceMember();
+		performanceMember.performance = performance;
+		performanceMember.user = user;
+		return performanceMember;
+	}
 }

@@ -13,10 +13,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "availabilities")
+@Table(name = "available_time")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Availability {
+/**
+ * 팀 내부에서 팀원 개인 가능 시간 종합
+ */
+public class AvailableTime {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

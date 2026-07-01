@@ -16,6 +16,9 @@ import lombok.NoArgsConstructor;
 @Table(name = "final_schedules")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+/**
+ * 최종 합주 날짜
+ */
 public class FinalSchedule {
 
 	@Id

@@ -23,4 +23,12 @@ public class TeamMember {
 
 	@Enumerated(EnumType.STRING)
 	private Part part;
+
+	public static TeamMember create(Team team, PerformanceMember performanceMember, Part part) {
+		TeamMember teamMember = new TeamMember();
+		teamMember.team = team;
+		teamMember.performanceMember = performanceMember;
+		teamMember.part = part;
+		return teamMember;
+	}
 }
