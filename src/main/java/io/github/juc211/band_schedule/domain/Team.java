@@ -43,4 +43,8 @@ public class Team {
 		this.name = name;
 		this.confirmedSong = confirmedSong;
 	}
+
+	public void updateConfirmedSong(String confirmedSong) {
+		this.confirmedSong = confirmedSong;
+	}
 }

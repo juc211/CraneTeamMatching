@@ -6,12 +6,26 @@ public abstract class TeamDto {
 
 	public record TeamCreateRequest(
 			String name,
-			String confirmedSong
+			String confirmedSong,
+			Long performanceConfirmedSongId
 	) {
 	}
 
 	public record TeamUpdateRequest(
 			String name,
+			String confirmedSong,
+			Long performanceConfirmedSongId
+	) {
+	}
+
+	public record TeamConfirmedSongUpdateRequest(
+			String confirmedSong,
+			Long performanceConfirmedSongId
+	) {
+	}
+
+	public record TeamConfirmedSongResponse(
+			Long teamId,
 			String confirmedSong
 	) {
 	}
@@ -26,6 +40,11 @@ public abstract class TeamDto {
 
 	public record TeamMemberAddRequest(
 			Long performanceMemberId,
+			Part part
+	) {
+	}
+
+	public record TeamMemberUpdateRequest(
 			Part part
 	) {
 	}

@@ -1,5 +1,6 @@
 package io.github.juc211.band_schedule.controller;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -48,7 +49,9 @@ class PerformanceControllerTest {
 								{
 								  "title": "2026 Summer Concert",
 								  "performanceDate": "2026-08-15",
-								  "location": "Main Hall"
+								  "location": "Main Hall",
+								  "scheduleWindowStartDate": "2026-08-01",
+								  "scheduleWindowEndDate": "2026-08-14"
 								}
 								"""))
 				.andExpect(status().isCreated())
@@ -68,7 +71,9 @@ class PerformanceControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].title").value("2026 Summer Concert"))
 				.andExpect(jsonPath("$[0].performanceDate").value("2026-08-15"))
-				.andExpect(jsonPath("$[0].location").value("Main Hall"));
+				.andExpect(jsonPath("$[0].location").value("Main Hall"))
+				.andExpect(jsonPath("$[0].scheduleWindowStartDate").doesNotExist())
+				.andExpect(jsonPath("$[0].scheduleWindowEndDate").doesNotExist());
 	}
 
 	@Test
@@ -84,7 +89,9 @@ class PerformanceControllerTest {
 				.andExpect(jsonPath("$.performanceId").value(performance.getId()))
 				.andExpect(jsonPath("$.title").value("2026 Summer Concert"))
 				.andExpect(jsonPath("$.performanceDate").value("2026-08-15"))
-				.andExpect(jsonPath("$.location").value("Main Hall"));
+				.andExpect(jsonPath("$.location").value("Main Hall"))
+				.andExpect(jsonPath("$.scheduleWindowStartDate").doesNotExist())
+				.andExpect(jsonPath("$.scheduleWindowEndDate").doesNotExist());
 	}
 
 	@Test
@@ -98,17 +105,89 @@ class PerformanceControllerTest {
 		mockMvc.perform(patch("/api/performances/{performanceId}", performance.getId())
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
-								{
-								  "title": "2026 Winter Concert",
-								  "performanceDate": "2026-12-20",
-								  "location": "Club Room"
-								}
-								"""))
+						{
+						  "title": "2026 Winter Concert",
+						  "performanceDate": "2026-12-20",
+						  "location": "Club Room",
+						  "scheduleWindowStartDate": "2026-12-01",
+						  "scheduleWindowEndDate": "2026-12-19"
+						}
+						"""))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.performanceId").value(performance.getId()))
 				.andExpect(jsonPath("$.title").value("2026 Winter Concert"))
 				.andExpect(jsonPath("$.performanceDate").value("2026-12-20"))
-				.andExpect(jsonPath("$.location").value("Club Room"));
+				.andExpect(jsonPath("$.location").value("Club Room"))
+				.andExpect(jsonPath("$.scheduleWindowStartDate").value("2026-12-01"))
+				.andExpect(jsonPath("$.scheduleWindowEndDate").value("2026-12-19"));
+	}
+
+	@Test
+	void updatePerformanceScheduleWindowReturnsOkStatus() throws Exception {
+		Performance performance = performanceRepository.save(Performance.create(
+				"2026 Summer Concert",
+				LocalDate.of(2026, 8, 20),
+				"Main Hall"
+		));
+
+		mockMvc.perform(patch("/api/performances/{performanceId}/schedule-window", performance.getId())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "scheduleWindowStartDate": "2026-08-01",
+								  "scheduleWindowEndDate": "2026-08-20"
+								}
+								"""))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.performanceId").value(performance.getId()))
+				.andExpect(jsonPath("$.title").value("2026 Summer Concert"))
+				.andExpect(jsonPath("$.performanceDate").value("2026-08-20"))
+				.andExpect(jsonPath("$.location").value("Main Hall"))
+				.andExpect(jsonPath("$.scheduleWindowStartDate").value("2026-08-01"))
+				.andExpect(jsonPath("$.scheduleWindowEndDate").value("2026-08-20"));
+	}
+
+	@Test
+	void getPerformanceScheduleWindowReturnsOkStatus() throws Exception {
+		Performance performance = performanceRepository.save(Performance.create(
+				"2026 Summer Concert",
+				LocalDate.of(2026, 8, 20),
+				"Main Hall",
+				LocalDate.of(2026, 8, 1),
+				LocalDate.of(2026, 8, 20)
+		));
+
+		mockMvc.perform(get("/api/performances/{performanceId}/schedule-window", performance.getId()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.performanceId").value(performance.getId()))
+				.andExpect(jsonPath("$.scheduleWindowStartDate").value("2026-08-01"))
+				.andExpect(jsonPath("$.scheduleWindowEndDate").value("2026-08-20"));
+	}
+
+	@Test
+	void deletePerformanceScheduleWindowReturnsNoContentStatus() throws Exception {
+		Performance performance = performanceRepository.save(Performance.create(
+				"2026 Summer Concert",
+				LocalDate.of(2026, 8, 20),
+				"Main Hall",
+				LocalDate.of(2026, 8, 1),
+				LocalDate.of(2026, 8, 20)
+		));
+
+		mockMvc.perform(delete("/api/performances/{performanceId}/schedule-window", performance.getId()))
+				.andExpect(status().isNoContent());
+	}
+
+	@Test
+	void deletePerformanceReturnsNoContentStatus() throws Exception {
+		Performance performance = performanceRepository.save(Performance.create(
+				"2026 Summer Concert",
+				LocalDate.of(2026, 8, 20),
+				"Main Hall"
+		));
+
+		mockMvc.perform(delete("/api/performances/{performanceId}", performance.getId()))
+				.andExpect(status().isNoContent());
 	}
 
 	@Test

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.github.juc211.band_schedule.domain.InputLink;
+import io.github.juc211.band_schedule.domain.InputLinkType;
 import io.github.juc211.band_schedule.domain.Performance;
 import io.github.juc211.band_schedule.domain.PerformanceMember;
 import io.github.juc211.band_schedule.domain.SongRequest;
@@ -247,7 +248,7 @@ class SongServiceTest {
 		PerformanceMember requesterMember = performanceMemberRepository.save(PerformanceMember.create(performance, requesterUser));
 		PerformanceMember voterMember = performanceMemberRepository.save(PerformanceMember.create(performance, voterUser));
 		InputLink inputLink = inputLinkRepository.save(
-				InputLink.create("vote-token", performance, true, LocalDateTime.now().plusDays(1))
+				InputLink.create("vote-token", performance, InputLinkType.SONG_VOTE, true, LocalDateTime.now().plusDays(1))
 		);
 		SongRequest ownSongRequest = songRequestRepository.save(
 				SongRequest.create(performance, null, voterMember, "Own Song - Artist A")
@@ -281,7 +282,7 @@ class SongServiceTest {
 		User user = userRepository.save(User.create("Kim Band", "20261234"));
 		PerformanceMember voterMember = performanceMemberRepository.save(PerformanceMember.create(performance, user));
 		InputLink inputLink = inputLinkRepository.save(
-				InputLink.create("vote-token", performance, true, LocalDateTime.now().plusDays(1))
+				InputLink.create("vote-token", performance, InputLinkType.SONG_VOTE, true, LocalDateTime.now().plusDays(1))
 		);
 		SongRequest songRequest = songRequestRepository.save(
 				SongRequest.create(performance, null, voterMember, "Song A - Artist A")
@@ -333,7 +334,7 @@ class SongServiceTest {
 		User user = userRepository.save(User.create("Kim Band", "20261234"));
 		PerformanceMember voterMember = performanceMemberRepository.save(PerformanceMember.create(firstPerformance, user));
 		InputLink inputLink = inputLinkRepository.save(
-				InputLink.create("vote-token", firstPerformance, true, LocalDateTime.now().plusDays(1))
+				InputLink.create("vote-token", firstPerformance, InputLinkType.SONG_VOTE, true, LocalDateTime.now().plusDays(1))
 		);
 		SongRequest otherPerformanceSongRequest = songRequestRepository.save(
 				SongRequest.create(secondPerformance, null, voterMember, "Song A - Artist A")

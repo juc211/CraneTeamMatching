@@ -43,11 +43,30 @@ public class SongController {
 	}
 
 	/**
+	 * 링크 기반 공연 전체 희망곡 조회
+	 */
+	@GetMapping("/input-links/{token}/song-requests")
+	public ResponseEntity<List<SongDto.SongRequestResponse>> getSongRequestsByLink(@PathVariable String token) {
+		return ResponseEntity.ok(songService.getSongRequestsByLink(token));
+	}
+
+	/**
 	 * 팀 단위 희망곡 조회
 	 */
 	@GetMapping("/teams/{teamId}/song-requests")
 	public ResponseEntity<List<SongDto.SongRequestResponse>> getSongRequestsByTeam(@PathVariable Long teamId) {
 		return ResponseEntity.ok(songService.getSongRequestsByTeam(teamId));
+	}
+
+	/**
+	 * 링크 기반 팀 단위 희망곡 조회
+	 */
+	@GetMapping("/input-links/{token}/teams/{teamId}/song-requests")
+	public ResponseEntity<List<SongDto.SongRequestResponse>> getSongRequestsByLinkAndTeam(
+			@PathVariable String token,
+			@PathVariable Long teamId
+	) {
+		return ResponseEntity.ok(songService.getSongRequestsByLinkAndTeam(token, teamId));
 	}
 
 	/**

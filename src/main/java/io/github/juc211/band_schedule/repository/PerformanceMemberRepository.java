@@ -7,4 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface PerformanceMemberRepository extends JpaRepository<PerformanceMember, Long> {
 
 	List<PerformanceMember> findByPerformanceIdOrderByIdAsc(Long performanceId);
+
+	boolean existsByUserId(Long userId);
+
+	void deleteByPerformanceId(Long performanceId);
 }

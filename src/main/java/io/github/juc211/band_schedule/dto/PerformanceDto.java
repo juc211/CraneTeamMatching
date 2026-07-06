@@ -7,8 +7,13 @@ public abstract class PerformanceDto {
     public record PerformanceCreateRequest(
             String title,
             LocalDate performanceDate,
-            String location
+            String location,
+            LocalDate scheduleWindowStartDate,
+            LocalDate scheduleWindowEndDate
     ) {
+        public PerformanceCreateRequest(String title, LocalDate performanceDate, String location) {
+            this(title, performanceDate, location, null, null);
+        }
 
     }
     public record PerformanceCreateResponse(
@@ -21,7 +26,27 @@ public abstract class PerformanceDto {
     public record PerformanceUpdateRequest(
             String title,
             LocalDate performanceDate,
-            String location
+            String location,
+            LocalDate scheduleWindowStartDate,
+            LocalDate scheduleWindowEndDate
+    ) {
+        public PerformanceUpdateRequest(String title, LocalDate performanceDate, String location) {
+            this(title, performanceDate, location, null, null);
+        }
+
+    }
+
+    public record PerformanceScheduleWindowUpdateRequest(
+            LocalDate scheduleWindowStartDate,
+            LocalDate scheduleWindowEndDate
+    ) {
+
+    }
+
+    public record PerformanceScheduleWindowResponse(
+            Long performanceId,
+            LocalDate scheduleWindowStartDate,
+            LocalDate scheduleWindowEndDate
     ) {
 
     }
@@ -30,7 +55,9 @@ public abstract class PerformanceDto {
             Long performanceId,
             String title,
             LocalDate performanceDate,
-            String location
+            String location,
+            LocalDate scheduleWindowStartDate,
+            LocalDate scheduleWindowEndDate
     ) {
 
     }

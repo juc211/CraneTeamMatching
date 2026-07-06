@@ -9,4 +9,10 @@ public interface SongRequestRepository extends JpaRepository<SongRequest, Long> 
 	List<SongRequest> findByPerformanceIdOrderByIdAsc(Long performanceId);
 
 	List<SongRequest> findByTeamIdOrderByIdAsc(Long teamId);
+
+	void deleteByTeamId(Long teamId);
+
+	void deleteByPerformanceId(Long performanceId);
+
+	void deleteByRequestedByMemberId(Long performanceMemberId);
 }

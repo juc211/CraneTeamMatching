@@ -23,4 +23,11 @@ public class UserSession {
     //세션
     @Enumerated(EnumType.STRING)
     private Part part;
+
+    public static UserSession create(User user, Part part) {
+        UserSession userSession = new UserSession();
+        userSession.user = user;
+        userSession.part = part;
+        return userSession;
+    }
 }

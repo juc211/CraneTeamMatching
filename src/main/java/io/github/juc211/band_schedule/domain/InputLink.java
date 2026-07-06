@@ -1,6 +1,8 @@
 package io.github.juc211.band_schedule.domain;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -30,6 +32,9 @@ public class InputLink {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private Performance performance;
 
+	@Enumerated(EnumType.STRING)
+	private InputLinkType type;
+
 	private boolean active;
 
 	private LocalDateTime expiresAt;
@@ -37,12 +42,25 @@ public class InputLink {
 	private LocalDateTime createdAt;
 
 	public static InputLink create(String token, Performance performance, boolean active, LocalDateTime expiresAt) {
+		return create(token, performance, InputLinkType.SONG_REQUEST, active, expiresAt);
+	}
+
+	public static InputLink create(String token, Performance performance, InputLinkType type, boolean active, LocalDateTime expiresAt) {
 		InputLink inputLink = new InputLink();
 		inputLink.token = token;
 		inputLink.performance = performance;
+		inputLink.type = type;
 		inputLink.active = active;
 		inputLink.expiresAt = expiresAt;
 		inputLink.createdAt = LocalDateTime.now();
 		return inputLink;
+	}
+
+	public void updateActive(boolean active) {
+		this.active = active;
+	}
+
+	public void updateExpiresAt(LocalDateTime expiresAt) {
+		this.expiresAt = expiresAt;
 	}
 }

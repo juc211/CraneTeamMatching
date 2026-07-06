@@ -3,6 +3,7 @@ package io.github.juc211.band_schedule.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.juc211.band_schedule.domain.AvailableTime;
+import io.github.juc211.band_schedule.domain.PerformanceConfirmedSong;
 import io.github.juc211.band_schedule.domain.FinalSchedule;
 import io.github.juc211.band_schedule.domain.InputLink;
 import io.github.juc211.band_schedule.domain.SongVote;
@@ -14,10 +15,11 @@ class RepositoryDefinitionTests {
 
 	@Test
 	void remainingEntityRepositoriesExtendJpaRepositoryWithLongId() {
-		assertJpaRepository(AvailabilityRepository.class, AvailableTime.class);
-		assertJpaRepository(FinalScheduleRepository.class, FinalSchedule.class);
-		assertJpaRepositoryWithDeclaredMethodCount(InputLinkRepository.class, InputLink.class, 1);
-		assertJpaRepositoryWithDeclaredMethodCount(SongVoteRepository.class, SongVote.class, 3);
+		assertJpaRepositoryWithDeclaredMethodCount(AvailabilityRepository.class, AvailableTime.class, 7);
+		assertJpaRepositoryWithDeclaredMethodCount(PerformanceConfirmedSongRepository.class, PerformanceConfirmedSong.class, 2);
+		assertJpaRepositoryWithDeclaredMethodCount(FinalScheduleRepository.class, FinalSchedule.class, 6);
+		assertJpaRepositoryWithDeclaredMethodCount(InputLinkRepository.class, InputLink.class, 4);
+		assertJpaRepositoryWithDeclaredMethodCount(SongVoteRepository.class, SongVote.class, 7);
 	}
 
 	private void assertJpaRepository(Class<?> repositoryType, Class<?> entityType) {
