@@ -1,5 +1,7 @@
 package io.github.juc211.band_schedule.dto;
 
+import io.github.juc211.band_schedule.domain.UserStatus;
+
 public abstract class UserDto {
 
 	public record UserCreateRequest(
@@ -11,7 +13,8 @@ public abstract class UserDto {
 	public record UserCreateResponse(
 			Long userId,
 			String name,
-			String studentNumber
+			String studentNumber,
+			UserStatus status
 	) {
 	}
 
@@ -21,10 +24,16 @@ public abstract class UserDto {
 	) {
 	}
 
+	public record UserStatusUpdateRequest(
+			UserStatus status
+	) {
+	}
+
 	public record UserResponse(
 			Long userId,
 			String name,
-			String studentNumber
+			String studentNumber,
+			UserStatus status
 	) {
 	}
 }

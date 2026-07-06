@@ -33,4 +33,27 @@ public class FinalSchedule {
 	private LocalDateTime endDateTime;
 
 	private String memo;
+
+	public static FinalSchedule create(Team team, LocalDateTime startDateTime, LocalDateTime endDateTime, String memo) {
+		FinalSchedule finalSchedule = new FinalSchedule();
+		finalSchedule.team = team;
+		finalSchedule.update(startDateTime, endDateTime, memo);
+		return finalSchedule;
+	}
+
+	public void update(LocalDateTime startDateTime, LocalDateTime endDateTime, String memo) {
+		validateTimeRange(startDateTime, endDateTime);
+		this.startDateTime = startDateTime;
+		this.endDateTime = endDateTime;
+		this.memo = memo;
+	}
+
+	private void validateTimeRange(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+		if (startDateTime == null || endDateTime == null) {
+			throw new IllegalArgumentException("Final schedule start and end date time must be set together");
+		}
+		if (!startDateTime.isBefore(endDateTime)) {
+			throw new IllegalArgumentException("Final schedule start date time must be before end date time");
+		}
+	}
 }

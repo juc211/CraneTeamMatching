@@ -12,4 +12,12 @@ public interface SongVoteRepository extends JpaRepository<SongVote, Long> {
 	List<SongVote> findBySongRequestIdOrderByIdAsc(Long songRequestId);
 
 	void deleteBySongRequestId(Long songRequestId);
+
+	void deleteBySongRequestTeamId(Long teamId);
+
+	void deleteBySongRequestPerformanceId(Long performanceId);
+
+	void deleteBySongRequestRequestedByMemberId(Long performanceMemberId);
+
+	void deleteByVoterMemberId(Long performanceMemberId);
 }

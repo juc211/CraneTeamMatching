@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface UserSessionRepository extends JpaRepository<UserSession, Long> {
     List<UserSession> findByUserId(Long userId);
+
+    boolean existsByUserId(Long userId);
 }

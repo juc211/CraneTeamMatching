@@ -6,6 +6,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -54,6 +55,43 @@ public class PerformanceController {
             @RequestBody PerformanceDto.PerformanceUpdateRequest request
     ) {
         return ResponseEntity.ok(performanceService.updatePerformance(performanceId, request));
+    }
+
+    /**
+     * 공연 삭제(공연 하위 데이터도 함께 삭제)
+     */
+    @DeleteMapping("/{performanceId}")
+    public ResponseEntity<Void> deletePerformance(@PathVariable Long performanceId) {
+        performanceService.deletePerformance(performanceId);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * 공연 합주 기간 조회
+     */
+    @GetMapping("/{performanceId}/schedule-window")
+    public ResponseEntity<PerformanceDto.PerformanceScheduleWindowResponse> getPerformanceScheduleWindow(@PathVariable Long performanceId) {
+        return ResponseEntity.ok(performanceService.getPerformanceScheduleWindow(performanceId));
+    }
+
+    /**
+     * 공연 합주 기간 지정 및 수정
+     */
+    @PatchMapping("/{performanceId}/schedule-window")
+    public ResponseEntity<PerformanceDto.PerformanceResponse> updatePerformanceScheduleWindow(
+            @PathVariable Long performanceId,
+            @RequestBody PerformanceDto.PerformanceScheduleWindowUpdateRequest request
+    ) {
+        return ResponseEntity.ok(performanceService.updatePerformanceScheduleWindow(performanceId, request));
+    }
+
+    /**
+     * 공연 합주 기간 삭제
+     */
+    @DeleteMapping("/{performanceId}/schedule-window")
+    public ResponseEntity<Void> deletePerformanceScheduleWindow(@PathVariable Long performanceId) {
+        performanceService.deletePerformanceScheduleWindow(performanceId);
+        return ResponseEntity.noContent().build();
     }
 
     /**

@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.github.juc211.band_schedule.domain.InputLink;
+import io.github.juc211.band_schedule.domain.InputLinkType;
 import io.github.juc211.band_schedule.domain.Performance;
 import io.github.juc211.band_schedule.domain.PerformanceMember;
 import io.github.juc211.band_schedule.domain.SongRequest;
@@ -208,7 +209,7 @@ class SongControllerTest {
 		PerformanceMember requesterMember = performanceMemberRepository.save(PerformanceMember.create(performance, requesterUser));
 		PerformanceMember voterMember = performanceMemberRepository.save(PerformanceMember.create(performance, voterUser));
 		InputLink inputLink = inputLinkRepository.save(
-				InputLink.create("vote-token", performance, true, LocalDateTime.now().plusDays(1))
+				InputLink.create("vote-token", performance, InputLinkType.SONG_VOTE, true, LocalDateTime.now().plusDays(1))
 		);
 		SongRequest songRequest = songRequestRepository.save(
 				SongRequest.create(performance, null, requesterMember, "Song A - Artist A")

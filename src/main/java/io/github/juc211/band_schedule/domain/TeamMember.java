@@ -31,4 +31,8 @@ public class TeamMember {
 		teamMember.part = part;
 		return teamMember;
 	}
+
+	public void updatePart(Part part) {
+		this.part = part;
+	}
 }

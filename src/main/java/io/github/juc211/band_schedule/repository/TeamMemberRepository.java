@@ -7,4 +7,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface TeamMemberRepository extends JpaRepository<TeamMember, Long> {
 
 	List<TeamMember> findByTeamIdOrderByIdAsc(Long teamId);
+
+	void deleteByTeamId(Long teamId);
+
+	void deleteByPerformanceMemberId(Long performanceMemberId);
+
+	void deleteByTeamPerformanceId(Long performanceId);
 }

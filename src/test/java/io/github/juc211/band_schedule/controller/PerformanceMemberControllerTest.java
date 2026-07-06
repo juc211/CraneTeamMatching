@@ -1,11 +1,14 @@
 package io.github.juc211.band_schedule.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.github.juc211.band_schedule.domain.Performance;
+import io.github.juc211.band_schedule.domain.PerformanceMember;
 import io.github.juc211.band_schedule.domain.User;
+import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
 import io.github.juc211.band_schedule.repository.UserRepository;
 import java.time.LocalDate;
@@ -33,6 +36,9 @@ class PerformanceMemberControllerTest {
 	@Autowired
 	private UserRepository userRepository;
 
+	@Autowired
+	private PerformanceMemberRepository performanceMemberRepository;
+
 	@Test
 	void addPerformanceMembersReturnsCreatedStatus() throws Exception {
 		Performance performance = performanceRepository.save(
@@ -54,5 +60,17 @@ class PerformanceMemberControllerTest {
 				.andExpect(jsonPath("$.members[0].name").value("Kim Vocal"))
 				.andExpect(jsonPath("$.members[1].userId").value(bass.getId()))
 				.andExpect(jsonPath("$.members[1].name").value("Lee Bass"));
+	}
+
+	@Test
+	void deletePerformanceMemberReturnsNoContentStatus() throws Exception {
+		Performance performance = performanceRepository.save(
+				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+		);
+		User user = userRepository.save(User.create("Kim Vocal", "20261234"));
+		PerformanceMember performanceMember = performanceMemberRepository.save(PerformanceMember.create(performance, user));
+
+		mockMvc.perform(delete("/api/performance-members/{performanceMemberId}", performanceMember.getId()))
+				.andExpect(status().isNoContent());
 	}
 }
