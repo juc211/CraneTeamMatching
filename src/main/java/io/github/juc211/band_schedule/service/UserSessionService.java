@@ -1,0 +1,68 @@
+package io.github.juc211.band_schedule.service;
+
+import io.github.juc211.band_schedule.domain.User;
+import io.github.juc211.band_schedule.domain.UserSession;
+import io.github.juc211.band_schedule.dto.UserSessionDto;
+import io.github.juc211.band_schedule.repository.UserRepository;
+import io.github.juc211.band_schedule.repository.UserSessionRepository;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@Transactional
+@RequiredArgsConstructor
+public class UserSessionService {
+
+	private final UserSessionRepository userSessionRepository;
+	private final UserRepository userRepository;
+
+	/**
+	 * 유저 세션 추가
+	 */
+	public UserSessionDto.UserSessionResponse createUserSession(
+			Long userId,
+			UserSessionDto.UserSessionCreateRequest request
+	) {
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+
+		UserSession savedUserSession = userSessionRepository.save(UserSession.create(user, request.part()));
+
+		return toUserSessionResponse(savedUserSession);
+	}
+
+	/**
+	 * 유저 세션 목록 조회
+	 */
+	@Transactional(readOnly = true)
+	public List<UserSessionDto.UserSessionResponse> getUserSessionsByUser(Long userId) {
+		if (!userRepository.existsById(userId)) {
+			throw new IllegalArgumentException("User not found: " + userId);
+		}
+
+		return userSessionRepository.findByUserId(userId)
+				.stream()
+				.map(this::toUserSessionResponse)
+				.toList();
+	}
+
+	/**
+	 * 유저 세션 삭제
+	 */
+	public void deleteUserSession(Long userSessionId) {
+		UserSession userSession = userSessionRepository.findById(userSessionId)
+				.orElseThrow(() -> new IllegalArgumentException("UserSession not found: " + userSessionId));
+
+		userSessionRepository.delete(userSession);
+	}
+
+	private UserSessionDto.UserSessionResponse toUserSessionResponse(UserSession userSession) {
+		return new UserSessionDto.UserSessionResponse(
+				userSession.getId(),
+				userSession.getUser().getId(),
+				userSession.getPart()
+		);
+	}
+}
