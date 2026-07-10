@@ -25,6 +25,8 @@ public class UserService {
 	 * 밴드 멤버 생성
 	 */
 	public UserDto.UserCreateResponse createUser(UserDto.UserCreateRequest request) {
+		validateStudentNumberNotDuplicated(request.studentNumber());
+
 		User user = User.create(request.name(), request.studentNumber());
 
 		User savedUser = userRepository.save(user);
@@ -55,6 +57,7 @@ public class UserService {
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
+		validateStudentNumberNotDuplicated(userId, request.studentNumber());
 		user.update(request.name(), request.studentNumber());
 
 		return toUserResponse(user);
@@ -112,6 +115,9 @@ public class UserService {
 		userRepository.delete(user);
 	}
 
+	/**
+	 * 유저 응답 변환
+	 */
 	private UserDto.UserResponse toUserResponse(User user) {
 		return new UserDto.UserResponse(
 				user.getId(),
@@ -119,5 +125,23 @@ public class UserService {
 				user.getStudentNumber(),
 				user.getStatus()
 		);
+	}
+
+	/**
+	 * 학번 중복 여부 검증
+	 */
+	private void validateStudentNumberNotDuplicated(String studentNumber) {
+		if (userRepository.existsByStudentNumber(studentNumber)) {
+			throw new IllegalArgumentException("Student number already exists: " + studentNumber);
+		}
+	}
+
+	/**
+	 * 본인을 제외한 학번 중복 여부 검증
+	 */
+	private void validateStudentNumberNotDuplicated(Long userId, String studentNumber) {
+		if (userRepository.existsByStudentNumberAndIdNot(studentNumber, userId)) {
+			throw new IllegalArgumentException("Student number already exists: " + studentNumber);
+		}
 	}
 }

@@ -46,6 +46,14 @@ public class PerformanceConfirmedSongController {
 	}
 
 	/**
+	 * 링크 기반 공연 단위 확정곡 목록 조회
+	 */
+	@GetMapping("/input-links/{token}/performance-confirmed-songs")
+	public ResponseEntity<List<PerformanceConfirmedSongDto.PerformanceConfirmedSongResponse>> getPerformanceConfirmedSongsByLink(@PathVariable String token) {
+		return ResponseEntity.ok(performanceConfirmedSongService.getPerformanceConfirmedSongsByLink(token));
+	}
+
+	/**
 	 * 공연 단위 확정곡 수정
 	 */
 	@PatchMapping("/performance-confirmed-songs/{performanceConfirmedSongId}")

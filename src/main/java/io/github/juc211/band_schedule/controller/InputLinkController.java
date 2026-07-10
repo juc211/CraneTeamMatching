@@ -99,4 +99,15 @@ public class InputLinkController {
 	public ResponseEntity<List<PerformanceDto.PerformanceMemberResponse>> getPerformanceMembersByLink(@PathVariable String token) {
 		return ResponseEntity.ok(performanceService.getPerformanceMembersByLink(token));
 	}
+
+	/**
+	 * 링크 기반 이름/학번 공연 참여 인원 식별
+	 */
+	@PostMapping("/input-links/{token}/identify")
+	public ResponseEntity<InputLinkDto.InputLinkIdentifyResponse> identifyPerformanceMember(
+			@PathVariable String token,
+			@RequestBody InputLinkDto.InputLinkIdentifyRequest request
+	) {
+		return ResponseEntity.ok(inputLinkService.identifyPerformanceMember(token, request));
+	}
 }

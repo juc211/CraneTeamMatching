@@ -6,6 +6,8 @@ import io.github.juc211.band_schedule.domain.AvailableTime;
 import io.github.juc211.band_schedule.domain.PerformanceConfirmedSong;
 import io.github.juc211.band_schedule.domain.FinalSchedule;
 import io.github.juc211.band_schedule.domain.InputLink;
+import io.github.juc211.band_schedule.domain.PerformanceSetlistItem;
+import io.github.juc211.band_schedule.domain.SongPreference;
 import io.github.juc211.band_schedule.domain.SongVote;
 import java.lang.reflect.ParameterizedType;
 import org.junit.jupiter.api.Test;
@@ -17,8 +19,10 @@ class RepositoryDefinitionTests {
 	void remainingEntityRepositoriesExtendJpaRepositoryWithLongId() {
 		assertJpaRepositoryWithDeclaredMethodCount(AvailabilityRepository.class, AvailableTime.class, 7);
 		assertJpaRepositoryWithDeclaredMethodCount(PerformanceConfirmedSongRepository.class, PerformanceConfirmedSong.class, 2);
+		assertJpaRepositoryWithDeclaredMethodCount(PerformanceSetlistItemRepository.class, PerformanceSetlistItem.class, 3);
 		assertJpaRepositoryWithDeclaredMethodCount(FinalScheduleRepository.class, FinalSchedule.class, 6);
 		assertJpaRepositoryWithDeclaredMethodCount(InputLinkRepository.class, InputLink.class, 4);
+		assertJpaRepositoryWithDeclaredMethodCount(SongPreferenceRepository.class, SongPreference.class, 6);
 		assertJpaRepositoryWithDeclaredMethodCount(SongVoteRepository.class, SongVote.class, 7);
 	}
 

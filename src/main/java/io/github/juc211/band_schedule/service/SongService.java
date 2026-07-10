@@ -50,7 +50,8 @@ public class SongService {
 				inputLink.getPerformance(),
 				selectedTeam,
 				requestedByMember,
-				request.song()
+				request.song(),
+				request.youtubeUrl()
 		));
 
 		return toSongRequestResponse(savedSongRequest);
@@ -129,7 +130,7 @@ public class SongService {
 
 		validateTeamBelongsToSongRequestPerformance(songRequest, selectedTeam);
 
-		songRequest.update(selectedTeam, request.song());
+		songRequest.update(selectedTeam, request.song(), request.youtubeUrl());
 
 		return toSongRequestResponse(songRequest);
 	}
@@ -191,6 +192,9 @@ public class SongService {
 				.toList();
 	}
 
+	/**
+	 * 링크 사용 가능 여부 검증
+	 */
 	private void validateUsableLink(InputLink inputLink) {
 		if (!inputLink.isActive()) {
 			throw new IllegalArgumentException("InputLink is inactive");
@@ -200,12 +204,18 @@ public class SongService {
 		}
 	}
 
+	/**
+	 * 링크 타입 검증
+	 */
 	private void validateLinkType(InputLink inputLink, InputLinkType expectedType) {
 		if (inputLink.getType() != expectedType) {
 			throw new IllegalArgumentException("InputLink type must be " + expectedType);
 		}
 	}
 
+	/**
+	 * 링크 공연과 공연 참여 인원 공연 일치 여부 검증
+	 */
 	private void validateSamePerformance(InputLink inputLink, PerformanceMember requestedByMember) {
 		Long linkPerformanceId = inputLink.getPerformance().getId();
 		Long memberPerformanceId = requestedByMember.getPerformance().getId();
@@ -214,6 +224,9 @@ public class SongService {
 		}
 	}
 
+	/**
+	 * 선택된 팀 조회
+	 */
 	private Team getSelectedTeam(Long teamId) {
 		if (teamId == null) {
 			return null;
@@ -223,24 +236,36 @@ public class SongService {
 				.orElseThrow(() -> new IllegalArgumentException("Team not found: " + teamId));
 	}
 
+	/**
+	 * 공연 존재 여부 검증
+	 */
 	private void validatePerformanceExists(Long performanceId) {
 		if (!performanceRepository.existsById(performanceId)) {
 			throw new IllegalArgumentException("Performance not found: " + performanceId);
 		}
 	}
 
+	/**
+	 * 팀 존재 여부 검증
+	 */
 	private void validateTeamExists(Long teamId) {
 		if (!teamRepository.existsById(teamId)) {
 			throw new IllegalArgumentException("Team not found: " + teamId);
 		}
 	}
 
+	/**
+	 * 희망곡 신청 존재 여부 검증
+	 */
 	private void validateSongRequestExists(Long songRequestId) {
 		if (!songRequestRepository.existsById(songRequestId)) {
 			throw new IllegalArgumentException("SongRequest not found: " + songRequestId);
 		}
 	}
 
+	/**
+	 * 팀이 링크 공연에 속하는지 검증
+	 */
 	private void validateTeamBelongsToLinkPerformance(InputLink inputLink, Team selectedTeam) {
 		if (selectedTeam == null) {
 			return;
@@ -253,6 +278,9 @@ public class SongService {
 		}
 	}
 
+	/**
+	 * 팀이 희망곡 신청 공연에 속하는지 검증
+	 */
 	private void validateTeamBelongsToSongRequestPerformance(SongRequest songRequest, Team selectedTeam) {
 		if (selectedTeam == null) {
 			return;
@@ -265,6 +293,9 @@ public class SongService {
 		}
 	}
 
+	/**
+	 * 희망곡 신청이 링크 공연에 속하는지 검증
+	 */
 	private void validateSongRequestBelongsToLinkPerformance(InputLink inputLink, SongRequest songRequest) {
 		Long linkPerformanceId = inputLink.getPerformance().getId();
 		Long songRequestPerformanceId = songRequest.getPerformance().getId();
@@ -273,6 +304,9 @@ public class SongService {
 		}
 	}
 
+	/**
+	 * 희망곡 신청 응답 변환
+	 */
 	private SongDto.SongRequestResponse toSongRequestResponse(SongRequest songRequest) {
 		Team team = songRequest.getTeam();
 		return new SongDto.SongRequestResponse(
@@ -281,10 +315,14 @@ public class SongService {
 				team == null ? null : team.getId(),
 				songRequest.getRequestedByMember().getId(),
 				songRequest.getSong(),
+				songRequest.getYoutubeUrl(),
 				songRequest.getCreatedAt()
 		);
 	}
 
+	/**
+	 * 희망곡 투표 응답 변환
+	 */
 	private SongDto.SongVoteResponse toSongVoteResponse(SongVote songVote) {
 		return new SongDto.SongVoteResponse(
 				songVote.getId(),

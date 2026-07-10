@@ -8,6 +8,8 @@ public interface TeamMemberRepository extends JpaRepository<TeamMember, Long> {
 
 	List<TeamMember> findByTeamIdOrderByIdAsc(Long teamId);
 
+	List<TeamMember> findByPerformanceMemberIdOrderByIdAsc(Long performanceMemberId);
+
 	void deleteByTeamId(Long teamId);
 
 	void deleteByPerformanceMemberId(Long performanceMemberId);

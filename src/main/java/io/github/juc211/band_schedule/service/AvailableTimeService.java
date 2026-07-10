@@ -62,6 +62,9 @@ public class AvailableTimeService {
 		return replaceAvailableTimes(teamMember, request);
 	}
 
+	/**
+	 * 팀원 가능 시간 목록 교체 공통 처리
+	 */
 	private List<AvailableTimeDto.AvailableTimeResponse> replaceAvailableTimes(
 			TeamMember teamMember,
 			AvailableTimeDto.AvailableTimesReplaceRequest request
@@ -176,18 +179,27 @@ public class AvailableTimeService {
 				.toList();
 	}
 
+	/**
+	 * 팀원 존재 여부 검증
+	 */
 	private void validateTeamMemberExists(Long teamMemberId) {
 		if (!teamMemberRepository.existsById(teamMemberId)) {
 			throw new IllegalArgumentException("TeamMember not found: " + teamMemberId);
 		}
 	}
 
+	/**
+	 * 팀 존재 여부 검증
+	 */
 	private void validateTeamExists(Long teamId) {
 		if (!teamRepository.existsById(teamId)) {
 			throw new IllegalArgumentException("Team not found: " + teamId);
 		}
 	}
 
+	/**
+	 * 가능 시간이 공연 합주 기간 안에 있는지 검증
+	 */
 	private void validateWithinScheduleWindow(TeamMember teamMember, LocalDateTime startDateTime, LocalDateTime endDateTime) {
 		Performance performance = teamMember.getTeam().getPerformance();
 		LocalDate scheduleWindowStartDate = performance.getScheduleWindowStartDate();
@@ -199,12 +211,16 @@ public class AvailableTimeService {
 		if (startDateTime == null || endDateTime == null) {
 			throw new IllegalArgumentException("Available time start and end date time must be set together");
 		}
-		if (startDateTime.toLocalDate().isBefore(scheduleWindowStartDate)
-				|| endDateTime.toLocalDate().isAfter(scheduleWindowEndDate)) {
+		LocalDateTime windowStartDateTime = scheduleWindowStartDate.atStartOfDay();
+		LocalDateTime exclusiveWindowEndDateTime = scheduleWindowEndDate.plusDays(1).atStartOfDay();
+		if (startDateTime.isBefore(windowStartDateTime) || endDateTime.isAfter(exclusiveWindowEndDateTime)) {
 			throw new IllegalArgumentException("Available time must be within performance schedule window");
 		}
 	}
 
+	/**
+	 * 링크 사용 가능 여부 검증
+	 */
 	private void validateUsableLink(InputLink inputLink) {
 		if (!inputLink.isActive()) {
 			throw new IllegalArgumentException("InputLink is inactive");
@@ -214,12 +230,18 @@ public class AvailableTimeService {
 		}
 	}
 
+	/**
+	 * 링크 타입 검증
+	 */
 	private void validateLinkType(InputLink inputLink, InputLinkType expectedType) {
 		if (inputLink.getType() != expectedType) {
 			throw new IllegalArgumentException("InputLink type must be " + expectedType);
 		}
 	}
 
+	/**
+	 * 링크 공연과 팀원 공연 일치 여부 검증
+	 */
 	private void validateSamePerformance(InputLink inputLink, TeamMember teamMember) {
 		Long linkPerformanceId = inputLink.getPerformance().getId();
 		Long memberPerformanceId = teamMember.getTeam().getPerformance().getId();
@@ -228,6 +250,9 @@ public class AvailableTimeService {
 		}
 	}
 
+	/**
+	 * 팀원 가능 시간 목록 병합 정규화
+	 */
 	private List<TimeRange> getNormalizedAvailableTimeRanges(Long teamMemberId) {
 		List<TimeRange> sortedRanges = availabilityRepository.findByTeamMemberIdOrderByStartDateTimeAscIdAsc(teamMemberId)
 				.stream()
@@ -256,6 +281,9 @@ public class AvailableTimeService {
 		return normalizedRanges;
 	}
 
+	/**
+	 * 두 가능 시간 목록 교집합 계산
+	 */
 	private List<TimeRange> intersect(List<TimeRange> leftRanges, List<TimeRange> rightRanges) {
 		List<TimeRange> intersections = new ArrayList<>();
 		int leftIndex = 0;
@@ -281,14 +309,23 @@ public class AvailableTimeService {
 		return intersections;
 	}
 
+	/**
+	 * 더 늦은 시간 반환
+	 */
 	private LocalDateTime max(LocalDateTime first, LocalDateTime second) {
 		return first.isAfter(second) ? first : second;
 	}
 
+	/**
+	 * 더 이른 시간 반환
+	 */
 	private LocalDateTime min(LocalDateTime first, LocalDateTime second) {
 		return first.isBefore(second) ? first : second;
 	}
 
+	/**
+	 * 가능 시간 응답 변환
+	 */
 	private AvailableTimeDto.AvailableTimeResponse toAvailableTimeResponse(AvailableTime availableTime) {
 		TeamMember teamMember = availableTime.getTeamMember();
 		return new AvailableTimeDto.AvailableTimeResponse(

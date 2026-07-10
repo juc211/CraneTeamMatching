@@ -31,6 +31,7 @@ import io.github.juc211.band_schedule.repository.TeamRepository;
 import io.github.juc211.band_schedule.repository.UserRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -187,6 +188,41 @@ class PerformanceServiceTest {
 		assertThat(response.location()).isEqualTo("Main Hall");
 		assertThat(response.scheduleWindowStartDate()).isEqualTo(LocalDate.of(2026, 8, 1));
 		assertThat(response.scheduleWindowEndDate()).isEqualTo(LocalDate.of(2026, 8, 20));
+	}
+
+	@Test
+	void addPerformanceMembersRejectsDuplicateUserInSameRequest() {
+		Performance performance = performanceRepository.save(Performance.create(
+				"2026 Summer Concert",
+				LocalDate.of(2026, 8, 20),
+				"Main Hall"
+		));
+		User user = userRepository.save(User.create("Kim Vocal", "20261234"));
+
+		assertThatThrownBy(() -> performanceService.addPerformanceMembers(
+				performance.getId(),
+				new PerformanceDto.PerformanceMemberAddRequest(List.of(user.getId(), user.getId()))
+		))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("Duplicate user id");
+	}
+
+	@Test
+	void addPerformanceMembersRejectsUserAlreadyAddedToPerformance() {
+		Performance performance = performanceRepository.save(Performance.create(
+				"2026 Summer Concert",
+				LocalDate.of(2026, 8, 20),
+				"Main Hall"
+		));
+		User user = userRepository.save(User.create("Kim Vocal", "20261234"));
+		performanceMemberRepository.save(PerformanceMember.create(performance, user));
+
+		assertThatThrownBy(() -> performanceService.addPerformanceMembers(
+				performance.getId(),
+				new PerformanceDto.PerformanceMemberAddRequest(List.of(user.getId()))
+		))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("User is already added to performance");
 	}
 
 	@Test

@@ -12,13 +12,17 @@ import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.PerformanceConfirmedSongRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
+import io.github.juc211.band_schedule.repository.PerformanceSetlistItemRepository;
+import io.github.juc211.band_schedule.repository.SongPreferenceRepository;
 import io.github.juc211.band_schedule.repository.SongRequestRepository;
 import io.github.juc211.band_schedule.repository.SongVoteRepository;
 import io.github.juc211.band_schedule.repository.TeamMemberRepository;
 import io.github.juc211.band_schedule.repository.TeamRepository;
 import io.github.juc211.band_schedule.repository.UserRepository;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
@@ -40,6 +44,8 @@ public class PerformanceService {
     private final SongVoteRepository songVoteRepository;
     private final InputLinkRepository inputLinkRepository;
     private final PerformanceConfirmedSongRepository performanceConfirmedSongRepository;
+    private final PerformanceSetlistItemRepository performanceSetlistItemRepository;
+    private final SongPreferenceRepository songPreferenceRepository;
 
     /**
      * 공연 생성
@@ -171,6 +177,9 @@ public class PerformanceService {
         );
     }
 
+    /**
+     * 공연 합주 기간 삭제 가능 여부 검증
+     */
     private void validateScheduleWindowCanBeDeleted(Long performanceId) {
         if (availabilityRepository.existsByTeamMemberTeamPerformanceId(performanceId)) {
             throw new IllegalArgumentException("Cannot delete schedule window because available times exist");
@@ -203,6 +212,7 @@ public class PerformanceService {
                 inputLink,
                 InputLinkType.SONG_REQUEST,
                 InputLinkType.SONG_VOTE,
+                InputLinkType.SONG_PREFERENCE,
                 InputLinkType.AVAILABLE_TIME
         );
 
@@ -221,6 +231,8 @@ public class PerformanceService {
     ) {
         Performance performance = performanceRepository.findById(performanceId)
                 .orElseThrow(() -> new IllegalArgumentException("Performance not found: " + performanceId));
+
+        validatePerformanceMemberAddRequest(performanceId, request.userIds());
 
         List<PerformanceMember> performanceMembers = new ArrayList<>();
         for (Long userId : request.userIds()) {
@@ -243,6 +255,28 @@ public class PerformanceService {
     }
 
     /**
+     * 공연 참여 인원 추가 요청 검증
+     */
+    private void validatePerformanceMemberAddRequest(Long performanceId, List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            throw new IllegalArgumentException("User ids are required");
+        }
+
+        Set<Long> requestedUserIds = new HashSet<>();
+        for (Long userId : userIds) {
+            if (userId == null) {
+                throw new IllegalArgumentException("User id is required");
+            }
+            if (!requestedUserIds.add(userId)) {
+                throw new IllegalArgumentException("Duplicate user id in performance member request: " + userId);
+            }
+            if (performanceMemberRepository.existsByPerformanceIdAndUserId(performanceId, userId)) {
+                throw new IllegalArgumentException("User is already added to performance: " + userId);
+            }
+        }
+    }
+
+    /**
      * 공연 참여 인원 삭제
      */
     public void deletePerformanceMember(Long performanceMemberId) {
@@ -252,6 +286,7 @@ public class PerformanceService {
         songVoteRepository.deleteBySongRequestRequestedByMemberId(performanceMemberId);
         songRequestRepository.deleteByRequestedByMemberId(performanceMemberId);
         songVoteRepository.deleteByVoterMemberId(performanceMemberId);
+        songPreferenceRepository.deleteByPerformanceMemberId(performanceMemberId);
         availabilityRepository.deleteByTeamMemberPerformanceMemberId(performanceMemberId);
         teamMemberRepository.deleteByPerformanceMemberId(performanceMemberId);
         performanceMemberRepository.delete(performanceMember);
@@ -265,8 +300,10 @@ public class PerformanceService {
                 .orElseThrow(() -> new IllegalArgumentException("Performance not found: " + performanceId));
 
         inputLinkRepository.deleteByPerformanceId(performanceId);
+        songPreferenceRepository.deleteByPerformanceConfirmedSongPerformanceId(performanceId);
         performanceConfirmedSongRepository.deleteByPerformanceId(performanceId);
         finalScheduleRepository.deleteByTeamPerformanceId(performanceId);
+        performanceSetlistItemRepository.deleteByPerformanceId(performanceId);
         songVoteRepository.deleteBySongRequestPerformanceId(performanceId);
         songRequestRepository.deleteByPerformanceId(performanceId);
         availabilityRepository.deleteByTeamMemberTeamPerformanceId(performanceId);
@@ -276,6 +313,9 @@ public class PerformanceService {
         performanceRepository.delete(performance);
     }
 
+    /**
+     * 공연 응답 변환
+     */
     private PerformanceDto.PerformanceResponse toPerformanceResponse(Performance performance) {
         return new PerformanceDto.PerformanceResponse(
                 performance.getId(),
@@ -287,6 +327,9 @@ public class PerformanceService {
         );
     }
 
+    /**
+     * 공연 합주 기간 응답 변환
+     */
     private PerformanceDto.PerformanceScheduleWindowResponse toPerformanceScheduleWindowResponse(Performance performance) {
         return new PerformanceDto.PerformanceScheduleWindowResponse(
                 performance.getId(),
@@ -295,6 +338,9 @@ public class PerformanceService {
         );
     }
 
+    /**
+     * 공연 참여 인원 응답 변환
+     */
     private PerformanceDto.PerformanceMemberResponse toPerformanceMemberResponse(PerformanceMember performanceMember) {
         return new PerformanceDto.PerformanceMemberResponse(
                 performanceMember.getId(),
@@ -303,12 +349,18 @@ public class PerformanceService {
         );
     }
 
+    /**
+     * 공연 존재 여부 검증
+     */
     private void validatePerformanceExists(Long performanceId) {
         if (!performanceRepository.existsById(performanceId)) {
             throw new IllegalArgumentException("Performance not found: " + performanceId);
         }
     }
 
+    /**
+     * 사용 가능한 링크 조회
+     */
     private InputLink getUsableLink(String token) {
         InputLink inputLink = inputLinkRepository.findByToken(token)
                 .orElseThrow(() -> new IllegalArgumentException("InputLink not found: " + token));
@@ -321,6 +373,9 @@ public class PerformanceService {
         return inputLink;
     }
 
+    /**
+     * 링크 타입 검증
+     */
     private void validateLinkType(InputLink inputLink, InputLinkType... expectedTypes) {
         for (InputLinkType expectedType : expectedTypes) {
             if (inputLink.getType() == expectedType) {

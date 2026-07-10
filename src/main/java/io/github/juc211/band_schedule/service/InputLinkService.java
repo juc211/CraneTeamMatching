@@ -1,10 +1,16 @@
 package io.github.juc211.band_schedule.service;
 
 import io.github.juc211.band_schedule.domain.InputLink;
+import io.github.juc211.band_schedule.domain.InputLinkType;
 import io.github.juc211.band_schedule.domain.Performance;
+import io.github.juc211.band_schedule.domain.PerformanceMember;
+import io.github.juc211.band_schedule.domain.TeamMember;
 import io.github.juc211.band_schedule.dto.InputLinkDto;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
+import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
+import io.github.juc211.band_schedule.repository.TeamMemberRepository;
+import java.time.LocalDateTime;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.List;
@@ -21,6 +27,8 @@ public class InputLinkService {
 
 	private final InputLinkRepository inputLinkRepository;
 	private final PerformanceRepository performanceRepository;
+	private final PerformanceMemberRepository performanceMemberRepository;
+	private final TeamMemberRepository teamMemberRepository;
 	private final SecureRandom secureRandom = new SecureRandom();
 
 	/**
@@ -92,6 +100,31 @@ public class InputLinkService {
 		inputLinkRepository.delete(inputLink);
 	}
 
+	/**
+	 * 링크 기반 이름/학번 공연 참여 인원 식별
+	 */
+	@Transactional(readOnly = true)
+	public InputLinkDto.InputLinkIdentifyResponse identifyPerformanceMember(String token, InputLinkDto.InputLinkIdentifyRequest request) {
+		InputLink inputLink = inputLinkRepository.findByToken(token)
+				.orElseThrow(() -> new IllegalArgumentException("InputLink not found: " + token));
+
+		validateUsableLink(inputLink);
+		validateInputLinkType(inputLink);
+
+		PerformanceMember performanceMember = performanceMemberRepository
+				.findByPerformanceIdAndUserNameAndUserStudentNumber(
+						inputLink.getPerformance().getId(),
+						request.name(),
+						request.studentNumber()
+				)
+				.orElseThrow(() -> new IllegalArgumentException("PerformanceMember not found by name and student number"));
+
+		return toInputLinkIdentifyResponse(inputLink, performanceMember);
+	}
+
+	/**
+	 * 고유 토큰 생성
+	 */
 	private String generateUniqueToken() {
 		String token;
 		do {
@@ -102,12 +135,42 @@ public class InputLinkService {
 		return token;
 	}
 
+	/**
+	 * 공연 존재 여부 검증
+	 */
 	private void validatePerformanceExists(Long performanceId) {
 		if (!performanceRepository.existsById(performanceId)) {
 			throw new IllegalArgumentException("Performance not found: " + performanceId);
 		}
 	}
 
+	/**
+	 * 링크 사용 가능 여부 검증
+	 */
+	private void validateUsableLink(InputLink inputLink) {
+		if (!inputLink.isActive()) {
+			throw new IllegalArgumentException("InputLink is inactive");
+		}
+		if (inputLink.getExpiresAt() != null && inputLink.getExpiresAt().isBefore(LocalDateTime.now())) {
+			throw new IllegalArgumentException("InputLink is expired");
+		}
+	}
+
+	/**
+	 * 사용자 입력 링크 타입 여부 검증
+	 */
+	private void validateInputLinkType(InputLink inputLink) {
+		if (inputLink.getType() != InputLinkType.SONG_REQUEST
+				&& inputLink.getType() != InputLinkType.SONG_VOTE
+				&& inputLink.getType() != InputLinkType.SONG_PREFERENCE
+				&& inputLink.getType() != InputLinkType.AVAILABLE_TIME) {
+			throw new IllegalArgumentException("InputLink type is not for member input");
+		}
+	}
+
+	/**
+	 * 입력 링크 응답 변환
+	 */
 	private InputLinkDto.InputLinkResponse toInputLinkResponse(InputLink inputLink) {
 		return new InputLinkDto.InputLinkResponse(
 				inputLink.getId(),
@@ -117,6 +180,35 @@ public class InputLinkService {
 				inputLink.isActive(),
 				inputLink.getExpiresAt(),
 				inputLink.getCreatedAt()
+		);
+	}
+
+	/**
+	 * 링크 기반 공연 참여 인원 식별 응답 변환
+	 */
+	private InputLinkDto.InputLinkIdentifyResponse toInputLinkIdentifyResponse(InputLink inputLink, PerformanceMember performanceMember) {
+		return new InputLinkDto.InputLinkIdentifyResponse(
+				inputLink.getPerformance().getId(),
+				performanceMember.getId(),
+				performanceMember.getUser().getId(),
+				performanceMember.getUser().getName(),
+				performanceMember.getUser().getStudentNumber(),
+				teamMemberRepository.findByPerformanceMemberIdOrderByIdAsc(performanceMember.getId())
+						.stream()
+						.map(this::toInputLinkIdentifyTeamMemberResponse)
+						.toList()
+		);
+	}
+
+	/**
+	 * 링크 기반 팀원 식별 응답 변환
+	 */
+	private InputLinkDto.InputLinkIdentifyTeamMemberResponse toInputLinkIdentifyTeamMemberResponse(TeamMember teamMember) {
+		return new InputLinkDto.InputLinkIdentifyTeamMemberResponse(
+				teamMember.getId(),
+				teamMember.getTeam().getId(),
+				teamMember.getTeam().getName(),
+				teamMember.getPart()
 		);
 	}
 }
