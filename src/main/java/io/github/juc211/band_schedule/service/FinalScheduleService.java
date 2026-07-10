@@ -127,6 +127,9 @@ public class FinalScheduleService {
 		finalScheduleRepository.delete(finalSchedule);
 	}
 
+	/**
+	 * 최종 합주 일정 겹침 여부 검증
+	 */
 	private void validateNoOverlap(
 			LocalDateTime startDateTime,
 			LocalDateTime endDateTime,
@@ -152,6 +155,9 @@ public class FinalScheduleService {
 		}
 	}
 
+	/**
+	 * 사용 가능한 최종 일정 조회 링크 조회
+	 */
 	private InputLink getUsableFinalScheduleViewLink(String token) {
 		InputLink inputLink = inputLinkRepository.findByToken(token)
 				.orElseThrow(() -> new IllegalArgumentException("InputLink not found: " + token));
@@ -162,6 +168,9 @@ public class FinalScheduleService {
 		return inputLink;
 	}
 
+	/**
+	 * 링크 사용 가능 여부 검증
+	 */
 	private void validateUsableLink(InputLink inputLink) {
 		if (!inputLink.isActive()) {
 			throw new IllegalArgumentException("InputLink is inactive");
@@ -171,6 +180,9 @@ public class FinalScheduleService {
 		}
 	}
 
+	/**
+	 * 팀이 링크 공연에 속하는지 검증
+	 */
 	private void validateTeamBelongsToLinkPerformance(InputLink inputLink, Team team) {
 		Long linkPerformanceId = inputLink.getPerformance().getId();
 		Long teamPerformanceId = team.getPerformance().getId();
@@ -179,18 +191,27 @@ public class FinalScheduleService {
 		}
 	}
 
+	/**
+	 * 팀 존재 여부 검증
+	 */
 	private void validateTeamExists(Long teamId) {
 		if (!teamRepository.existsById(teamId)) {
 			throw new IllegalArgumentException("Team not found: " + teamId);
 		}
 	}
 
+	/**
+	 * 공연 존재 여부 검증
+	 */
 	private void validatePerformanceExists(Long performanceId) {
 		if (!performanceRepository.existsById(performanceId)) {
 			throw new IllegalArgumentException("Performance not found: " + performanceId);
 		}
 	}
 
+	/**
+	 * 최종 합주 일정 응답 변환
+	 */
 	private FinalScheduleDto.FinalScheduleResponse toFinalScheduleResponse(FinalSchedule finalSchedule) {
 		Team team = finalSchedule.getTeam();
 		return new FinalScheduleDto.FinalScheduleResponse(

@@ -8,14 +8,22 @@ public abstract class SongDto {
 	public record SongRequestCreateRequest(
 			Long teamId,
 			Long requestedByMemberId,
-			String song
+			String song,
+			String youtubeUrl
 	) {
+		public SongRequestCreateRequest(Long teamId, Long requestedByMemberId, String song) {
+			this(teamId, requestedByMemberId, song, null);
+		}
 	}
 
 	public record SongRequestUpdateRequest(
 			Long teamId,
-			String song
+			String song,
+			String youtubeUrl
 	) {
+		public SongRequestUpdateRequest(Long teamId, String song) {
+			this(teamId, song, null);
+		}
 	}
 
 	public record SongRequestResponse(
@@ -24,6 +32,7 @@ public abstract class SongDto {
 			Long teamId,
 			Long requestedByMemberId,
 			String song,
+			String youtubeUrl,
 			LocalDateTime createdAt
 	) {
 	}

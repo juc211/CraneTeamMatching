@@ -58,6 +58,9 @@ public class UserSessionService {
 		userSessionRepository.delete(userSession);
 	}
 
+	/**
+	 * 유저 세션 응답 변환
+	 */
 	private UserSessionDto.UserSessionResponse toUserSessionResponse(UserSession userSession) {
 		return new UserSessionDto.UserSessionResponse(
 				userSession.getId(),

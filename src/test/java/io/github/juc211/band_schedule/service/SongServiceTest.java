@@ -78,8 +78,35 @@ class SongServiceTest {
 		assertThat(response.teamId()).isNull();
 		assertThat(response.requestedByMemberId()).isEqualTo(performanceMember.getId());
 		assertThat(response.song()).isEqualTo("Song A - Artist A");
+		assertThat(response.youtubeUrl()).isNull();
 		assertThat(savedSongRequest.getTeam()).isNull();
 		assertThat(savedSongRequest.getCreatedAt()).isNotNull();
+	}
+
+	@Test
+	void createSongRequestStoresYoutubeUrl() {
+		Performance performance = performanceRepository.save(
+				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+		);
+		User user = userRepository.save(User.create("Kim Band", "20261234"));
+		PerformanceMember performanceMember = performanceMemberRepository.save(PerformanceMember.create(performance, user));
+		InputLink inputLink = inputLinkRepository.save(
+				InputLink.create("performance-token", performance, true, LocalDateTime.now().plusDays(1))
+		);
+
+		SongDto.SongRequestResponse response = songService.createSongRequest(
+				inputLink.getToken(),
+				new SongDto.SongRequestCreateRequest(
+						null,
+						performanceMember.getId(),
+						"Song A - Artist A",
+						"https://www.youtube.com/watch?v=abc123"
+				)
+		);
+
+		SongRequest savedSongRequest = songRequestRepository.findById(response.songRequestId()).orElseThrow();
+		assertThat(response.youtubeUrl()).isEqualTo("https://www.youtube.com/watch?v=abc123");
+		assertThat(savedSongRequest.getYoutubeUrl()).isEqualTo("https://www.youtube.com/watch?v=abc123");
 	}
 
 	@Test
@@ -152,15 +179,21 @@ class SongServiceTest {
 
 		SongDto.SongRequestResponse response = songService.updateSongRequest(
 				songRequest.getId(),
-				new SongDto.SongRequestUpdateRequest(team.getId(), "After Song - Artist B")
+				new SongDto.SongRequestUpdateRequest(
+						team.getId(),
+						"After Song - Artist B",
+						"https://youtu.be/updated"
+				)
 		);
 
 		SongRequest updatedSongRequest = songRequestRepository.findById(songRequest.getId()).orElseThrow();
 		assertThat(response.songRequestId()).isEqualTo(songRequest.getId());
 		assertThat(response.teamId()).isEqualTo(team.getId());
 		assertThat(response.song()).isEqualTo("After Song - Artist B");
+		assertThat(response.youtubeUrl()).isEqualTo("https://youtu.be/updated");
 		assertThat(updatedSongRequest.getTeam().getId()).isEqualTo(team.getId());
 		assertThat(updatedSongRequest.getSong()).isEqualTo("After Song - Artist B");
+		assertThat(updatedSongRequest.getYoutubeUrl()).isEqualTo("https://youtu.be/updated");
 	}
 
 	@Test

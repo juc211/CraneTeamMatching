@@ -51,6 +51,15 @@ class UserServiceTest {
 	}
 
 	@Test
+	void createUserRejectsDuplicateStudentNumber() {
+		userService.createUser(new UserDto.UserCreateRequest("Kim Band", "20261234"));
+
+		assertThatThrownBy(() -> userService.createUser(new UserDto.UserCreateRequest("Lee Bass", "20261234")))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("Student number already exists");
+	}
+
+	@Test
 	void getUsersReturnsRegisteredUsers() {
 		userService.createUser(new UserDto.UserCreateRequest("Kim Band", "20261234"));
 		userService.createUser(new UserDto.UserCreateRequest("Lee Bass", "20261235"));
@@ -104,6 +113,21 @@ class UserServiceTest {
 		assertThat(response.studentNumber()).isEqualTo("20269999");
 		assertThat(savedUser.getName()).isEqualTo("Kim Vocal");
 		assertThat(savedUser.getStudentNumber()).isEqualTo("20269999");
+	}
+
+	@Test
+	void updateUserRejectsDuplicateStudentNumber() {
+		UserDto.UserCreateResponse firstUser = userService.createUser(
+				new UserDto.UserCreateRequest("Kim Band", "20261234")
+		);
+		userService.createUser(new UserDto.UserCreateRequest("Lee Bass", "20261235"));
+
+		assertThatThrownBy(() -> userService.updateUser(
+				firstUser.userId(),
+				new UserDto.UserUpdateRequest("Kim Band", "20261235")
+		))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("Student number already exists");
 	}
 
 	@Test

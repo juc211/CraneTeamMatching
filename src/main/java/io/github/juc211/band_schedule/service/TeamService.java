@@ -14,6 +14,7 @@ import io.github.juc211.band_schedule.repository.FinalScheduleRepository;
 import io.github.juc211.band_schedule.repository.PerformanceConfirmedSongRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
+import io.github.juc211.band_schedule.repository.PerformanceSetlistItemRepository;
 import io.github.juc211.band_schedule.repository.SongRequestRepository;
 import io.github.juc211.band_schedule.repository.SongVoteRepository;
 import io.github.juc211.band_schedule.repository.TeamMemberRepository;
@@ -39,6 +40,7 @@ public class TeamService {
 	private final FinalScheduleRepository finalScheduleRepository;
 	private final SongRequestRepository songRequestRepository;
 	private final SongVoteRepository songVoteRepository;
+	private final PerformanceSetlistItemRepository performanceSetlistItemRepository;
 
 	/**
 	 * 팀 생성
@@ -211,6 +213,7 @@ public class TeamService {
 				.orElseThrow(() -> new IllegalArgumentException("Team not found: " + teamId));
 
 		finalScheduleRepository.deleteByTeamId(teamId);
+		performanceSetlistItemRepository.deleteByTeamId(teamId);
 		songVoteRepository.deleteBySongRequestTeamId(teamId);
 		songRequestRepository.deleteByTeamId(teamId);
 		availabilityRepository.deleteByTeamMemberTeamId(teamId);
@@ -218,6 +221,9 @@ public class TeamService {
 		teamRepository.delete(team);
 	}
 
+	/**
+	 * 팀 공연과 공연 참여 인원 공연 일치 여부 검증
+	 */
 	private void validateSamePerformance(Team team, PerformanceMember performanceMember) {
 		Long teamPerformanceId = team.getPerformance().getId();
 		Long memberPerformanceId = performanceMember.getPerformance().getId();
@@ -226,6 +232,9 @@ public class TeamService {
 		}
 	}
 
+	/**
+	 * 공연 단위 확정곡 참조를 팀 확정곡 문자열로 변환
+	 */
 	private String resolvePerformanceConfirmedSong(Long performanceId, String confirmedSong, Long performanceConfirmedSongId) {
 		if (performanceConfirmedSongId == null) {
 			return confirmedSong;
@@ -241,18 +250,27 @@ public class TeamService {
 		return savedPerformanceConfirmedSong.getSong();
 	}
 
+	/**
+	 * 공연 존재 여부 검증
+	 */
 	private void validatePerformanceExists(Long performanceId) {
 		if (!performanceRepository.existsById(performanceId)) {
 			throw new IllegalArgumentException("Performance not found: " + performanceId);
 		}
 	}
 
+	/**
+	 * 팀 존재 여부 검증
+	 */
 	private void validateTeamExists(Long teamId) {
 		if (!teamRepository.existsById(teamId)) {
 			throw new IllegalArgumentException("Team not found: " + teamId);
 		}
 	}
 
+	/**
+	 * 사용 가능한 링크 조회
+	 */
 	private InputLink getUsableLink(String token) {
 		InputLink inputLink = inputLinkRepository.findByToken(token)
 				.orElseThrow(() -> new IllegalArgumentException("InputLink not found: " + token));
@@ -265,6 +283,9 @@ public class TeamService {
 		return inputLink;
 	}
 
+	/**
+	 * 링크 타입 검증
+	 */
 	private void validateLinkType(InputLink inputLink, InputLinkType... expectedTypes) {
 		for (InputLinkType expectedType : expectedTypes) {
 			if (inputLink.getType() == expectedType) {
@@ -274,6 +295,9 @@ public class TeamService {
 		throw new IllegalArgumentException("InputLink type is not allowed");
 	}
 
+	/**
+	 * 팀이 링크 공연에 속하는지 검증
+	 */
 	private void validateTeamBelongsToLinkPerformance(InputLink inputLink, Team team) {
 		Long linkPerformanceId = inputLink.getPerformance().getId();
 		Long teamPerformanceId = team.getPerformance().getId();
@@ -282,6 +306,9 @@ public class TeamService {
 		}
 	}
 
+	/**
+	 * 팀 응답 변환
+	 */
 	private TeamDto.TeamResponse toTeamResponse(Team team) {
 		return new TeamDto.TeamResponse(
 				team.getId(),
@@ -291,6 +318,9 @@ public class TeamService {
 		);
 	}
 
+	/**
+	 * 팀 확정곡 응답 변환
+	 */
 	private TeamDto.TeamConfirmedSongResponse toTeamConfirmedSongResponse(Team team) {
 		return new TeamDto.TeamConfirmedSongResponse(
 				team.getId(),
@@ -298,6 +328,9 @@ public class TeamService {
 		);
 	}
 
+	/**
+	 * 팀원 응답 변환
+	 */
 	private TeamDto.TeamMemberResponse toTeamMemberResponse(TeamMember teamMember) {
 		return new TeamDto.TeamMemberResponse(
 				teamMember.getId(),

@@ -9,9 +9,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import io.github.juc211.band_schedule.domain.InputLink;
 import io.github.juc211.band_schedule.domain.InputLinkType;
+import io.github.juc211.band_schedule.domain.Part;
 import io.github.juc211.band_schedule.domain.Performance;
+import io.github.juc211.band_schedule.domain.PerformanceMember;
+import io.github.juc211.band_schedule.domain.Team;
+import io.github.juc211.band_schedule.domain.TeamMember;
+import io.github.juc211.band_schedule.domain.User;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
+import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
+import io.github.juc211.band_schedule.repository.TeamMemberRepository;
+import io.github.juc211.band_schedule.repository.TeamRepository;
+import io.github.juc211.band_schedule.repository.UserRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
@@ -37,6 +46,18 @@ class InputLinkControllerTest {
 
 	@Autowired
 	private PerformanceRepository performanceRepository;
+
+	@Autowired
+	private PerformanceMemberRepository performanceMemberRepository;
+
+	@Autowired
+	private TeamRepository teamRepository;
+
+	@Autowired
+	private TeamMemberRepository teamMemberRepository;
+
+	@Autowired
+	private UserRepository userRepository;
 
 	@Test
 	void createInputLinkReturnsCreatedStatus() throws Exception {
@@ -150,6 +171,37 @@ class InputLinkControllerTest {
 
 		mockMvc.perform(delete("/api/input-links/{inputLinkId}", inputLink.getId()))
 				.andExpect(status().isNoContent());
+	}
+
+	@Test
+	void identifyPerformanceMemberReturnsMemberAndTeamMemberIds() throws Exception {
+		Performance performance = createPerformance();
+		InputLink inputLink = inputLinkRepository.save(
+				InputLink.create("available-token", performance, InputLinkType.AVAILABLE_TIME, true, null)
+		);
+		User user = userRepository.save(User.create("김보컬", "20260001"));
+		PerformanceMember performanceMember = performanceMemberRepository.save(PerformanceMember.create(performance, user));
+		Team team = teamRepository.save(Team.create(performance, "Team A", "Song A"));
+		TeamMember teamMember = teamMemberRepository.save(TeamMember.create(team, performanceMember, Part.VOCAL));
+
+		mockMvc.perform(post("/api/input-links/{token}/identify", inputLink.getToken())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "name": "김보컬",
+								  "studentNumber": "20260001"
+								}
+								"""))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.performanceId").value(performance.getId()))
+				.andExpect(jsonPath("$.performanceMemberId").value(performanceMember.getId()))
+				.andExpect(jsonPath("$.userId").value(user.getId()))
+				.andExpect(jsonPath("$.name").value("김보컬"))
+				.andExpect(jsonPath("$.studentNumber").value("20260001"))
+				.andExpect(jsonPath("$.teamMembers[0].teamMemberId").value(teamMember.getId()))
+				.andExpect(jsonPath("$.teamMembers[0].teamId").value(team.getId()))
+				.andExpect(jsonPath("$.teamMembers[0].teamName").value("Team A"))
+				.andExpect(jsonPath("$.teamMembers[0].part").value("VOCAL"));
 	}
 
 	private Performance createPerformance() {

@@ -81,7 +81,8 @@ class SongControllerTest {
 								{
 								  "teamId": null,
 								  "requestedByMemberId": %d,
-								  "song": "Song A - Artist A"
+								  "song": "Song A - Artist A",
+								  "youtubeUrl": "https://www.youtube.com/watch?v=abc123"
 								}
 								""".formatted(performanceMember.getId())))
 				.andExpect(status().isCreated())
@@ -89,7 +90,8 @@ class SongControllerTest {
 				.andExpect(jsonPath("$.performanceId").value(performance.getId()))
 				.andExpect(jsonPath("$.teamId").doesNotExist())
 				.andExpect(jsonPath("$.requestedByMemberId").value(performanceMember.getId()))
-				.andExpect(jsonPath("$.song").value("Song A - Artist A"));
+				.andExpect(jsonPath("$.song").value("Song A - Artist A"))
+				.andExpect(jsonPath("$.youtubeUrl").value("https://www.youtube.com/watch?v=abc123"));
 	}
 
 	@Test
@@ -173,7 +175,8 @@ class SongControllerTest {
 						.content("""
 								{
 								  "teamId": %d,
-								  "song": "After Song - Artist B"
+								  "song": "After Song - Artist B",
+								  "youtubeUrl": "https://youtu.be/updated"
 								}
 								""".formatted(team.getId())))
 				.andExpect(status().isOk())
@@ -181,7 +184,8 @@ class SongControllerTest {
 				.andExpect(jsonPath("$.performanceId").value(performance.getId()))
 				.andExpect(jsonPath("$.teamId").value(team.getId()))
 				.andExpect(jsonPath("$.requestedByMemberId").value(performanceMember.getId()))
-				.andExpect(jsonPath("$.song").value("After Song - Artist B"));
+				.andExpect(jsonPath("$.song").value("After Song - Artist B"))
+				.andExpect(jsonPath("$.youtubeUrl").value("https://youtu.be/updated"));
 	}
 
 	@Test

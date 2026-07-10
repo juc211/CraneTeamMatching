@@ -8,4 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface UserRepository extends JpaRepository<User,Long> {
 
 	List<User> findByStatusOrderByIdAsc(UserStatus status);
+
+	boolean existsByStudentNumber(String studentNumber);
+
+	boolean existsByStudentNumberAndIdNot(String studentNumber, Long userId);
 }

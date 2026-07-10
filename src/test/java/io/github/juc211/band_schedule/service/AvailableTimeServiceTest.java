@@ -238,6 +238,34 @@ class AvailableTimeServiceTest {
 	}
 
 	@Test
+	void replaceAvailableTimesByTeamMemberAllowsEndAtNextDayMidnightOfScheduleWindowEndDate() {
+		Performance performance = performanceRepository.save(Performance.create(
+				"2026 Summer Concert",
+				LocalDate.of(2026, 8, 20),
+				"Main Hall",
+				LocalDate.of(2026, 8, 1),
+				LocalDate.of(2026, 8, 19)
+		));
+		TeamMember teamMember = createTeamMember(performance);
+
+		List<AvailableTimeDto.AvailableTimeResponse> responses = availableTimeService.replaceAvailableTimesByTeamMember(
+				teamMember.getId(),
+				new AvailableTimeDto.AvailableTimesReplaceRequest(
+						List.of(new AvailableTimeDto.AvailableTimeRequest(
+								LocalDateTime.of(2026, 8, 19, 23, 0),
+								LocalDateTime.of(2026, 8, 20, 0, 0)
+						))
+				)
+		);
+
+		assertThat(responses).singleElement()
+				.satisfies(response -> {
+					assertThat(response.startDateTime()).isEqualTo(LocalDateTime.of(2026, 8, 19, 23, 0));
+					assertThat(response.endDateTime()).isEqualTo(LocalDateTime.of(2026, 8, 20, 0, 0));
+				});
+	}
+
+	@Test
 	void getAvailableTimesByTeamMemberReturnsAvailableTimesInOrder() {
 		TeamMember teamMember = createTeamMemberWithScheduleWindow();
 		availabilityRepository.save(AvailableTime.create(

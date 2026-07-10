@@ -45,6 +45,8 @@ class DomainEntityMappingTests {
 		assertLazyManyToOne(PerformanceMember.class, "user");
 		assertLazyManyToOne(Team.class, "performance");
 		assertLazyManyToOne(PerformanceConfirmedSong.class, "performance");
+		assertLazyManyToOne(PerformanceSetlistItem.class, "performance");
+		assertLazyManyToOne(PerformanceSetlistItem.class, "team");
 		assertLazyManyToOne(TeamMember.class, "team");
 		assertLazyManyToOne(TeamMember.class, "performanceMember");
 		assertLazyManyToOne(SongRequest.class, "performance");
@@ -52,6 +54,8 @@ class DomainEntityMappingTests {
 		assertLazyManyToOne(SongRequest.class, "requestedByMember");
 		assertLazyManyToOne(SongVote.class, "songRequest");
 		assertLazyManyToOne(SongVote.class, "voterMember");
+		assertLazyManyToOne(SongPreference.class, "performanceConfirmedSong");
+		assertLazyManyToOne(SongPreference.class, "performanceMember");
 		assertLazyManyToOne(AvailableTime.class, "teamMember");
 		assertLazyManyToOne(FinalSchedule.class, "team");
 		assertLazyManyToOne(InputLink.class, "performance");
@@ -65,10 +69,12 @@ class DomainEntityMappingTests {
 				Performance.class,
 				PerformanceMember.class,
 				PerformanceConfirmedSong.class,
+				PerformanceSetlistItem.class,
 				Team.class,
 				TeamMember.class,
 				SongRequest.class,
 				SongVote.class,
+				SongPreference.class,
 				AvailableTime.class,
 				FinalSchedule.class,
 				InputLink.class
