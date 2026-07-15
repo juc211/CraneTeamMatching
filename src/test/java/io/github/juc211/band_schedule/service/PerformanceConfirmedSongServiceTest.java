@@ -36,13 +36,15 @@ class PerformanceConfirmedSongServiceTest {
 
 		PerformanceConfirmedSongDto.PerformanceConfirmedSongResponse response = performanceConfirmedSongService.createPerformanceConfirmedSong(
 				performance.getId(),
-				new PerformanceConfirmedSongDto.PerformanceConfirmedSongCreateRequest("Confirmed Song - Artist A")
+				new PerformanceConfirmedSongDto.PerformanceConfirmedSongCreateRequest("Confirmed Song - Artist A", "Kim Vocal 추천")
 		);
 
 		PerformanceConfirmedSong savedPerformanceConfirmedSong = performanceConfirmedSongRepository.findById(response.performanceConfirmedSongId()).orElseThrow();
 		assertThat(response.performanceId()).isEqualTo(performance.getId());
 		assertThat(response.song()).isEqualTo("Confirmed Song - Artist A");
+		assertThat(response.adminMemo()).isEqualTo("Kim Vocal 추천");
 		assertThat(savedPerformanceConfirmedSong.getPerformance().getId()).isEqualTo(performance.getId());
+		assertThat(savedPerformanceConfirmedSong.getAdminMemo()).isEqualTo("Kim Vocal 추천");
 		assertThat(savedPerformanceConfirmedSong.getCreatedAt()).isNotNull();
 	}
 
@@ -57,6 +59,27 @@ class PerformanceConfirmedSongServiceTest {
 		assertThat(performanceConfirmedSongService.getPerformanceConfirmedSongsByPerformance(performance.getId()))
 				.extracting(PerformanceConfirmedSongDto.PerformanceConfirmedSongResponse::song)
 				.containsExactly("Confirmed Song A - Artist A", "Confirmed Song B - Artist B");
+	}
+
+	@Test
+	void updatePerformanceConfirmedSongChangesSongAndAdminMemo() {
+		Performance performance = performanceRepository.save(
+				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+		);
+		PerformanceConfirmedSong confirmedSong = performanceConfirmedSongRepository.save(
+				PerformanceConfirmedSong.create(performance, "Old Song", "Old memo")
+		);
+
+		PerformanceConfirmedSongDto.PerformanceConfirmedSongResponse response =
+				performanceConfirmedSongService.updatePerformanceConfirmedSong(
+						confirmedSong.getId(),
+						new PerformanceConfirmedSongDto.PerformanceConfirmedSongUpdateRequest("New Song", "New memo")
+				);
+
+		assertThat(response.song()).isEqualTo("New Song");
+		assertThat(response.adminMemo()).isEqualTo("New memo");
+		assertThat(performanceConfirmedSongRepository.findById(confirmedSong.getId()).orElseThrow().getAdminMemo())
+				.isEqualTo("New memo");
 	}
 
 	@Test

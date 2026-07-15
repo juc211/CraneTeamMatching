@@ -32,6 +32,7 @@ public abstract class SongPreferenceDto {
 			Long performanceConfirmedSongId,
 			Long performanceId,
 			String song,
+			String adminMemo,
 			long preferenceCount,
 			Double averageRank,
 			List<SongPreferenceResponse> preferences

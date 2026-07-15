@@ -133,6 +133,31 @@ class SongServiceTest {
 	}
 
 	@Test
+	void createSongRequestRejectsExpiredSongRequestLink() {
+		Performance performance = performanceRepository.save(
+				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+		);
+		User user = userRepository.save(User.create("Kim Band", "20261234"));
+		PerformanceMember performanceMember = performanceMemberRepository.save(PerformanceMember.create(performance, user));
+		InputLink inputLink = inputLinkRepository.save(
+				InputLink.create(
+						"expired-song-request-token",
+						performance,
+						InputLinkType.SONG_REQUEST,
+						true,
+						LocalDateTime.now().minusMinutes(1)
+				)
+		);
+
+		assertThatThrownBy(() -> songService.createSongRequest(
+				inputLink.getToken(),
+				new SongDto.SongRequestCreateRequest(null, performanceMember.getId(), "Song A - Artist A")
+		))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("InputLink is expired");
+	}
+
+	@Test
 	void getSongRequestsByPerformanceReturnsAllSongRequestsInPerformance() {
 		Performance performance = performanceRepository.save(
 				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
