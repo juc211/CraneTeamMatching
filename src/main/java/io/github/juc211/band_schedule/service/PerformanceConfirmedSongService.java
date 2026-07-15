@@ -35,7 +35,9 @@ public class PerformanceConfirmedSongService {
 		Performance performance = performanceRepository.findById(performanceId)
 				.orElseThrow(() -> new IllegalArgumentException("Performance not found: " + performanceId));
 
-		PerformanceConfirmedSong savedPerformanceConfirmedSong = performanceConfirmedSongRepository.save(PerformanceConfirmedSong.create(performance, request.song()));
+		PerformanceConfirmedSong savedPerformanceConfirmedSong = performanceConfirmedSongRepository.save(
+				PerformanceConfirmedSong.create(performance, request.song(), request.adminMemo())
+		);
 
 		return toPerformanceConfirmedSongResponse(savedPerformanceConfirmedSong);
 	}
@@ -57,7 +59,7 @@ public class PerformanceConfirmedSongService {
 	 * 링크 기반 공연 단위 확정곡 목록 조회
 	 */
 	@Transactional(readOnly = true)
-	public List<PerformanceConfirmedSongDto.PerformanceConfirmedSongResponse> getPerformanceConfirmedSongsByLink(String token) {
+	public List<PerformanceConfirmedSongDto.PerformanceConfirmedSongPublicResponse> getPerformanceConfirmedSongsByLink(String token) {
 		InputLink inputLink = inputLinkRepository.findByToken(token)
 				.orElseThrow(() -> new IllegalArgumentException("InputLink not found: " + token));
 
@@ -66,7 +68,7 @@ public class PerformanceConfirmedSongService {
 
 		return performanceConfirmedSongRepository.findByPerformanceIdOrderByIdAsc(inputLink.getPerformance().getId())
 				.stream()
-				.map(this::toPerformanceConfirmedSongResponse)
+				.map(this::toPerformanceConfirmedSongPublicResponse)
 				.toList();
 	}
 
@@ -80,7 +82,7 @@ public class PerformanceConfirmedSongService {
 		PerformanceConfirmedSong performanceConfirmedSong = performanceConfirmedSongRepository.findById(performanceConfirmedSongId)
 				.orElseThrow(() -> new IllegalArgumentException("PerformanceConfirmedSong not found: " + performanceConfirmedSongId));
 
-		performanceConfirmedSong.update(request.song());
+		performanceConfirmedSong.update(request.song(), request.adminMemo());
 
 		return toPerformanceConfirmedSongResponse(performanceConfirmedSong);
 	}
@@ -131,6 +133,19 @@ public class PerformanceConfirmedSongService {
 	 */
 	private PerformanceConfirmedSongDto.PerformanceConfirmedSongResponse toPerformanceConfirmedSongResponse(PerformanceConfirmedSong performanceConfirmedSong) {
 		return new PerformanceConfirmedSongDto.PerformanceConfirmedSongResponse(
+				performanceConfirmedSong.getId(),
+				performanceConfirmedSong.getPerformance().getId(),
+				performanceConfirmedSong.getSong(),
+				performanceConfirmedSong.getAdminMemo(),
+				performanceConfirmedSong.getCreatedAt()
+		);
+	}
+
+	/**
+	 * 공연 단위 확정곡 멤버용 응답 변환
+	 */
+	private PerformanceConfirmedSongDto.PerformanceConfirmedSongPublicResponse toPerformanceConfirmedSongPublicResponse(PerformanceConfirmedSong performanceConfirmedSong) {
+		return new PerformanceConfirmedSongDto.PerformanceConfirmedSongPublicResponse(
 				performanceConfirmedSong.getId(),
 				performanceConfirmedSong.getPerformance().getId(),
 				performanceConfirmedSong.getSong(),

@@ -27,17 +27,29 @@ public class PerformanceConfirmedSong {
 
 	private String song;
 
+	private String adminMemo;
+
 	private LocalDateTime createdAt;
 
 	public static PerformanceConfirmedSong create(Performance performance, String song) {
+		return create(performance, song, null);
+	}
+
+	public static PerformanceConfirmedSong create(Performance performance, String song, String adminMemo) {
 		PerformanceConfirmedSong performanceConfirmedSong = new PerformanceConfirmedSong();
 		performanceConfirmedSong.performance = performance;
 		performanceConfirmedSong.song = song;
+		performanceConfirmedSong.adminMemo = adminMemo;
 		performanceConfirmedSong.createdAt = LocalDateTime.now();
 		return performanceConfirmedSong;
 	}
 
 	public void update(String song) {
+		update(song, adminMemo);
+	}
+
+	public void update(String song, String adminMemo) {
 		this.song = song;
+		this.adminMemo = adminMemo;
 	}
 }

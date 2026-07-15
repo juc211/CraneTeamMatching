@@ -86,12 +86,13 @@ class SongPreferenceControllerTest {
 	void getSongPreferenceResultsReturnsOkStatus() throws Exception {
 		Performance performance = createPerformance();
 		PerformanceMember performanceMember = createPerformanceMember(performance, "김보컬", "20260001");
-		PerformanceConfirmedSong confirmedSong = performanceConfirmedSongRepository.save(PerformanceConfirmedSong.create(performance, "Song A"));
+		PerformanceConfirmedSong confirmedSong = performanceConfirmedSongRepository.save(PerformanceConfirmedSong.create(performance, "Song A", "김보컬 추천"));
 		songPreferenceRepository.save(SongPreference.create(confirmedSong, performanceMember, 2));
 
 		mockMvc.perform(get("/api/performances/{performanceId}/song-preferences/results", performance.getId()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].song").value("Song A"))
+				.andExpect(jsonPath("$[0].adminMemo").value("김보컬 추천"))
 				.andExpect(jsonPath("$[0].preferenceCount").value(1))
 				.andExpect(jsonPath("$[0].averageRank").value(2.0))
 				.andExpect(jsonPath("$[0].preferences[0].userName").value("김보컬"));

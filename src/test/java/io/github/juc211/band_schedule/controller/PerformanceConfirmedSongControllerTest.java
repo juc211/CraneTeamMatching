@@ -2,12 +2,16 @@ package io.github.juc211.band_schedule.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.github.juc211.band_schedule.domain.PerformanceConfirmedSong;
 import io.github.juc211.band_schedule.domain.Performance;
+import io.github.juc211.band_schedule.domain.InputLink;
+import io.github.juc211.band_schedule.domain.InputLinkType;
+import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.PerformanceConfirmedSongRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
 import java.time.LocalDate;
@@ -35,6 +39,9 @@ class PerformanceConfirmedSongControllerTest {
 	@Autowired
 	private PerformanceRepository performanceRepository;
 
+	@Autowired
+	private InputLinkRepository inputLinkRepository;
+
 	@Test
 	void createPerformanceConfirmedSongReturnsCreatedStatus() throws Exception {
 		Performance performance = performanceRepository.save(
@@ -45,13 +52,15 @@ class PerformanceConfirmedSongControllerTest {
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
-								  "song": "Confirmed Song - Artist A"
+								  "song": "Confirmed Song - Artist A",
+								  "adminMemo": "Kim Vocal 추천"
 								}
 								"""))
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.performanceConfirmedSongId").isNumber())
 				.andExpect(jsonPath("$.performanceId").value(performance.getId()))
-				.andExpect(jsonPath("$.song").value("Confirmed Song - Artist A"));
+				.andExpect(jsonPath("$.song").value("Confirmed Song - Artist A"))
+				.andExpect(jsonPath("$.adminMemo").value("Kim Vocal 추천"));
 	}
 
 	@Test
@@ -66,6 +75,42 @@ class PerformanceConfirmedSongControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].song").value("Confirmed Song A - Artist A"))
 				.andExpect(jsonPath("$[1].song").value("Confirmed Song B - Artist B"));
+	}
+
+	@Test
+	void getPerformanceConfirmedSongsByLinkDoesNotExposeAdminMemo() throws Exception {
+		Performance performance = performanceRepository.save(
+				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+		);
+		inputLinkRepository.save(InputLink.create("preference-token", performance, InputLinkType.SONG_PREFERENCE, true, null));
+		performanceConfirmedSongRepository.save(PerformanceConfirmedSong.create(performance, "Confirmed Song A - Artist A", "관리자 메모"));
+
+		mockMvc.perform(get("/api/input-links/{token}/performance-confirmed-songs", "preference-token"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[0].song").value("Confirmed Song A - Artist A"))
+				.andExpect(jsonPath("$[0].adminMemo").doesNotExist());
+	}
+
+	@Test
+	void updatePerformanceConfirmedSongReturnsOkStatus() throws Exception {
+		Performance performance = performanceRepository.save(
+				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+		);
+		PerformanceConfirmedSong confirmedSong = performanceConfirmedSongRepository.save(
+				PerformanceConfirmedSong.create(performance, "Old Song", "Old memo")
+		);
+
+		mockMvc.perform(patch("/api/performance-confirmed-songs/{performanceConfirmedSongId}", confirmedSong.getId())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "song": "New Song",
+								  "adminMemo": "New memo"
+								}
+								"""))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.song").value("New Song"))
+				.andExpect(jsonPath("$.adminMemo").value("New memo"));
 	}
 
 	@Test

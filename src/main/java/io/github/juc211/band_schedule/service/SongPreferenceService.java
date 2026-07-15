@@ -264,6 +264,7 @@ public class SongPreferenceService {
 				confirmedSong.getId(),
 				confirmedSong.getPerformance().getId(),
 				confirmedSong.getSong(),
+				confirmedSong.getAdminMemo(),
 				preferences.size(),
 				averageRank,
 				preferenceResponses
