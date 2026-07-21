@@ -5,6 +5,8 @@ import io.github.juc211.band_schedule.domain.InputLinkType;
 import io.github.juc211.band_schedule.domain.PerformanceConfirmedSong;
 import io.github.juc211.band_schedule.domain.Performance;
 import io.github.juc211.band_schedule.dto.PerformanceConfirmedSongDto;
+import io.github.juc211.band_schedule.exception.BusinessException;
+import io.github.juc211.band_schedule.exception.ErrorCode;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.PerformanceConfirmedSongRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
@@ -33,7 +35,7 @@ public class PerformanceConfirmedSongService {
 			PerformanceConfirmedSongDto.PerformanceConfirmedSongCreateRequest request
 	) {
 		Performance performance = performanceRepository.findById(performanceId)
-				.orElseThrow(() -> new IllegalArgumentException("Performance not found: " + performanceId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND, "Performance not found: " + performanceId));
 
 		PerformanceConfirmedSong savedPerformanceConfirmedSong = performanceConfirmedSongRepository.save(
 				PerformanceConfirmedSong.create(performance, request.song(), request.adminMemo())
@@ -61,7 +63,7 @@ public class PerformanceConfirmedSongService {
 	@Transactional(readOnly = true)
 	public List<PerformanceConfirmedSongDto.PerformanceConfirmedSongPublicResponse> getPerformanceConfirmedSongsByLink(String token) {
 		InputLink inputLink = inputLinkRepository.findByToken(token)
-				.orElseThrow(() -> new IllegalArgumentException("InputLink not found: " + token));
+				.orElseThrow(() -> new BusinessException(ErrorCode.INPUT_LINK_NOT_FOUND, "InputLink not found: " + token));
 
 		validateUsableLink(inputLink);
 		validateLinkType(inputLink, InputLinkType.SONG_PREFERENCE);
@@ -80,7 +82,7 @@ public class PerformanceConfirmedSongService {
 			PerformanceConfirmedSongDto.PerformanceConfirmedSongUpdateRequest request
 	) {
 		PerformanceConfirmedSong performanceConfirmedSong = performanceConfirmedSongRepository.findById(performanceConfirmedSongId)
-				.orElseThrow(() -> new IllegalArgumentException("PerformanceConfirmedSong not found: " + performanceConfirmedSongId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_CONFIRMED_SONG_NOT_FOUND, "PerformanceConfirmedSong not found: " + performanceConfirmedSongId));
 
 		performanceConfirmedSong.update(request.song(), request.adminMemo());
 
@@ -92,7 +94,7 @@ public class PerformanceConfirmedSongService {
 	 */
 	public void deletePerformanceConfirmedSong(Long performanceConfirmedSongId) {
 		PerformanceConfirmedSong performanceConfirmedSong = performanceConfirmedSongRepository.findById(performanceConfirmedSongId)
-				.orElseThrow(() -> new IllegalArgumentException("PerformanceConfirmedSong not found: " + performanceConfirmedSongId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_CONFIRMED_SONG_NOT_FOUND, "PerformanceConfirmedSong not found: " + performanceConfirmedSongId));
 
 		songPreferenceRepository.deleteByPerformanceConfirmedSongId(performanceConfirmedSongId);
 		performanceConfirmedSongRepository.delete(performanceConfirmedSong);
@@ -103,10 +105,10 @@ public class PerformanceConfirmedSongService {
 	 */
 	private void validateUsableLink(InputLink inputLink) {
 		if (!inputLink.isActive()) {
-			throw new IllegalArgumentException("InputLink is inactive");
+			throw new BusinessException(ErrorCode.INPUT_LINK_INACTIVE, "InputLink is inactive");
 		}
 		if (inputLink.getExpiresAt() != null && inputLink.getExpiresAt().isBefore(LocalDateTime.now())) {
-			throw new IllegalArgumentException("InputLink is expired");
+			throw new BusinessException(ErrorCode.LINK_EXPIRED, "InputLink is expired");
 		}
 	}
 
@@ -115,7 +117,7 @@ public class PerformanceConfirmedSongService {
 	 */
 	private void validateLinkType(InputLink inputLink, InputLinkType expectedType) {
 		if (inputLink.getType() != expectedType) {
-			throw new IllegalArgumentException("InputLink type must be " + expectedType);
+			throw new BusinessException(ErrorCode.INVALID_INPUT_LINK_TYPE, "InputLink type must be " + expectedType);
 		}
 	}
 
@@ -124,7 +126,7 @@ public class PerformanceConfirmedSongService {
 	 */
 	private void validatePerformanceExists(Long performanceId) {
 		if (!performanceRepository.existsById(performanceId)) {
-			throw new IllegalArgumentException("Performance not found: " + performanceId);
+			throw new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND, "Performance not found: " + performanceId);
 		}
 	}
 

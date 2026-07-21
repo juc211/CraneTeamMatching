@@ -6,6 +6,8 @@ import io.github.juc211.band_schedule.domain.Performance;
 import io.github.juc211.band_schedule.domain.PerformanceMember;
 import io.github.juc211.band_schedule.domain.TeamMember;
 import io.github.juc211.band_schedule.dto.InputLinkDto;
+import io.github.juc211.band_schedule.exception.BusinessException;
+import io.github.juc211.band_schedule.exception.ErrorCode;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
@@ -36,10 +38,10 @@ public class InputLinkService {
 	 */
 	public InputLinkDto.InputLinkResponse createInputLink(Long performanceId, InputLinkDto.InputLinkCreateRequest request) {
 		Performance performance = performanceRepository.findById(performanceId)
-				.orElseThrow(() -> new IllegalArgumentException("Performance not found: " + performanceId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND, "Performance not found: " + performanceId));
 
 		if (request.type() == null) {
-			throw new IllegalArgumentException("InputLink type is required");
+			throw new BusinessException(ErrorCode.INPUT_LINK_TYPE_REQUIRED, "InputLink type is required");
 		}
 
 		InputLink savedInputLink = inputLinkRepository.save(InputLink.create(
@@ -71,7 +73,7 @@ public class InputLinkService {
 	 */
 	public InputLinkDto.InputLinkResponse updateInputLinkActive(Long inputLinkId, InputLinkDto.InputLinkActiveUpdateRequest request) {
 		InputLink inputLink = inputLinkRepository.findById(inputLinkId)
-				.orElseThrow(() -> new IllegalArgumentException("InputLink not found: " + inputLinkId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.INPUT_LINK_NOT_FOUND, "InputLink not found: " + inputLinkId));
 
 		inputLink.updateActive(request.active());
 
@@ -83,7 +85,7 @@ public class InputLinkService {
 	 */
 	public InputLinkDto.InputLinkResponse updateInputLinkExpiresAt(Long inputLinkId, InputLinkDto.InputLinkExpiresAtUpdateRequest request) {
 		InputLink inputLink = inputLinkRepository.findById(inputLinkId)
-				.orElseThrow(() -> new IllegalArgumentException("InputLink not found: " + inputLinkId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.INPUT_LINK_NOT_FOUND, "InputLink not found: " + inputLinkId));
 
 		inputLink.updateExpiresAt(request.expiresAt());
 
@@ -95,7 +97,7 @@ public class InputLinkService {
 	 */
 	public void deleteInputLink(Long inputLinkId) {
 		InputLink inputLink = inputLinkRepository.findById(inputLinkId)
-				.orElseThrow(() -> new IllegalArgumentException("InputLink not found: " + inputLinkId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.INPUT_LINK_NOT_FOUND, "InputLink not found: " + inputLinkId));
 
 		inputLinkRepository.delete(inputLink);
 	}
@@ -106,7 +108,7 @@ public class InputLinkService {
 	@Transactional(readOnly = true)
 	public InputLinkDto.InputLinkIdentifyResponse identifyPerformanceMember(String token, InputLinkDto.InputLinkIdentifyRequest request) {
 		InputLink inputLink = inputLinkRepository.findByToken(token)
-				.orElseThrow(() -> new IllegalArgumentException("InputLink not found: " + token));
+				.orElseThrow(() -> new BusinessException(ErrorCode.INPUT_LINK_NOT_FOUND, "InputLink not found: " + token));
 
 		validateUsableLink(inputLink);
 		validateInputLinkType(inputLink);
@@ -117,7 +119,7 @@ public class InputLinkService {
 						request.name(),
 						request.studentNumber()
 				)
-				.orElseThrow(() -> new IllegalArgumentException("PerformanceMember not found by name and student number"));
+				.orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_MEMBER_NOT_FOUND, "PerformanceMember not found by name and student number"));
 
 		return toInputLinkIdentifyResponse(inputLink, performanceMember);
 	}
@@ -140,7 +142,7 @@ public class InputLinkService {
 	 */
 	private void validatePerformanceExists(Long performanceId) {
 		if (!performanceRepository.existsById(performanceId)) {
-			throw new IllegalArgumentException("Performance not found: " + performanceId);
+			throw new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND, "Performance not found: " + performanceId);
 		}
 	}
 
@@ -149,10 +151,10 @@ public class InputLinkService {
 	 */
 	private void validateUsableLink(InputLink inputLink) {
 		if (!inputLink.isActive()) {
-			throw new IllegalArgumentException("InputLink is inactive");
+			throw new BusinessException(ErrorCode.INPUT_LINK_INACTIVE, "InputLink is inactive");
 		}
 		if (inputLink.getExpiresAt() != null && inputLink.getExpiresAt().isBefore(LocalDateTime.now())) {
-			throw new IllegalArgumentException("InputLink is expired");
+			throw new BusinessException(ErrorCode.LINK_EXPIRED, "InputLink is expired");
 		}
 	}
 
@@ -164,7 +166,7 @@ public class InputLinkService {
 				&& inputLink.getType() != InputLinkType.SONG_VOTE
 				&& inputLink.getType() != InputLinkType.SONG_PREFERENCE
 				&& inputLink.getType() != InputLinkType.AVAILABLE_TIME) {
-			throw new IllegalArgumentException("InputLink type is not for member input");
+			throw new BusinessException(ErrorCode.INPUT_LINK_NOT_FOR_MEMBER_INPUT, "InputLink type is not for member input");
 		}
 	}
 

@@ -11,6 +11,7 @@ import io.github.juc211.band_schedule.domain.PerformanceMember;
 import io.github.juc211.band_schedule.domain.SongPreference;
 import io.github.juc211.band_schedule.domain.User;
 import io.github.juc211.band_schedule.dto.SongPreferenceDto;
+import io.github.juc211.band_schedule.exception.BusinessException;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.PerformanceConfirmedSongRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
@@ -117,7 +118,7 @@ class SongPreferenceServiceTest {
 						List.of(new SongPreferenceDto.SongPreferenceItemRequest(firstSong.getId(), 1))
 				)
 		))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("Song preference must be submitted for all performance confirmed songs");
 	}
 
@@ -136,7 +137,7 @@ class SongPreferenceServiceTest {
 						List.of(new SongPreferenceDto.SongPreferenceItemRequest(otherSong.getId(), 1))
 				)
 		))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("PerformanceConfirmedSong does not belong to performance");
 	}
 
@@ -157,7 +158,7 @@ class SongPreferenceServiceTest {
 						)
 				)
 		))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("Song preference cannot contain duplicate confirmed song");
 	}
 
@@ -175,7 +176,7 @@ class SongPreferenceServiceTest {
 						Collections.singletonList(null)
 				)
 		))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("Song preference item is required");
 	}
 

@@ -3,6 +3,8 @@ package io.github.juc211.band_schedule.service;
 import io.github.juc211.band_schedule.domain.User;
 import io.github.juc211.band_schedule.domain.UserStatus;
 import io.github.juc211.band_schedule.dto.UserDto;
+import io.github.juc211.band_schedule.exception.BusinessException;
+import io.github.juc211.band_schedule.exception.ErrorCode;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
 import io.github.juc211.band_schedule.repository.UserRepository;
 import io.github.juc211.band_schedule.repository.UserSessionRepository;
@@ -45,7 +47,7 @@ public class UserService {
 	@Transactional(readOnly = true)
 	public UserDto.UserResponse getUser(Long userId) {
 		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, "User not found: " + userId));
 
 		return toUserResponse(user);
 	}
@@ -55,7 +57,7 @@ public class UserService {
 	 */
 	public UserDto.UserResponse updateUser(Long userId, UserDto.UserUpdateRequest request) {
 		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, "User not found: " + userId));
 
 		validateStudentNumberNotDuplicated(userId, request.studentNumber());
 		user.update(request.name(), request.studentNumber());
@@ -94,8 +96,11 @@ public class UserService {
 	 */
 	public UserDto.UserResponse updateUserStatus(Long userId, UserDto.UserStatusUpdateRequest request) {
 		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, "User not found: " + userId));
 
+		if (request.status() == null) {
+			throw new BusinessException(ErrorCode.USER_STATUS_REQUIRED, "User status is required");
+		}
 		user.updateStatus(request.status());
 
 		return toUserResponse(user);
@@ -106,10 +111,10 @@ public class UserService {
 	 */
 	public void deleteUser(Long userId) {
 		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, "User not found: " + userId));
 
 		if (performanceMemberRepository.existsByUserId(userId) || userSessionRepository.existsByUserId(userId)) {
-			throw new IllegalArgumentException("User with references cannot be deleted. Update the user status instead.");
+			throw new BusinessException(ErrorCode.USER_HAS_REFERENCES, "User with references cannot be deleted. Update the user status instead.");
 		}
 
 		userRepository.delete(user);
@@ -132,7 +137,7 @@ public class UserService {
 	 */
 	private void validateStudentNumberNotDuplicated(String studentNumber) {
 		if (userRepository.existsByStudentNumber(studentNumber)) {
-			throw new IllegalArgumentException("Student number already exists: " + studentNumber);
+			throw new BusinessException(ErrorCode.STUDENT_NUMBER_DUPLICATED, "Student number already exists: " + studentNumber);
 		}
 	}
 
@@ -141,7 +146,7 @@ public class UserService {
 	 */
 	private void validateStudentNumberNotDuplicated(Long userId, String studentNumber) {
 		if (userRepository.existsByStudentNumberAndIdNot(studentNumber, userId)) {
-			throw new IllegalArgumentException("Student number already exists: " + studentNumber);
+			throw new BusinessException(ErrorCode.STUDENT_NUMBER_DUPLICATED, "Student number already exists: " + studentNumber);
 		}
 	}
 }

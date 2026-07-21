@@ -5,6 +5,8 @@ import io.github.juc211.band_schedule.domain.InputLink;
 import io.github.juc211.band_schedule.domain.InputLinkType;
 import io.github.juc211.band_schedule.domain.Team;
 import io.github.juc211.band_schedule.dto.FinalScheduleDto;
+import io.github.juc211.band_schedule.exception.BusinessException;
+import io.github.juc211.band_schedule.exception.ErrorCode;
 import io.github.juc211.band_schedule.repository.FinalScheduleRepository;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
@@ -33,7 +35,7 @@ public class FinalScheduleService {
 			FinalScheduleDto.FinalScheduleCreateRequest request
 	) {
 		Team team = teamRepository.findById(teamId)
-				.orElseThrow(() -> new IllegalArgumentException("Team not found: " + teamId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_NOT_FOUND, "Team not found: " + teamId));
 
 		validateNoOverlap(request.startDateTime(), request.endDateTime(), null);
 
@@ -90,7 +92,7 @@ public class FinalScheduleService {
 	public List<FinalScheduleDto.FinalScheduleResponse> getFinalSchedulesByLinkAndTeam(String token, Long teamId) {
 		InputLink inputLink = getUsableFinalScheduleViewLink(token);
 		Team team = teamRepository.findById(teamId)
-				.orElseThrow(() -> new IllegalArgumentException("Team not found: " + teamId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_NOT_FOUND, "Team not found: " + teamId));
 
 		validateTeamBelongsToLinkPerformance(inputLink, team);
 
@@ -108,7 +110,7 @@ public class FinalScheduleService {
 			FinalScheduleDto.FinalScheduleUpdateRequest request
 	) {
 		FinalSchedule finalSchedule = finalScheduleRepository.findById(finalScheduleId)
-				.orElseThrow(() -> new IllegalArgumentException("FinalSchedule not found: " + finalScheduleId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.FINAL_SCHEDULE_NOT_FOUND, "FinalSchedule not found: " + finalScheduleId));
 
 		validateNoOverlap(request.startDateTime(), request.endDateTime(), finalSchedule.getId());
 
@@ -122,7 +124,7 @@ public class FinalScheduleService {
 	 */
 	public void deleteFinalSchedule(Long finalScheduleId) {
 		FinalSchedule finalSchedule = finalScheduleRepository.findById(finalScheduleId)
-				.orElseThrow(() -> new IllegalArgumentException("FinalSchedule not found: " + finalScheduleId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.FINAL_SCHEDULE_NOT_FOUND, "FinalSchedule not found: " + finalScheduleId));
 
 		finalScheduleRepository.delete(finalSchedule);
 	}
@@ -136,10 +138,10 @@ public class FinalScheduleService {
 			Long excludedFinalScheduleId
 	) {
 		if (startDateTime == null || endDateTime == null) {
-			throw new IllegalArgumentException("Final schedule start and end date time must be set together");
+			throw new BusinessException(ErrorCode.FINAL_SCHEDULE_DATES_REQUIRED_TOGETHER, "Final schedule start and end date time must be set together");
 		}
 		if (!startDateTime.isBefore(endDateTime)) {
-			throw new IllegalArgumentException("Final schedule start date time must be before end date time");
+			throw new BusinessException(ErrorCode.FINAL_SCHEDULE_START_NOT_BEFORE_END, "Final schedule start date time must be before end date time");
 		}
 
 		boolean hasOverlap = finalScheduleRepository
@@ -151,7 +153,7 @@ public class FinalScheduleService {
 				.anyMatch(finalSchedule -> !finalSchedule.getId().equals(excludedFinalScheduleId));
 
 		if (hasOverlap) {
-			throw new IllegalArgumentException("Final schedule overlaps with another final schedule");
+			throw new BusinessException(ErrorCode.FINAL_SCHEDULE_OVERLAPPED, "Final schedule overlaps with another final schedule");
 		}
 	}
 
@@ -160,10 +162,10 @@ public class FinalScheduleService {
 	 */
 	private InputLink getUsableFinalScheduleViewLink(String token) {
 		InputLink inputLink = inputLinkRepository.findByToken(token)
-				.orElseThrow(() -> new IllegalArgumentException("InputLink not found: " + token));
+				.orElseThrow(() -> new BusinessException(ErrorCode.INPUT_LINK_NOT_FOUND, "InputLink not found: " + token));
 		validateUsableLink(inputLink);
 		if (inputLink.getType() != InputLinkType.FINAL_SCHEDULE_VIEW) {
-			throw new IllegalArgumentException("InputLink type must be " + InputLinkType.FINAL_SCHEDULE_VIEW);
+			throw new BusinessException(ErrorCode.INVALID_INPUT_LINK_TYPE, "InputLink type must be " + InputLinkType.FINAL_SCHEDULE_VIEW);
 		}
 		return inputLink;
 	}
@@ -173,10 +175,10 @@ public class FinalScheduleService {
 	 */
 	private void validateUsableLink(InputLink inputLink) {
 		if (!inputLink.isActive()) {
-			throw new IllegalArgumentException("InputLink is inactive");
+			throw new BusinessException(ErrorCode.INPUT_LINK_INACTIVE, "InputLink is inactive");
 		}
 		if (inputLink.getExpiresAt() != null && inputLink.getExpiresAt().isBefore(LocalDateTime.now())) {
-			throw new IllegalArgumentException("InputLink is expired");
+			throw new BusinessException(ErrorCode.LINK_EXPIRED, "InputLink is expired");
 		}
 	}
 
@@ -187,7 +189,7 @@ public class FinalScheduleService {
 		Long linkPerformanceId = inputLink.getPerformance().getId();
 		Long teamPerformanceId = team.getPerformance().getId();
 		if (!linkPerformanceId.equals(teamPerformanceId)) {
-			throw new IllegalArgumentException("Team does not belong to link performance");
+			throw new BusinessException(ErrorCode.TEAM_NOT_IN_LINK_PERFORMANCE, "Team does not belong to link performance");
 		}
 	}
 
@@ -196,7 +198,7 @@ public class FinalScheduleService {
 	 */
 	private void validateTeamExists(Long teamId) {
 		if (!teamRepository.existsById(teamId)) {
-			throw new IllegalArgumentException("Team not found: " + teamId);
+			throw new BusinessException(ErrorCode.TEAM_NOT_FOUND, "Team not found: " + teamId);
 		}
 	}
 
@@ -205,7 +207,7 @@ public class FinalScheduleService {
 	 */
 	private void validatePerformanceExists(Long performanceId) {
 		if (!performanceRepository.existsById(performanceId)) {
-			throw new IllegalArgumentException("Performance not found: " + performanceId);
+			throw new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND, "Performance not found: " + performanceId);
 		}
 	}
 
