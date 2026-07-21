@@ -9,6 +9,7 @@ import io.github.juc211.band_schedule.domain.InputLinkType;
 import io.github.juc211.band_schedule.domain.Performance;
 import io.github.juc211.band_schedule.domain.Team;
 import io.github.juc211.band_schedule.dto.FinalScheduleDto;
+import io.github.juc211.band_schedule.exception.BusinessException;
 import io.github.juc211.band_schedule.repository.FinalScheduleRepository;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
@@ -108,7 +109,7 @@ class FinalScheduleServiceTest {
 						null
 				)
 		))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("Final schedule overlaps with another final schedule");
 	}
 
@@ -131,7 +132,7 @@ class FinalScheduleServiceTest {
 						null
 				)
 		))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("Final schedule overlaps with another final schedule");
 	}
 
@@ -244,7 +245,7 @@ class FinalScheduleServiceTest {
 		inputLinkRepository.save(InputLink.create("available-token", performance, InputLinkType.AVAILABLE_TIME, true, null));
 
 		assertThatThrownBy(() -> finalScheduleService.getFinalSchedulesByLink("available-token"))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("InputLink type must be FINAL_SCHEDULE_VIEW");
 	}
 
@@ -256,7 +257,7 @@ class FinalScheduleServiceTest {
 		Team otherTeam = teamRepository.save(Team.create(otherPerformance, "Other Team", "Other Song"));
 
 		assertThatThrownBy(() -> finalScheduleService.getFinalSchedulesByLinkAndTeam("view-token", otherTeam.getId()))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("Team does not belong to link performance");
 	}
 
@@ -298,7 +299,7 @@ class FinalScheduleServiceTest {
 						null
 				)
 		))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("Final schedule overlaps with another final schedule");
 	}
 

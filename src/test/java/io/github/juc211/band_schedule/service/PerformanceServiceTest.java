@@ -18,6 +18,7 @@ import io.github.juc211.band_schedule.domain.TeamMember;
 import io.github.juc211.band_schedule.domain.User;
 import io.github.juc211.band_schedule.domain.Vote;
 import io.github.juc211.band_schedule.dto.PerformanceDto;
+import io.github.juc211.band_schedule.exception.BusinessException;
 import io.github.juc211.band_schedule.repository.AvailabilityRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
 import io.github.juc211.band_schedule.repository.FinalScheduleRepository;
@@ -203,7 +204,7 @@ class PerformanceServiceTest {
 				performance.getId(),
 				new PerformanceDto.PerformanceMemberAddRequest(List.of(user.getId(), user.getId()))
 		))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("Duplicate user id");
 	}
 
@@ -221,7 +222,7 @@ class PerformanceServiceTest {
 				performance.getId(),
 				new PerformanceDto.PerformanceMemberAddRequest(List.of(user.getId()))
 		))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("User is already added to performance");
 	}
 
@@ -281,7 +282,7 @@ class PerformanceServiceTest {
 		));
 
 		assertThatThrownBy(() -> performanceService.deletePerformanceScheduleWindow(performance.getId()))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("Cannot delete schedule window because available times exist");
 	}
 
@@ -296,7 +297,7 @@ class PerformanceServiceTest {
 		);
 
 		assertThatThrownBy(() -> performanceService.createPerformance(request))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("Schedule window end date must not be after performance date");
 	}
 

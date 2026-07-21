@@ -6,6 +6,8 @@ import io.github.juc211.band_schedule.domain.InputLinkType;
 import io.github.juc211.band_schedule.domain.Performance;
 import io.github.juc211.band_schedule.domain.TeamMember;
 import io.github.juc211.band_schedule.dto.AvailableTimeDto;
+import io.github.juc211.band_schedule.exception.BusinessException;
+import io.github.juc211.band_schedule.exception.ErrorCode;
 import io.github.juc211.band_schedule.repository.AvailabilityRepository;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.TeamRepository;
@@ -37,7 +39,7 @@ public class AvailableTimeService {
 			AvailableTimeDto.AvailableTimesReplaceRequest request
 	) {
 		TeamMember teamMember = teamMemberRepository.findById(teamMemberId)
-				.orElseThrow(() -> new IllegalArgumentException("TeamMember not found: " + teamMemberId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_MEMBER_NOT_FOUND, "TeamMember not found: " + teamMemberId));
 
 		return replaceAvailableTimes(teamMember, request);
 	}
@@ -51,9 +53,9 @@ public class AvailableTimeService {
 			AvailableTimeDto.AvailableTimesReplaceRequest request
 	) {
 		InputLink inputLink = inputLinkRepository.findByToken(token)
-				.orElseThrow(() -> new IllegalArgumentException("InputLink not found: " + token));
+				.orElseThrow(() -> new BusinessException(ErrorCode.INPUT_LINK_NOT_FOUND, "InputLink not found: " + token));
 		TeamMember teamMember = teamMemberRepository.findById(teamMemberId)
-				.orElseThrow(() -> new IllegalArgumentException("TeamMember not found: " + teamMemberId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_MEMBER_NOT_FOUND, "TeamMember not found: " + teamMemberId));
 
 		validateUsableLink(inputLink);
 		validateLinkType(inputLink, InputLinkType.AVAILABLE_TIME);
@@ -112,9 +114,9 @@ public class AvailableTimeService {
 	@Transactional(readOnly = true)
 	public List<AvailableTimeDto.AvailableTimeResponse> getAvailableTimesByTeamMember(String token, Long teamMemberId) {
 		InputLink inputLink = inputLinkRepository.findByToken(token)
-				.orElseThrow(() -> new IllegalArgumentException("InputLink not found: " + token));
+				.orElseThrow(() -> new BusinessException(ErrorCode.INPUT_LINK_NOT_FOUND, "InputLink not found: " + token));
 		TeamMember teamMember = teamMemberRepository.findById(teamMemberId)
-				.orElseThrow(() -> new IllegalArgumentException("TeamMember not found: " + teamMemberId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_MEMBER_NOT_FOUND, "TeamMember not found: " + teamMemberId));
 
 		validateUsableLink(inputLink);
 		validateLinkType(inputLink, InputLinkType.AVAILABLE_TIME);
@@ -184,7 +186,7 @@ public class AvailableTimeService {
 	 */
 	private void validateTeamMemberExists(Long teamMemberId) {
 		if (!teamMemberRepository.existsById(teamMemberId)) {
-			throw new IllegalArgumentException("TeamMember not found: " + teamMemberId);
+			throw new BusinessException(ErrorCode.TEAM_MEMBER_NOT_FOUND, "TeamMember not found: " + teamMemberId);
 		}
 	}
 
@@ -193,7 +195,7 @@ public class AvailableTimeService {
 	 */
 	private void validateTeamExists(Long teamId) {
 		if (!teamRepository.existsById(teamId)) {
-			throw new IllegalArgumentException("Team not found: " + teamId);
+			throw new BusinessException(ErrorCode.TEAM_NOT_FOUND, "Team not found: " + teamId);
 		}
 	}
 
@@ -206,15 +208,18 @@ public class AvailableTimeService {
 		LocalDate scheduleWindowEndDate = performance.getScheduleWindowEndDate();
 
 		if (scheduleWindowStartDate == null || scheduleWindowEndDate == null) {
-			throw new IllegalArgumentException("Performance schedule window is required to submit available time");
+			throw new BusinessException(ErrorCode.SCHEDULE_WINDOW_REQUIRED, "Performance schedule window is required to submit available time");
 		}
 		if (startDateTime == null || endDateTime == null) {
-			throw new IllegalArgumentException("Available time start and end date time must be set together");
+			throw new BusinessException(ErrorCode.AVAILABLE_TIME_DATES_REQUIRED_TOGETHER, "Available time start and end date time must be set together");
+		}
+		if (!startDateTime.isBefore(endDateTime)) {
+			throw new BusinessException(ErrorCode.AVAILABLE_TIME_START_NOT_BEFORE_END, "Available time start date time must be before end date time");
 		}
 		LocalDateTime windowStartDateTime = scheduleWindowStartDate.atStartOfDay();
 		LocalDateTime exclusiveWindowEndDateTime = scheduleWindowEndDate.plusDays(1).atStartOfDay();
 		if (startDateTime.isBefore(windowStartDateTime) || endDateTime.isAfter(exclusiveWindowEndDateTime)) {
-			throw new IllegalArgumentException("Available time must be within performance schedule window");
+			throw new BusinessException(ErrorCode.AVAILABLE_TIME_OUT_OF_SCHEDULE_WINDOW, "Available time must be within performance schedule window");
 		}
 	}
 
@@ -223,10 +228,10 @@ public class AvailableTimeService {
 	 */
 	private void validateUsableLink(InputLink inputLink) {
 		if (!inputLink.isActive()) {
-			throw new IllegalArgumentException("InputLink is inactive");
+			throw new BusinessException(ErrorCode.INPUT_LINK_INACTIVE, "InputLink is inactive");
 		}
 		if (inputLink.getExpiresAt() != null && inputLink.getExpiresAt().isBefore(LocalDateTime.now())) {
-			throw new IllegalArgumentException("InputLink is expired");
+			throw new BusinessException(ErrorCode.LINK_EXPIRED, "InputLink is expired");
 		}
 	}
 
@@ -235,7 +240,7 @@ public class AvailableTimeService {
 	 */
 	private void validateLinkType(InputLink inputLink, InputLinkType expectedType) {
 		if (inputLink.getType() != expectedType) {
-			throw new IllegalArgumentException("InputLink type must be " + expectedType);
+			throw new BusinessException(ErrorCode.INVALID_INPUT_LINK_TYPE, "InputLink type must be " + expectedType);
 		}
 	}
 
@@ -246,7 +251,7 @@ public class AvailableTimeService {
 		Long linkPerformanceId = inputLink.getPerformance().getId();
 		Long memberPerformanceId = teamMember.getTeam().getPerformance().getId();
 		if (!linkPerformanceId.equals(memberPerformanceId)) {
-			throw new IllegalArgumentException("TeamMember does not belong to link performance");
+			throw new BusinessException(ErrorCode.TEAM_MEMBER_NOT_IN_LINK_PERFORMANCE, "TeamMember does not belong to link performance");
 		}
 	}
 

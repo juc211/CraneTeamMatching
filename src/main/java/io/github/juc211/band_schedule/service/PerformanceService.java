@@ -6,6 +6,8 @@ import io.github.juc211.band_schedule.domain.User;
 import io.github.juc211.band_schedule.domain.InputLink;
 import io.github.juc211.band_schedule.domain.InputLinkType;
 import io.github.juc211.band_schedule.dto.PerformanceDto;
+import io.github.juc211.band_schedule.exception.BusinessException;
+import io.github.juc211.band_schedule.exception.ErrorCode;
 import io.github.juc211.band_schedule.repository.AvailabilityRepository;
 import io.github.juc211.band_schedule.repository.FinalScheduleRepository;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
@@ -23,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
@@ -51,6 +54,12 @@ public class PerformanceService {
      * 공연 생성
      */
     public PerformanceDto.PerformanceCreateResponse createPerformance(PerformanceDto.PerformanceCreateRequest request) {
+        validateScheduleWindowFields(
+                request.performanceDate(),
+                request.scheduleWindowStartDate(),
+                request.scheduleWindowEndDate()
+        );
+
         Performance performance = Performance.create(
                 request.title(),
                 request.performanceDate(),
@@ -84,7 +93,7 @@ public class PerformanceService {
     @Transactional(readOnly = true)
     public PerformanceDto.PerformanceResponse getPerformance(Long performanceId) {
         Performance performance = performanceRepository.findById(performanceId)
-                .orElseThrow(() -> new IllegalArgumentException("Performance not found: " + performanceId));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND, "Performance not found: " + performanceId));
 
         return toPerformanceResponse(performance);
     }
@@ -104,7 +113,13 @@ public class PerformanceService {
      */
     public PerformanceDto.PerformanceResponse updatePerformance(Long performanceId, PerformanceDto.PerformanceUpdateRequest request) {
         Performance performance = performanceRepository.findById(performanceId)
-                .orElseThrow(() -> new IllegalArgumentException("Performance not found: " + performanceId));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND, "Performance not found: " + performanceId));
+
+        validateScheduleWindowFields(
+                request.performanceDate(),
+                request.scheduleWindowStartDate(),
+                request.scheduleWindowEndDate()
+        );
 
         performance.update(
                 request.title(),
@@ -123,7 +138,7 @@ public class PerformanceService {
     @Transactional(readOnly = true)
     public PerformanceDto.PerformanceScheduleWindowResponse getPerformanceScheduleWindow(Long performanceId) {
         Performance performance = performanceRepository.findById(performanceId)
-                .orElseThrow(() -> new IllegalArgumentException("Performance not found: " + performanceId));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND, "Performance not found: " + performanceId));
 
         return toPerformanceScheduleWindowResponse(performance);
     }
@@ -146,7 +161,13 @@ public class PerformanceService {
             PerformanceDto.PerformanceScheduleWindowUpdateRequest request
     ) {
         Performance performance = performanceRepository.findById(performanceId)
-                .orElseThrow(() -> new IllegalArgumentException("Performance not found: " + performanceId));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND, "Performance not found: " + performanceId));
+
+        validateScheduleWindowFields(
+                performance.getPerformanceDate(),
+                request.scheduleWindowStartDate(),
+                request.scheduleWindowEndDate()
+        );
 
         performance.update(
                 performance.getTitle(),
@@ -164,7 +185,7 @@ public class PerformanceService {
      */
     public void deletePerformanceScheduleWindow(Long performanceId) {
         Performance performance = performanceRepository.findById(performanceId)
-                .orElseThrow(() -> new IllegalArgumentException("Performance not found: " + performanceId));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND, "Performance not found: " + performanceId));
 
         validateScheduleWindowCanBeDeleted(performanceId);
 
@@ -182,10 +203,10 @@ public class PerformanceService {
      */
     private void validateScheduleWindowCanBeDeleted(Long performanceId) {
         if (availabilityRepository.existsByTeamMemberTeamPerformanceId(performanceId)) {
-            throw new IllegalArgumentException("Cannot delete schedule window because available times exist");
+            throw new BusinessException(ErrorCode.SCHEDULE_WINDOW_DELETE_BLOCKED_BY_AVAILABLE_TIMES, "Cannot delete schedule window because available times exist");
         }
         if (finalScheduleRepository.existsByTeamPerformanceId(performanceId)) {
-            throw new IllegalArgumentException("Cannot delete schedule window because final schedules exist");
+            throw new BusinessException(ErrorCode.SCHEDULE_WINDOW_DELETE_BLOCKED_BY_FINAL_SCHEDULES, "Cannot delete schedule window because final schedules exist");
         }
     }
 
@@ -230,14 +251,14 @@ public class PerformanceService {
             PerformanceDto.PerformanceMemberAddRequest request
     ) {
         Performance performance = performanceRepository.findById(performanceId)
-                .orElseThrow(() -> new IllegalArgumentException("Performance not found: " + performanceId));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND, "Performance not found: " + performanceId));
 
         validatePerformanceMemberAddRequest(performanceId, request.userIds());
 
         List<PerformanceMember> performanceMembers = new ArrayList<>();
         for (Long userId : request.userIds()) {
             User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+                    .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, "User not found: " + userId));
             performanceMembers.add(PerformanceMember.create(performance, user));
         }
 
@@ -259,19 +280,19 @@ public class PerformanceService {
      */
     private void validatePerformanceMemberAddRequest(Long performanceId, List<Long> userIds) {
         if (userIds == null || userIds.isEmpty()) {
-            throw new IllegalArgumentException("User ids are required");
+            throw new BusinessException(ErrorCode.USER_IDS_REQUIRED, "User ids are required");
         }
 
         Set<Long> requestedUserIds = new HashSet<>();
         for (Long userId : userIds) {
             if (userId == null) {
-                throw new IllegalArgumentException("User id is required");
+                throw new BusinessException(ErrorCode.USER_ID_REQUIRED, "User id is required");
             }
             if (!requestedUserIds.add(userId)) {
-                throw new IllegalArgumentException("Duplicate user id in performance member request: " + userId);
+                throw new BusinessException(ErrorCode.DUPLICATE_USER_ID_IN_REQUEST, "Duplicate user id in performance member request: " + userId);
             }
             if (performanceMemberRepository.existsByPerformanceIdAndUserId(performanceId, userId)) {
-                throw new IllegalArgumentException("User is already added to performance: " + userId);
+                throw new BusinessException(ErrorCode.USER_ALREADY_ADDED_TO_PERFORMANCE, "User is already added to performance: " + userId);
             }
         }
     }
@@ -281,7 +302,7 @@ public class PerformanceService {
      */
     public void deletePerformanceMember(Long performanceMemberId) {
         PerformanceMember performanceMember = performanceMemberRepository.findById(performanceMemberId)
-                .orElseThrow(() -> new IllegalArgumentException("PerformanceMember not found: " + performanceMemberId));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_MEMBER_NOT_FOUND, "PerformanceMember not found: " + performanceMemberId));
 
         songVoteRepository.deleteBySongRequestRequestedByMemberId(performanceMemberId);
         songRequestRepository.deleteByRequestedByMemberId(performanceMemberId);
@@ -297,7 +318,7 @@ public class PerformanceService {
      */
     public void deletePerformance(Long performanceId) {
         Performance performance = performanceRepository.findById(performanceId)
-                .orElseThrow(() -> new IllegalArgumentException("Performance not found: " + performanceId));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND, "Performance not found: " + performanceId));
 
         inputLinkRepository.deleteByPerformanceId(performanceId);
         songPreferenceRepository.deleteByPerformanceConfirmedSongPerformanceId(performanceId);
@@ -354,7 +375,29 @@ public class PerformanceService {
      */
     private void validatePerformanceExists(Long performanceId) {
         if (!performanceRepository.existsById(performanceId)) {
-            throw new IllegalArgumentException("Performance not found: " + performanceId);
+            throw new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND, "Performance not found: " + performanceId);
+        }
+    }
+
+    /**
+     * 공연 합주 기간 입력 값 검증
+     */
+    private void validateScheduleWindowFields(
+            LocalDate performanceDate,
+            LocalDate scheduleWindowStartDate,
+            LocalDate scheduleWindowEndDate
+    ) {
+        if ((scheduleWindowStartDate == null) != (scheduleWindowEndDate == null)) {
+            throw new BusinessException(ErrorCode.SCHEDULE_WINDOW_DATES_REQUIRED_TOGETHER, "Schedule window start date and end date must be set together");
+        }
+        if (scheduleWindowStartDate == null) {
+            return;
+        }
+        if (scheduleWindowStartDate.isAfter(scheduleWindowEndDate)) {
+            throw new BusinessException(ErrorCode.SCHEDULE_WINDOW_START_AFTER_END, "Schedule window start date must not be after end date");
+        }
+        if (performanceDate != null && scheduleWindowEndDate.isAfter(performanceDate)) {
+            throw new BusinessException(ErrorCode.SCHEDULE_WINDOW_END_AFTER_PERFORMANCE_DATE, "Schedule window end date must not be after performance date");
         }
     }
 
@@ -363,12 +406,12 @@ public class PerformanceService {
      */
     private InputLink getUsableLink(String token) {
         InputLink inputLink = inputLinkRepository.findByToken(token)
-                .orElseThrow(() -> new IllegalArgumentException("InputLink not found: " + token));
+                .orElseThrow(() -> new BusinessException(ErrorCode.INPUT_LINK_NOT_FOUND, "InputLink not found: " + token));
         if (!inputLink.isActive()) {
-            throw new IllegalArgumentException("InputLink is inactive");
+            throw new BusinessException(ErrorCode.INPUT_LINK_INACTIVE, "InputLink is inactive");
         }
         if (inputLink.getExpiresAt() != null && inputLink.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("InputLink is expired");
+            throw new BusinessException(ErrorCode.LINK_EXPIRED, "InputLink is expired");
         }
         return inputLink;
     }
@@ -382,6 +425,6 @@ public class PerformanceService {
                 return;
             }
         }
-        throw new IllegalArgumentException("InputLink type is not allowed");
+        throw new BusinessException(ErrorCode.INVALID_INPUT_LINK_TYPE, "InputLink type is not allowed");
     }
 }

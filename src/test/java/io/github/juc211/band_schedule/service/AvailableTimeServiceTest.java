@@ -13,6 +13,7 @@ import io.github.juc211.band_schedule.domain.Team;
 import io.github.juc211.band_schedule.domain.TeamMember;
 import io.github.juc211.band_schedule.domain.User;
 import io.github.juc211.band_schedule.dto.AvailableTimeDto;
+import io.github.juc211.band_schedule.exception.BusinessException;
 import io.github.juc211.band_schedule.repository.AvailabilityRepository;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
@@ -178,7 +179,7 @@ class AvailableTimeServiceTest {
 				teamMember.getId(),
 				new AvailableTimeDto.AvailableTimesReplaceRequest(List.of())
 		))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("InputLink type must be AVAILABLE_TIME");
 	}
 
@@ -199,7 +200,7 @@ class AvailableTimeServiceTest {
 				otherTeamMember.getId(),
 				new AvailableTimeDto.AvailableTimesReplaceRequest(List.of())
 		))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("TeamMember does not belong to link performance");
 	}
 
@@ -216,7 +217,7 @@ class AvailableTimeServiceTest {
 						))
 				)
 		))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("Performance schedule window is required");
 	}
 
@@ -233,7 +234,7 @@ class AvailableTimeServiceTest {
 						))
 				)
 		))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("Available time must be within performance schedule window");
 	}
 

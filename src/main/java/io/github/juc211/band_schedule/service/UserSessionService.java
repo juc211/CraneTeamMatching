@@ -3,6 +3,8 @@ package io.github.juc211.band_schedule.service;
 import io.github.juc211.band_schedule.domain.User;
 import io.github.juc211.band_schedule.domain.UserSession;
 import io.github.juc211.band_schedule.dto.UserSessionDto;
+import io.github.juc211.band_schedule.exception.BusinessException;
+import io.github.juc211.band_schedule.exception.ErrorCode;
 import io.github.juc211.band_schedule.repository.UserRepository;
 import io.github.juc211.band_schedule.repository.UserSessionRepository;
 import java.util.List;
@@ -26,7 +28,7 @@ public class UserSessionService {
 			UserSessionDto.UserSessionCreateRequest request
 	) {
 		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, "User not found: " + userId));
 
 		UserSession savedUserSession = userSessionRepository.save(UserSession.create(user, request.part()));
 
@@ -39,7 +41,7 @@ public class UserSessionService {
 	@Transactional(readOnly = true)
 	public List<UserSessionDto.UserSessionResponse> getUserSessionsByUser(Long userId) {
 		if (!userRepository.existsById(userId)) {
-			throw new IllegalArgumentException("User not found: " + userId);
+			throw new BusinessException(ErrorCode.USER_NOT_FOUND, "User not found: " + userId);
 		}
 
 		return userSessionRepository.findByUserId(userId)
@@ -53,7 +55,7 @@ public class UserSessionService {
 	 */
 	public void deleteUserSession(Long userSessionId) {
 		UserSession userSession = userSessionRepository.findById(userSessionId)
-				.orElseThrow(() -> new IllegalArgumentException("UserSession not found: " + userSessionId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.USER_SESSION_NOT_FOUND, "UserSession not found: " + userSessionId));
 
 		userSessionRepository.delete(userSession);
 	}

@@ -8,6 +8,7 @@ import io.github.juc211.band_schedule.domain.PerformanceMember;
 import io.github.juc211.band_schedule.domain.User;
 import io.github.juc211.band_schedule.domain.UserStatus;
 import io.github.juc211.band_schedule.dto.UserDto;
+import io.github.juc211.band_schedule.exception.BusinessException;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
 import io.github.juc211.band_schedule.repository.UserRepository;
@@ -55,7 +56,7 @@ class UserServiceTest {
 		userService.createUser(new UserDto.UserCreateRequest("Kim Band", "20261234"));
 
 		assertThatThrownBy(() -> userService.createUser(new UserDto.UserCreateRequest("Lee Bass", "20261234")))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("Student number already exists");
 	}
 
@@ -126,7 +127,7 @@ class UserServiceTest {
 				firstUser.userId(),
 				new UserDto.UserUpdateRequest("Kim Band", "20261235")
 		))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("Student number already exists");
 	}
 
@@ -165,7 +166,7 @@ class UserServiceTest {
 		performanceMemberRepository.save(PerformanceMember.create(performance, user));
 
 		assertThatThrownBy(() -> userService.deleteUser(user.getId()))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("User with references cannot be deleted");
 	}
 }

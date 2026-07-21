@@ -18,6 +18,7 @@ import io.github.juc211.band_schedule.domain.TeamMember;
 import io.github.juc211.band_schedule.domain.User;
 import io.github.juc211.band_schedule.domain.Vote;
 import io.github.juc211.band_schedule.dto.TeamDto;
+import io.github.juc211.band_schedule.exception.BusinessException;
 import io.github.juc211.band_schedule.repository.AvailabilityRepository;
 import io.github.juc211.band_schedule.repository.FinalScheduleRepository;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
@@ -230,7 +231,7 @@ class TeamServiceTest {
 				firstPerformance.getId(),
 				new TeamDto.TeamCreateRequest("Team A", null, otherPerformanceConfirmedSong.getId())
 		))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("PerformanceConfirmedSong does not belong to team performance");
 	}
 
@@ -352,7 +353,7 @@ class TeamServiceTest {
 		Team otherTeam = teamRepository.save(Team.create(otherPerformance, "Other Team", "Other Song"));
 
 		assertThatThrownBy(() -> teamService.getTeamMembersByLink("available-token", otherTeam.getId()))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("Team does not belong to link performance");
 	}
 
@@ -429,7 +430,7 @@ class TeamServiceTest {
 				team.getId(),
 				new TeamDto.TeamMemberAddRequest(otherPerformanceMember.getId(), Part.VOCAL)
 		))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("PerformanceMember does not belong to team performance");
 	}
 }

@@ -7,6 +7,8 @@ import io.github.juc211.band_schedule.domain.SongRequest;
 import io.github.juc211.band_schedule.domain.SongVote;
 import io.github.juc211.band_schedule.domain.Team;
 import io.github.juc211.band_schedule.dto.SongDto;
+import io.github.juc211.band_schedule.exception.BusinessException;
+import io.github.juc211.band_schedule.exception.ErrorCode;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
@@ -36,9 +38,9 @@ public class SongService {
 	 */
 	public SongDto.SongRequestResponse createSongRequest(String token, SongDto.SongRequestCreateRequest request) {
 		InputLink inputLink = inputLinkRepository.findByToken(token)
-				.orElseThrow(() -> new IllegalArgumentException("InputLink not found: " + token));
+				.orElseThrow(() -> new BusinessException(ErrorCode.INPUT_LINK_NOT_FOUND, "InputLink not found: " + token));
 		PerformanceMember requestedByMember = performanceMemberRepository.findById(request.requestedByMemberId())
-				.orElseThrow(() -> new IllegalArgumentException("PerformanceMember not found: " + request.requestedByMemberId()));
+				.orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_MEMBER_NOT_FOUND, "PerformanceMember not found: " + request.requestedByMemberId()));
 
 		validateUsableLink(inputLink);
 		validateLinkType(inputLink, InputLinkType.SONG_REQUEST);
@@ -76,7 +78,7 @@ public class SongService {
 	@Transactional(readOnly = true)
 	public List<SongDto.SongRequestResponse> getSongRequestsByLink(String token) {
 		InputLink inputLink = inputLinkRepository.findByToken(token)
-				.orElseThrow(() -> new IllegalArgumentException("InputLink not found: " + token));
+				.orElseThrow(() -> new BusinessException(ErrorCode.INPUT_LINK_NOT_FOUND, "InputLink not found: " + token));
 
 		validateUsableLink(inputLink);
 		validateLinkType(inputLink, InputLinkType.SONG_VOTE);
@@ -106,9 +108,9 @@ public class SongService {
 	@Transactional(readOnly = true)
 	public List<SongDto.SongRequestResponse> getSongRequestsByLinkAndTeam(String token, Long teamId) {
 		InputLink inputLink = inputLinkRepository.findByToken(token)
-				.orElseThrow(() -> new IllegalArgumentException("InputLink not found: " + token));
+				.orElseThrow(() -> new BusinessException(ErrorCode.INPUT_LINK_NOT_FOUND, "InputLink not found: " + token));
 		Team team = teamRepository.findById(teamId)
-				.orElseThrow(() -> new IllegalArgumentException("Team not found: " + teamId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_NOT_FOUND, "Team not found: " + teamId));
 
 		validateUsableLink(inputLink);
 		validateLinkType(inputLink, InputLinkType.SONG_VOTE);
@@ -125,7 +127,7 @@ public class SongService {
 	 */
 	public SongDto.SongRequestResponse updateSongRequest(Long songRequestId, SongDto.SongRequestUpdateRequest request) {
 		SongRequest songRequest = songRequestRepository.findById(songRequestId)
-				.orElseThrow(() -> new IllegalArgumentException("SongRequest not found: " + songRequestId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.SONG_REQUEST_NOT_FOUND, "SongRequest not found: " + songRequestId));
 		Team selectedTeam = getSelectedTeam(request.teamId());
 
 		validateTeamBelongsToSongRequestPerformance(songRequest, selectedTeam);
@@ -140,7 +142,7 @@ public class SongService {
 	 */
 	public void deleteSongRequest(Long songRequestId) {
 		SongRequest songRequest = songRequestRepository.findById(songRequestId)
-				.orElseThrow(() -> new IllegalArgumentException("SongRequest not found: " + songRequestId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.SONG_REQUEST_NOT_FOUND, "SongRequest not found: " + songRequestId));
 
 		songVoteRepository.deleteBySongRequestId(songRequestId);
 		songRequestRepository.delete(songRequest);
@@ -151,7 +153,7 @@ public class SongService {
 	 */
 	public void deleteSongVote(Long songVoteId) {
 		SongVote songVote = songVoteRepository.findById(songVoteId)
-				.orElseThrow(() -> new IllegalArgumentException("SongVote not found: " + songVoteId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.SONG_VOTE_NOT_FOUND, "SongVote not found: " + songVoteId));
 
 		songVoteRepository.delete(songVote);
 	}
@@ -161,11 +163,11 @@ public class SongService {
 	 */
 	public SongDto.SongVoteResponse submitSongVote(String token, SongDto.SongVoteSubmitRequest request) {
 		InputLink inputLink = inputLinkRepository.findByToken(token)
-				.orElseThrow(() -> new IllegalArgumentException("InputLink not found: " + token));
+				.orElseThrow(() -> new BusinessException(ErrorCode.INPUT_LINK_NOT_FOUND, "InputLink not found: " + token));
 		SongRequest songRequest = songRequestRepository.findById(request.songRequestId())
-				.orElseThrow(() -> new IllegalArgumentException("SongRequest not found: " + request.songRequestId()));
+				.orElseThrow(() -> new BusinessException(ErrorCode.SONG_REQUEST_NOT_FOUND, "SongRequest not found: " + request.songRequestId()));
 		PerformanceMember voterMember = performanceMemberRepository.findById(request.voterMemberId())
-				.orElseThrow(() -> new IllegalArgumentException("PerformanceMember not found: " + request.voterMemberId()));
+				.orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_MEMBER_NOT_FOUND, "PerformanceMember not found: " + request.voterMemberId()));
 
 		validateUsableLink(inputLink);
 		validateLinkType(inputLink, InputLinkType.SONG_VOTE);
@@ -197,10 +199,10 @@ public class SongService {
 	 */
 	private void validateUsableLink(InputLink inputLink) {
 		if (!inputLink.isActive()) {
-			throw new IllegalArgumentException("InputLink is inactive");
+			throw new BusinessException(ErrorCode.INPUT_LINK_INACTIVE, "InputLink is inactive");
 		}
 		if (inputLink.getExpiresAt() != null && inputLink.getExpiresAt().isBefore(LocalDateTime.now())) {
-			throw new IllegalArgumentException("InputLink is expired");
+			throw new BusinessException(ErrorCode.LINK_EXPIRED, "InputLink is expired");
 		}
 	}
 
@@ -209,7 +211,7 @@ public class SongService {
 	 */
 	private void validateLinkType(InputLink inputLink, InputLinkType expectedType) {
 		if (inputLink.getType() != expectedType) {
-			throw new IllegalArgumentException("InputLink type must be " + expectedType);
+			throw new BusinessException(ErrorCode.INVALID_INPUT_LINK_TYPE, "InputLink type must be " + expectedType);
 		}
 	}
 
@@ -220,7 +222,7 @@ public class SongService {
 		Long linkPerformanceId = inputLink.getPerformance().getId();
 		Long memberPerformanceId = requestedByMember.getPerformance().getId();
 		if (!linkPerformanceId.equals(memberPerformanceId)) {
-			throw new IllegalArgumentException("PerformanceMember does not belong to link performance");
+			throw new BusinessException(ErrorCode.PERFORMANCE_MEMBER_NOT_IN_PERFORMANCE, "PerformanceMember does not belong to link performance");
 		}
 	}
 
@@ -233,7 +235,7 @@ public class SongService {
 		}
 
 		return teamRepository.findById(teamId)
-				.orElseThrow(() -> new IllegalArgumentException("Team not found: " + teamId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_NOT_FOUND, "Team not found: " + teamId));
 	}
 
 	/**
@@ -241,7 +243,7 @@ public class SongService {
 	 */
 	private void validatePerformanceExists(Long performanceId) {
 		if (!performanceRepository.existsById(performanceId)) {
-			throw new IllegalArgumentException("Performance not found: " + performanceId);
+			throw new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND, "Performance not found: " + performanceId);
 		}
 	}
 
@@ -250,7 +252,7 @@ public class SongService {
 	 */
 	private void validateTeamExists(Long teamId) {
 		if (!teamRepository.existsById(teamId)) {
-			throw new IllegalArgumentException("Team not found: " + teamId);
+			throw new BusinessException(ErrorCode.TEAM_NOT_FOUND, "Team not found: " + teamId);
 		}
 	}
 
@@ -259,7 +261,7 @@ public class SongService {
 	 */
 	private void validateSongRequestExists(Long songRequestId) {
 		if (!songRequestRepository.existsById(songRequestId)) {
-			throw new IllegalArgumentException("SongRequest not found: " + songRequestId);
+			throw new BusinessException(ErrorCode.SONG_REQUEST_NOT_FOUND, "SongRequest not found: " + songRequestId);
 		}
 	}
 
@@ -274,7 +276,7 @@ public class SongService {
 		Long linkPerformanceId = inputLink.getPerformance().getId();
 		Long teamPerformanceId = selectedTeam.getPerformance().getId();
 		if (!linkPerformanceId.equals(teamPerformanceId)) {
-			throw new IllegalArgumentException("Team does not belong to link performance");
+			throw new BusinessException(ErrorCode.TEAM_NOT_IN_LINK_PERFORMANCE, "Team does not belong to link performance");
 		}
 	}
 
@@ -289,7 +291,7 @@ public class SongService {
 		Long songRequestPerformanceId = songRequest.getPerformance().getId();
 		Long teamPerformanceId = selectedTeam.getPerformance().getId();
 		if (!songRequestPerformanceId.equals(teamPerformanceId)) {
-			throw new IllegalArgumentException("Team does not belong to song request performance");
+			throw new BusinessException(ErrorCode.TEAM_NOT_IN_SONG_REQUEST_PERFORMANCE, "Team does not belong to song request performance");
 		}
 	}
 
@@ -300,7 +302,7 @@ public class SongService {
 		Long linkPerformanceId = inputLink.getPerformance().getId();
 		Long songRequestPerformanceId = songRequest.getPerformance().getId();
 		if (!linkPerformanceId.equals(songRequestPerformanceId)) {
-			throw new IllegalArgumentException("SongRequest does not belong to link performance");
+			throw new BusinessException(ErrorCode.SONG_REQUEST_NOT_IN_LINK_PERFORMANCE, "SongRequest does not belong to link performance");
 		}
 	}
 

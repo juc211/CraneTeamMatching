@@ -7,6 +7,7 @@ import io.github.juc211.band_schedule.domain.Performance;
 import io.github.juc211.band_schedule.domain.PerformanceSetlistItem;
 import io.github.juc211.band_schedule.domain.Team;
 import io.github.juc211.band_schedule.dto.PerformanceSetlistDto;
+import io.github.juc211.band_schedule.exception.BusinessException;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
 import io.github.juc211.band_schedule.repository.PerformanceSetlistItemRepository;
 import io.github.juc211.band_schedule.repository.TeamRepository;
@@ -90,7 +91,7 @@ class PerformanceSetlistServiceTest {
 						new PerformanceSetlistDto.PerformanceSetlistItemRequest(otherTeam.getId(), 1)
 				))
 		))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("Team does not belong to performance");
 	}
 
@@ -107,7 +108,7 @@ class PerformanceSetlistServiceTest {
 						new PerformanceSetlistDto.PerformanceSetlistItemRequest(secondTeam.getId(), 1)
 				))
 		))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("Setlist cannot contain duplicate sequence number");
 	}
 
@@ -119,7 +120,7 @@ class PerformanceSetlistServiceTest {
 				performance.getId(),
 				new PerformanceSetlistDto.PerformanceSetlistReplaceRequest(Collections.singletonList(null))
 		))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("Setlist item is required");
 	}
 
@@ -135,7 +136,7 @@ class PerformanceSetlistServiceTest {
 						new PerformanceSetlistDto.PerformanceSetlistItemRequest(team.getId(), 2)
 				))
 		))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("Setlist cannot contain duplicate team");
 	}
 

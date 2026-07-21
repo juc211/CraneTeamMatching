@@ -8,6 +8,8 @@ import io.github.juc211.band_schedule.domain.PerformanceMember;
 import io.github.juc211.band_schedule.domain.Team;
 import io.github.juc211.band_schedule.domain.TeamMember;
 import io.github.juc211.band_schedule.dto.TeamDto;
+import io.github.juc211.band_schedule.exception.BusinessException;
+import io.github.juc211.band_schedule.exception.ErrorCode;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.AvailabilityRepository;
 import io.github.juc211.band_schedule.repository.FinalScheduleRepository;
@@ -47,7 +49,7 @@ public class TeamService {
 	 */
 	public TeamDto.TeamResponse createTeam(Long performanceId, TeamDto.TeamCreateRequest request) {
 		Performance performance = performanceRepository.findById(performanceId)
-				.orElseThrow(() -> new IllegalArgumentException("Performance not found: " + performanceId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND, "Performance not found: " + performanceId));
 
 		String confirmedSong = resolvePerformanceConfirmedSong(performance.getId(), request.confirmedSong(), request.performanceConfirmedSongId());
 		Team savedTeam = teamRepository.save(Team.create(performance, request.name(), confirmedSong));
@@ -60,7 +62,7 @@ public class TeamService {
 	 */
 	public TeamDto.TeamResponse updateTeam(Long teamId, TeamDto.TeamUpdateRequest request) {
 		Team team = teamRepository.findById(teamId)
-				.orElseThrow(() -> new IllegalArgumentException("Team not found: " + teamId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_NOT_FOUND, "Team not found: " + teamId));
 
 		String confirmedSong = resolvePerformanceConfirmedSong(team.getPerformance().getId(), request.confirmedSong(), request.performanceConfirmedSongId());
 		team.update(request.name(), confirmedSong);
@@ -74,7 +76,7 @@ public class TeamService {
 	@Transactional(readOnly = true)
 	public TeamDto.TeamConfirmedSongResponse getTeamConfirmedSong(Long teamId) {
 		Team team = teamRepository.findById(teamId)
-				.orElseThrow(() -> new IllegalArgumentException("Team not found: " + teamId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_NOT_FOUND, "Team not found: " + teamId));
 
 		return toTeamConfirmedSongResponse(team);
 	}
@@ -84,7 +86,7 @@ public class TeamService {
 	 */
 	public TeamDto.TeamResponse updateTeamConfirmedSong(Long teamId, TeamDto.TeamConfirmedSongUpdateRequest request) {
 		Team team = teamRepository.findById(teamId)
-				.orElseThrow(() -> new IllegalArgumentException("Team not found: " + teamId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_NOT_FOUND, "Team not found: " + teamId));
 
 		String confirmedSong = resolvePerformanceConfirmedSong(team.getPerformance().getId(), request.confirmedSong(), request.performanceConfirmedSongId());
 		team.updateConfirmedSong(confirmedSong);
@@ -97,7 +99,7 @@ public class TeamService {
 	 */
 	public void deleteTeamConfirmedSong(Long teamId) {
 		Team team = teamRepository.findById(teamId)
-				.orElseThrow(() -> new IllegalArgumentException("Team not found: " + teamId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_NOT_FOUND, "Team not found: " + teamId));
 
 		team.updateConfirmedSong(null);
 	}
@@ -140,9 +142,9 @@ public class TeamService {
 	 */
 	public TeamDto.TeamMemberResponse addTeamMember(Long teamId, TeamDto.TeamMemberAddRequest request) {
 		Team team = teamRepository.findById(teamId)
-				.orElseThrow(() -> new IllegalArgumentException("Team not found: " + teamId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_NOT_FOUND, "Team not found: " + teamId));
 		PerformanceMember performanceMember = performanceMemberRepository.findById(request.performanceMemberId())
-				.orElseThrow(() -> new IllegalArgumentException("PerformanceMember not found: " + request.performanceMemberId()));
+				.orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_MEMBER_NOT_FOUND, "PerformanceMember not found: " + request.performanceMemberId()));
 
 		validateSamePerformance(team, performanceMember);
 
@@ -156,7 +158,7 @@ public class TeamService {
 	 */
 	public TeamDto.TeamMemberResponse updateTeamMember(Long teamMemberId, TeamDto.TeamMemberUpdateRequest request) {
 		TeamMember teamMember = teamMemberRepository.findById(teamMemberId)
-				.orElseThrow(() -> new IllegalArgumentException("TeamMember not found: " + teamMemberId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_MEMBER_NOT_FOUND, "TeamMember not found: " + teamMemberId));
 
 		teamMember.updatePart(request.part());
 
@@ -185,7 +187,7 @@ public class TeamService {
 		validateLinkType(inputLink, InputLinkType.AVAILABLE_TIME);
 
 		Team team = teamRepository.findById(teamId)
-				.orElseThrow(() -> new IllegalArgumentException("Team not found: " + teamId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_NOT_FOUND, "Team not found: " + teamId));
 		validateTeamBelongsToLinkPerformance(inputLink, team);
 
 		return teamMemberRepository.findByTeamIdOrderByIdAsc(teamId)
@@ -199,7 +201,7 @@ public class TeamService {
 	 */
 	public void deleteTeamMember(Long teamMemberId) {
 		TeamMember teamMember = teamMemberRepository.findById(teamMemberId)
-				.orElseThrow(() -> new IllegalArgumentException("TeamMember not found: " + teamMemberId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_MEMBER_NOT_FOUND, "TeamMember not found: " + teamMemberId));
 
 		availabilityRepository.deleteByTeamMemberId(teamMemberId);
 		teamMemberRepository.delete(teamMember);
@@ -210,7 +212,7 @@ public class TeamService {
 	 */
 	public void deleteTeam(Long teamId) {
 		Team team = teamRepository.findById(teamId)
-				.orElseThrow(() -> new IllegalArgumentException("Team not found: " + teamId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_NOT_FOUND, "Team not found: " + teamId));
 
 		finalScheduleRepository.deleteByTeamId(teamId);
 		performanceSetlistItemRepository.deleteByTeamId(teamId);
@@ -228,7 +230,7 @@ public class TeamService {
 		Long teamPerformanceId = team.getPerformance().getId();
 		Long memberPerformanceId = performanceMember.getPerformance().getId();
 		if (!teamPerformanceId.equals(memberPerformanceId)) {
-			throw new IllegalArgumentException("PerformanceMember does not belong to team performance");
+			throw new BusinessException(ErrorCode.PERFORMANCE_MEMBER_NOT_IN_TEAM_PERFORMANCE, "PerformanceMember does not belong to team performance");
 		}
 	}
 
@@ -241,10 +243,10 @@ public class TeamService {
 		}
 
 		PerformanceConfirmedSong savedPerformanceConfirmedSong = performanceConfirmedSongRepository.findById(performanceConfirmedSongId)
-				.orElseThrow(() -> new IllegalArgumentException("PerformanceConfirmedSong not found: " + performanceConfirmedSongId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_CONFIRMED_SONG_NOT_FOUND, "PerformanceConfirmedSong not found: " + performanceConfirmedSongId));
 
 		if (!savedPerformanceConfirmedSong.getPerformance().getId().equals(performanceId)) {
-			throw new IllegalArgumentException("PerformanceConfirmedSong does not belong to team performance");
+			throw new BusinessException(ErrorCode.PERFORMANCE_CONFIRMED_SONG_NOT_IN_TEAM_PERFORMANCE, "PerformanceConfirmedSong does not belong to team performance");
 		}
 
 		return savedPerformanceConfirmedSong.getSong();
@@ -255,7 +257,7 @@ public class TeamService {
 	 */
 	private void validatePerformanceExists(Long performanceId) {
 		if (!performanceRepository.existsById(performanceId)) {
-			throw new IllegalArgumentException("Performance not found: " + performanceId);
+			throw new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND, "Performance not found: " + performanceId);
 		}
 	}
 
@@ -264,7 +266,7 @@ public class TeamService {
 	 */
 	private void validateTeamExists(Long teamId) {
 		if (!teamRepository.existsById(teamId)) {
-			throw new IllegalArgumentException("Team not found: " + teamId);
+			throw new BusinessException(ErrorCode.TEAM_NOT_FOUND, "Team not found: " + teamId);
 		}
 	}
 
@@ -273,12 +275,12 @@ public class TeamService {
 	 */
 	private InputLink getUsableLink(String token) {
 		InputLink inputLink = inputLinkRepository.findByToken(token)
-				.orElseThrow(() -> new IllegalArgumentException("InputLink not found: " + token));
+				.orElseThrow(() -> new BusinessException(ErrorCode.INPUT_LINK_NOT_FOUND, "InputLink not found: " + token));
 		if (!inputLink.isActive()) {
-			throw new IllegalArgumentException("InputLink is inactive");
+			throw new BusinessException(ErrorCode.INPUT_LINK_INACTIVE, "InputLink is inactive");
 		}
 		if (inputLink.getExpiresAt() != null && inputLink.getExpiresAt().isBefore(LocalDateTime.now())) {
-			throw new IllegalArgumentException("InputLink is expired");
+			throw new BusinessException(ErrorCode.LINK_EXPIRED, "InputLink is expired");
 		}
 		return inputLink;
 	}
@@ -292,7 +294,7 @@ public class TeamService {
 				return;
 			}
 		}
-		throw new IllegalArgumentException("InputLink type is not allowed");
+		throw new BusinessException(ErrorCode.INVALID_INPUT_LINK_TYPE, "InputLink type is not allowed");
 	}
 
 	/**
@@ -302,7 +304,7 @@ public class TeamService {
 		Long linkPerformanceId = inputLink.getPerformance().getId();
 		Long teamPerformanceId = team.getPerformance().getId();
 		if (!linkPerformanceId.equals(teamPerformanceId)) {
-			throw new IllegalArgumentException("Team does not belong to link performance");
+			throw new BusinessException(ErrorCode.TEAM_NOT_IN_LINK_PERFORMANCE, "Team does not belong to link performance");
 		}
 	}
 

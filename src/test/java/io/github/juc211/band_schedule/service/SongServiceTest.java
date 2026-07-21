@@ -13,6 +13,7 @@ import io.github.juc211.band_schedule.domain.Team;
 import io.github.juc211.band_schedule.domain.User;
 import io.github.juc211.band_schedule.domain.Vote;
 import io.github.juc211.band_schedule.dto.SongDto;
+import io.github.juc211.band_schedule.exception.BusinessException;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
@@ -153,7 +154,7 @@ class SongServiceTest {
 				inputLink.getToken(),
 				new SongDto.SongRequestCreateRequest(null, performanceMember.getId(), "Song A - Artist A")
 		))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("InputLink is expired");
 	}
 
@@ -240,7 +241,7 @@ class SongServiceTest {
 				songRequest.getId(),
 				new SongDto.SongRequestUpdateRequest(otherTeam.getId(), "After Song - Artist B")
 		))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("Team does not belong to song request performance");
 	}
 
@@ -402,7 +403,7 @@ class SongServiceTest {
 				inputLink.getToken(),
 				new SongDto.SongVoteSubmitRequest(otherPerformanceSongRequest.getId(), voterMember.getId(), Vote.POSSIBLE, "가능")
 		))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("SongRequest does not belong to link performance");
 	}
 
@@ -425,7 +426,7 @@ class SongServiceTest {
 				inputLink.getToken(),
 				new SongDto.SongRequestCreateRequest(otherTeam.getId(), performanceMember.getId(), "Song A - Artist A")
 		))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("Team does not belong to link performance");
 	}
 
@@ -447,7 +448,7 @@ class SongServiceTest {
 				inputLink.getToken(),
 				new SongDto.SongRequestCreateRequest(null, otherPerformanceMember.getId(), "Song A - Artist A")
 		))
-				.isInstanceOf(IllegalArgumentException.class)
+				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("PerformanceMember does not belong to link performance");
 	}
 }

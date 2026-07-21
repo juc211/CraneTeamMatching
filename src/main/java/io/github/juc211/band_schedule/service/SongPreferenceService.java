@@ -7,6 +7,8 @@ import io.github.juc211.band_schedule.domain.PerformanceConfirmedSong;
 import io.github.juc211.band_schedule.domain.PerformanceMember;
 import io.github.juc211.band_schedule.domain.SongPreference;
 import io.github.juc211.band_schedule.dto.SongPreferenceDto;
+import io.github.juc211.band_schedule.exception.BusinessException;
+import io.github.juc211.band_schedule.exception.ErrorCode;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.PerformanceConfirmedSongRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
@@ -42,9 +44,9 @@ public class SongPreferenceService {
 			SongPreferenceDto.SongPreferenceSubmitRequest request
 	) {
 		InputLink inputLink = inputLinkRepository.findByToken(token)
-				.orElseThrow(() -> new IllegalArgumentException("InputLink not found: " + token));
+				.orElseThrow(() -> new BusinessException(ErrorCode.INPUT_LINK_NOT_FOUND, "InputLink not found: " + token));
 		PerformanceMember performanceMember = performanceMemberRepository.findById(request.performanceMemberId())
-				.orElseThrow(() -> new IllegalArgumentException("PerformanceMember not found: " + request.performanceMemberId()));
+				.orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_MEMBER_NOT_FOUND, "PerformanceMember not found: " + request.performanceMemberId()));
 
 		validateUsableLink(inputLink);
 		validateLinkType(inputLink, InputLinkType.SONG_PREFERENCE);
@@ -82,7 +84,7 @@ public class SongPreferenceService {
 	) {
 		validatePerformanceExists(performanceId);
 		PerformanceMember performanceMember = performanceMemberRepository.findById(performanceMemberId)
-				.orElseThrow(() -> new IllegalArgumentException("PerformanceMember not found: " + performanceMemberId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_MEMBER_NOT_FOUND, "PerformanceMember not found: " + performanceMemberId));
 		validatePerformanceMemberBelongsToPerformance(performanceId, performanceMember);
 
 		return songPreferenceRepository
@@ -122,7 +124,7 @@ public class SongPreferenceService {
 	 */
 	public void deleteSongPreference(Long songPreferenceId) {
 		SongPreference songPreference = songPreferenceRepository.findById(songPreferenceId)
-				.orElseThrow(() -> new IllegalArgumentException("SongPreference not found: " + songPreferenceId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.SONG_PREFERENCE_NOT_FOUND, "SongPreference not found: " + songPreferenceId));
 
 		songPreferenceRepository.delete(songPreference);
 	}
@@ -140,7 +142,7 @@ public class SongPreferenceService {
 				.map(preference -> {
 					validateSongPreferenceItemRequest(preference, confirmedSongIds);
 					PerformanceConfirmedSong confirmedSong = performanceConfirmedSongRepository.findById(preference.performanceConfirmedSongId())
-							.orElseThrow(() -> new IllegalArgumentException("PerformanceConfirmedSong not found: " + preference.performanceConfirmedSongId()));
+							.orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_CONFIRMED_SONG_NOT_FOUND, "PerformanceConfirmedSong not found: " + preference.performanceConfirmedSongId()));
 					validateConfirmedSongBelongsToPerformance(performance, confirmedSong);
 					return SongPreference.create(confirmedSong, performanceMember, preference.rank());
 				})
@@ -163,7 +165,7 @@ public class SongPreferenceService {
 				.collect(Collectors.toSet());
 
 		if (!submittedConfirmedSongIds.equals(requiredConfirmedSongIds)) {
-			throw new IllegalArgumentException("Song preference must be submitted for all performance confirmed songs");
+			throw new BusinessException(ErrorCode.SONG_PREFERENCE_ALL_CONFIRMED_SONGS_REQUIRED, "Song preference must be submitted for all performance confirmed songs");
 		}
 	}
 
@@ -175,16 +177,16 @@ public class SongPreferenceService {
 			Set<Long> confirmedSongIds
 	) {
 		if (preference == null) {
-			throw new IllegalArgumentException("Song preference item is required");
+			throw new BusinessException(ErrorCode.SONG_PREFERENCE_ITEM_REQUIRED, "Song preference item is required");
 		}
 		if (preference.performanceConfirmedSongId() == null) {
-			throw new IllegalArgumentException("PerformanceConfirmedSong id is required");
+			throw new BusinessException(ErrorCode.PERFORMANCE_CONFIRMED_SONG_ID_REQUIRED, "PerformanceConfirmedSong id is required");
 		}
 		if (preference.rank() == null || preference.rank() < 1) {
-			throw new IllegalArgumentException("Song preference rank must be positive");
+			throw new BusinessException(ErrorCode.SONG_PREFERENCE_RANK_INVALID, "Song preference rank must be positive");
 		}
 		if (!confirmedSongIds.add(preference.performanceConfirmedSongId())) {
-			throw new IllegalArgumentException("Song preference cannot contain duplicate confirmed song");
+			throw new BusinessException(ErrorCode.DUPLICATE_SONG_PREFERENCE_CONFIRMED_SONG, "Song preference cannot contain duplicate confirmed song");
 		}
 	}
 
@@ -193,10 +195,10 @@ public class SongPreferenceService {
 	 */
 	private void validateUsableLink(InputLink inputLink) {
 		if (!inputLink.isActive()) {
-			throw new IllegalArgumentException("InputLink is inactive");
+			throw new BusinessException(ErrorCode.INPUT_LINK_INACTIVE, "InputLink is inactive");
 		}
 		if (inputLink.getExpiresAt() != null && inputLink.getExpiresAt().isBefore(LocalDateTime.now())) {
-			throw new IllegalArgumentException("InputLink is expired");
+			throw new BusinessException(ErrorCode.LINK_EXPIRED, "InputLink is expired");
 		}
 	}
 
@@ -205,7 +207,7 @@ public class SongPreferenceService {
 	 */
 	private void validateLinkType(InputLink inputLink, InputLinkType expectedType) {
 		if (inputLink.getType() != expectedType) {
-			throw new IllegalArgumentException("InputLink type must be " + expectedType);
+			throw new BusinessException(ErrorCode.INVALID_INPUT_LINK_TYPE, "InputLink type must be " + expectedType);
 		}
 	}
 
@@ -214,7 +216,7 @@ public class SongPreferenceService {
 	 */
 	private void validatePerformanceExists(Long performanceId) {
 		if (!performanceRepository.existsById(performanceId)) {
-			throw new IllegalArgumentException("Performance not found: " + performanceId);
+			throw new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND, "Performance not found: " + performanceId);
 		}
 	}
 
@@ -230,7 +232,7 @@ public class SongPreferenceService {
 	 */
 	private void validatePerformanceMemberBelongsToPerformance(Long performanceId, PerformanceMember performanceMember) {
 		if (!performanceMember.getPerformance().getId().equals(performanceId)) {
-			throw new IllegalArgumentException("PerformanceMember does not belong to performance");
+			throw new BusinessException(ErrorCode.PERFORMANCE_MEMBER_NOT_IN_PERFORMANCE, "PerformanceMember does not belong to performance");
 		}
 	}
 
@@ -239,7 +241,7 @@ public class SongPreferenceService {
 	 */
 	private void validateConfirmedSongBelongsToPerformance(Performance performance, PerformanceConfirmedSong confirmedSong) {
 		if (!confirmedSong.getPerformance().getId().equals(performance.getId())) {
-			throw new IllegalArgumentException("PerformanceConfirmedSong does not belong to performance");
+			throw new BusinessException(ErrorCode.PERFORMANCE_CONFIRMED_SONG_NOT_IN_PERFORMANCE, "PerformanceConfirmedSong does not belong to performance");
 		}
 	}
 

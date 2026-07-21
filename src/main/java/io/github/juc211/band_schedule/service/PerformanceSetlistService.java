@@ -4,6 +4,8 @@ import io.github.juc211.band_schedule.domain.Performance;
 import io.github.juc211.band_schedule.domain.PerformanceSetlistItem;
 import io.github.juc211.band_schedule.domain.Team;
 import io.github.juc211.band_schedule.dto.PerformanceSetlistDto;
+import io.github.juc211.band_schedule.exception.BusinessException;
+import io.github.juc211.band_schedule.exception.ErrorCode;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
 import io.github.juc211.band_schedule.repository.PerformanceSetlistItemRepository;
 import io.github.juc211.band_schedule.repository.TeamRepository;
@@ -31,7 +33,7 @@ public class PerformanceSetlistService {
 			PerformanceSetlistDto.PerformanceSetlistReplaceRequest request
 	) {
 		Performance performance = performanceRepository.findById(performanceId)
-				.orElseThrow(() -> new IllegalArgumentException("Performance not found: " + performanceId));
+				.orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND, "Performance not found: " + performanceId));
 
 		List<PerformanceSetlistDto.PerformanceSetlistItemRequest> items = request.items() == null
 				? List.of()
@@ -83,7 +85,7 @@ public class PerformanceSetlistService {
 				.map(item -> {
 					validateSetlistItemRequest(item, teamIds, sequenceNumbers);
 					Team team = teamRepository.findById(item.teamId())
-							.orElseThrow(() -> new IllegalArgumentException("Team not found: " + item.teamId()));
+							.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_NOT_FOUND, "Team not found: " + item.teamId()));
 					validateTeamBelongsToPerformance(performance, team);
 					return PerformanceSetlistItem.create(performance, team, item.sequenceNumber());
 				})
@@ -99,19 +101,19 @@ public class PerformanceSetlistService {
 			Set<Integer> sequenceNumbers
 	) {
 		if (item == null) {
-			throw new IllegalArgumentException("Setlist item is required");
+			throw new BusinessException(ErrorCode.SETLIST_ITEM_REQUIRED, "Setlist item is required");
 		}
 		if (item.teamId() == null) {
-			throw new IllegalArgumentException("Setlist team id is required");
+			throw new BusinessException(ErrorCode.SETLIST_TEAM_ID_REQUIRED, "Setlist team id is required");
 		}
 		if (item.sequenceNumber() == null || item.sequenceNumber() < 1) {
-			throw new IllegalArgumentException("Setlist sequence number must be positive");
+			throw new BusinessException(ErrorCode.SETLIST_SEQUENCE_INVALID, "Setlist sequence number must be positive");
 		}
 		if (!teamIds.add(item.teamId())) {
-			throw new IllegalArgumentException("Setlist cannot contain duplicate team");
+			throw new BusinessException(ErrorCode.DUPLICATE_SETLIST_TEAM, "Setlist cannot contain duplicate team");
 		}
 		if (!sequenceNumbers.add(item.sequenceNumber())) {
-			throw new IllegalArgumentException("Setlist cannot contain duplicate sequence number");
+			throw new BusinessException(ErrorCode.DUPLICATE_SETLIST_SEQUENCE, "Setlist cannot contain duplicate sequence number");
 		}
 	}
 
@@ -120,7 +122,7 @@ public class PerformanceSetlistService {
 	 */
 	private void validateTeamBelongsToPerformance(Performance performance, Team team) {
 		if (!team.getPerformance().getId().equals(performance.getId())) {
-			throw new IllegalArgumentException("Team does not belong to performance");
+			throw new BusinessException(ErrorCode.TEAM_NOT_IN_PERFORMANCE, "Team does not belong to performance");
 		}
 	}
 
@@ -129,7 +131,7 @@ public class PerformanceSetlistService {
 	 */
 	private void validatePerformanceExists(Long performanceId) {
 		if (!performanceRepository.existsById(performanceId)) {
-			throw new IllegalArgumentException("Performance not found: " + performanceId);
+			throw new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND, "Performance not found: " + performanceId);
 		}
 	}
 
