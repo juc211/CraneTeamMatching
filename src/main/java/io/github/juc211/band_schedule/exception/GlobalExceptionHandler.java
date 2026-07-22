@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
-@RestControllerAdvice // 모든 @RestController에서 발생하는 예외를 가로채서 처리합니다.
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     /**
