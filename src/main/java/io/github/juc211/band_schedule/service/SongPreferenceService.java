@@ -43,27 +43,38 @@ public class SongPreferenceService {
 			String token,
 			SongPreferenceDto.SongPreferenceSubmitRequest request
 	) {
+		// 링크, 부원 조회
 		InputLink inputLink = inputLinkRepository.findByToken(token)
 				.orElseThrow(() -> new BusinessException(ErrorCode.INPUT_LINK_NOT_FOUND, "InputLink not found: " + token));
 		PerformanceMember performanceMember = performanceMemberRepository.findById(request.performanceMemberId())
 				.orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_MEMBER_NOT_FOUND, "PerformanceMember not found: " + request.performanceMemberId()));
 
+		// 링크 상태, 타입, 소속 공연 검증
 		validateUsableLink(inputLink);
 		validateLinkType(inputLink, InputLinkType.SONG_PREFERENCE);
 		validatePerformanceMemberBelongsToLinkPerformance(inputLink, performanceMember);
 
+
+		// null 차단 - request.preferences() (raw 데이터)가 null이 아닐경우 preference로 변환
 		List<SongPreferenceDto.SongPreferenceItemRequest> preferences = request.preferences() == null
-				? List.of()
+				? List.of() // null일 경우 NPE를 막기위해 빈 List로 치환
 				: request.preferences();
+
+		// Entity 변환
 		List<SongPreference> songPreferences = validateAndCreateSongPreferences(inputLink.getPerformance(), performanceMember, preferences);
+
+		// 모든 확정곡 제출 여부 검증
 		validateAllConfirmedSongsAreSubmitted(inputLink.getPerformance().getId(), preferences);
 
+		// 기존 선호도 데이터 삭제 (재제출 처리)
 		songPreferenceRepository.deleteByPerformanceMemberIdAndPerformanceConfirmedSongPerformanceId(
 				performanceMember.getId(),
 				inputLink.getPerformance().getId()
 		);
+		// 새 선호도 일괄 저장
 		songPreferenceRepository.saveAll(songPreferences);
 
+		//dto 변환
 		return songPreferenceRepository
 				.findByPerformanceMemberIdAndPerformanceConfirmedSongPerformanceIdOrderByPerformanceConfirmedSongIdAsc(
 						performanceMember.getId(),

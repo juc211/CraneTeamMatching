@@ -32,7 +32,7 @@ public class AvailableTimeService {
 	private final InputLinkRepository inputLinkRepository;
 
 	/**
-	 * 팀원 가능 시간 목록 전체 저장/교체
+	 * 팀원 가능 시간 목록 전체 저장/교체 - (관리자용)
 	 */
 	public List<AvailableTimeDto.AvailableTimeResponse> replaceAvailableTimesByTeamMember(
 			Long teamMemberId,
@@ -45,7 +45,7 @@ public class AvailableTimeService {
 	}
 
 	/**
-	 * 링크 기반 팀원 가능 시간 목록 전체 저장/교체
+	 * 링크 기반 팀원 가능 시간 목록 전체 저장/교체 -(유저용)
 	 */
 	public List<AvailableTimeDto.AvailableTimeResponse> replaceAvailableTimesByTeamMember(
 			String token,
@@ -57,8 +57,13 @@ public class AvailableTimeService {
 		TeamMember teamMember = teamMemberRepository.findById(teamMemberId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_MEMBER_NOT_FOUND, "TeamMember not found: " + teamMemberId));
 
+		// 링크 사용 여부 검증
 		validateUsableLink(inputLink);
+
+		// 접근한 링크가 AVAILABLE_TIME 인지 검증
 		validateLinkType(inputLink, InputLinkType.AVAILABLE_TIME);
+
+		// 접근한 링크의 공연과 해당 팀원이 속한 공연이 같은지 검증
 		validateSamePerformance(inputLink, teamMember);
 
 		return replaceAvailableTimes(teamMember, request);
@@ -71,16 +76,20 @@ public class AvailableTimeService {
 			TeamMember teamMember,
 			AvailableTimeDto.AvailableTimesReplaceRequest request
 	) {
+		// Null방지
 		List<AvailableTimeDto.AvailableTimeRequest> availableTimeRequests = request.availableTimes() == null
 				? List.of()
 				: request.availableTimes();
 
+		// List를 순회하며 가능 시간이 합주 기간에 있는지 검증
 		availableTimeRequests.forEach(availableTimeRequest ->
 				validateWithinScheduleWindow(teamMember, availableTimeRequest.startDateTime(), availableTimeRequest.endDateTime())
 		);
 
+		// 해당 팀원이 이전에 제출했던 가능 시간 데이터를 일괄 삭제
 		availabilityRepository.deleteByTeamMemberId(teamMember.getId());
 
+		// 엔티티 생성, 저장 및 Response DTO 변환
 		return availabilityRepository.saveAll(
 						availableTimeRequests.stream()
 								.map(availableTimeRequest -> AvailableTime.create(

@@ -37,8 +37,12 @@ public class FinalScheduleService {
 		Team team = teamRepository.findById(teamId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_NOT_FOUND, "Team not found: " + teamId));
 
+		// 합주 일정이 다른 팀과 중복되지 않는지 검증
+		// 세 번째 파라미터 null의 의미: 일정 수정(Update) 시에는 "자기 자신의 일정 ID"를 넘겨주어 본인을 제외하고 겹침을 검사함
+		// 지금은 신규 생성(Create)이므로 비교에서 제외할 기존 ID가 없어 null을 넘겨줌
 		validateNoOverlap(request.startDateTime(), request.endDateTime(), null);
 
+		// FinalSchedule에 팀 일정 반영
 		FinalSchedule savedFinalSchedule = finalScheduleRepository.save(
 				FinalSchedule.create(team, request.startDateTime(), request.endDateTime(), request.memo())
 		);
@@ -112,6 +116,7 @@ public class FinalScheduleService {
 		FinalSchedule finalSchedule = finalScheduleRepository.findById(finalScheduleId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.FINAL_SCHEDULE_NOT_FOUND, "FinalSchedule not found: " + finalScheduleId));
 
+		//최종 합주 일정 겹침 여부 검증
 		validateNoOverlap(request.startDateTime(), request.endDateTime(), finalSchedule.getId());
 
 		finalSchedule.update(request.startDateTime(), request.endDateTime(), request.memo());

@@ -20,7 +20,7 @@ public class AvailableTimeController {
 	private final AvailableTimeService availableTimeService;
 
 	/**
-	 * 팀원 가능 시간 목록 전체 저장/교체/삭제(빈 배열 넣으면 삭제로 인식)
+	 * 팀원 가능 시간 목록 전체 저장/교체/삭제(빈 배열 넣으면 삭제로 인식) - (관리자용)
 	 */
 	@PutMapping("/team-members/{teamMemberId}/available-times")
 	public ResponseEntity<List<AvailableTimeDto.AvailableTimeResponse>> replaceAvailableTimesByTeamMember(
@@ -31,7 +31,7 @@ public class AvailableTimeController {
 	}
 
 	/**
-	 * 링크 기반 팀원 가능 시간 목록 전체 저장/교체
+	 * 링크 기반 팀원 가능 시간 목록 전체 저장/교체 - (유저용)
 	 */
 	@PutMapping("/input-links/{token}/team-members/{teamMemberId}/available-times")
 	public ResponseEntity<List<AvailableTimeDto.AvailableTimeResponse>> replaceAvailableTimesByTeamMember(
