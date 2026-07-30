@@ -37,15 +37,24 @@ public class SongService {
 	 * 희망곡 신청
 	 */
 	public SongDto.SongRequestResponse createSongRequest(String token, SongDto.SongRequestCreateRequest request) {
+		// 검증
 		InputLink inputLink = inputLinkRepository.findByToken(token)
 				.orElseThrow(() -> new BusinessException(ErrorCode.INPUT_LINK_NOT_FOUND, "InputLink not found: " + token));
 		PerformanceMember requestedByMember = performanceMemberRepository.findById(request.requestedByMemberId())
 				.orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_MEMBER_NOT_FOUND, "PerformanceMember not found: " + request.requestedByMemberId()));
 
+		// 링크 사용 여부 검증
 		validateUsableLink(inputLink);
+
+		// 링크 타입 검증
 		validateLinkType(inputLink, InputLinkType.SONG_REQUEST);
+
+		// 링크 공연과 공연 참여 인원 공연 일치 여부 검증
 		validateSamePerformance(inputLink, requestedByMember);
+
 		Team selectedTeam = getSelectedTeam(request.teamId());
+
+		//팀이 공연에 속하는지 검증
 		validateTeamBelongsToLinkPerformance(inputLink, selectedTeam);
 
 		SongRequest savedSongRequest = songRequestRepository.save(SongRequest.create(

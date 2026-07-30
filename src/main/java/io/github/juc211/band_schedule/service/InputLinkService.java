@@ -45,6 +45,7 @@ public class InputLinkService {
 		}
 
 		InputLink savedInputLink = inputLinkRepository.save(InputLink.create(
+				// generateUniqueToken - 토큰 생성 메서드
 				generateUniqueToken(),
 				performance,
 				request.type(),
@@ -110,9 +111,13 @@ public class InputLinkService {
 		InputLink inputLink = inputLinkRepository.findByToken(token)
 				.orElseThrow(() -> new BusinessException(ErrorCode.INPUT_LINK_NOT_FOUND, "InputLink not found: " + token));
 
+		// 링크 사용 가능 여부 검증
 		validateUsableLink(inputLink);
+
+		// 사용자 입력 링크 타입 여부 검증
 		validateInputLinkType(inputLink);
 
+		// 이름 + 학번 + 공연ID로 본인 식별
 		PerformanceMember performanceMember = performanceMemberRepository
 				.findByPerformanceIdAndUserNameAndUserStudentNumber(
 						inputLink.getPerformance().getId(),
@@ -121,6 +126,7 @@ public class InputLinkService {
 				)
 				.orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_MEMBER_NOT_FOUND, "PerformanceMember not found by name and student number"));
 
+		//식별된 부원이 속한 팀 목록 조회 후 응답 반환
 		return toInputLinkIdentifyResponse(inputLink, performanceMember);
 	}
 
