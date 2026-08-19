@@ -4,7 +4,7 @@ import io.github.juc211.band_schedule.domain.AvailableTime;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface AvailabilityRepository extends JpaRepository<AvailableTime, Long> {
+public interface AvailableTimeRepository extends JpaRepository<AvailableTime, Long> {
 
 	List<AvailableTime> findByTeamMemberIdOrderByStartDateTimeAscIdAsc(Long teamMemberId);
 

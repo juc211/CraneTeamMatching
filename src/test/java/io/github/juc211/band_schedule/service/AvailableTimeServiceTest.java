@@ -14,7 +14,7 @@ import io.github.juc211.band_schedule.domain.TeamMember;
 import io.github.juc211.band_schedule.domain.User;
 import io.github.juc211.band_schedule.dto.AvailableTimeDto;
 import io.github.juc211.band_schedule.exception.BusinessException;
-import io.github.juc211.band_schedule.repository.AvailabilityRepository;
+import io.github.juc211.band_schedule.repository.AvailableTimeRepository;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
@@ -39,7 +39,7 @@ class AvailableTimeServiceTest {
 	private AvailableTimeService availableTimeService;
 
 	@Autowired
-	private AvailabilityRepository availabilityRepository;
+	private AvailableTimeRepository availableTimeRepository;
 
 	@Autowired
 	private PerformanceRepository performanceRepository;
@@ -74,7 +74,7 @@ class AvailableTimeServiceTest {
 		);
 
 		AvailableTimeDto.AvailableTimeResponse response = responses.get(0);
-		AvailableTime savedAvailableTime = availabilityRepository.findById(response.availableTimeId()).orElseThrow();
+		AvailableTime savedAvailableTime = availableTimeRepository.findById(response.availableTimeId()).orElseThrow();
 		assertThat(responses).hasSize(1);
 		assertThat(response.teamMemberId()).isEqualTo(teamMember.getId());
 		assertThat(response.name()).isEqualTo("Kim Vocal");
@@ -85,7 +85,7 @@ class AvailableTimeServiceTest {
 	@Test
 	void replaceAvailableTimesByTeamMemberReplacesExistingAvailableTimes() {
 		TeamMember teamMember = createTeamMemberWithScheduleWindow();
-		AvailableTime existingAvailableTime = availabilityRepository.save(AvailableTime.create(
+		AvailableTime existingAvailableTime = availableTimeRepository.save(AvailableTime.create(
 				teamMember,
 				LocalDateTime.of(2026, 8, 1, 15, 0),
 				LocalDateTime.of(2026, 8, 1, 18, 0)
@@ -107,7 +107,7 @@ class AvailableTimeServiceTest {
 				)
 		);
 
-		assertThat(availabilityRepository.findById(existingAvailableTime.getId())).isEmpty();
+		assertThat(availableTimeRepository.findById(existingAvailableTime.getId())).isEmpty();
 		assertThat(responses)
 				.extracting(AvailableTimeDto.AvailableTimeResponse::startDateTime)
 				.containsExactly(
@@ -119,7 +119,7 @@ class AvailableTimeServiceTest {
 	@Test
 	void replaceAvailableTimesByTeamMemberClearsAvailableTimesWhenEmptyListIsSubmitted() {
 		TeamMember teamMember = createTeamMemberWithScheduleWindow();
-		availabilityRepository.save(AvailableTime.create(
+		availableTimeRepository.save(AvailableTime.create(
 				teamMember,
 				LocalDateTime.of(2026, 8, 1, 15, 0),
 				LocalDateTime.of(2026, 8, 1, 18, 0)
@@ -131,7 +131,7 @@ class AvailableTimeServiceTest {
 		);
 
 		assertThat(responses).isEmpty();
-		assertThat(availabilityRepository.findByTeamMemberIdOrderByStartDateTimeAscIdAsc(teamMember.getId())).isEmpty();
+		assertThat(availableTimeRepository.findByTeamMemberIdOrderByStartDateTimeAscIdAsc(teamMember.getId())).isEmpty();
 	}
 
 	@Test
@@ -269,12 +269,12 @@ class AvailableTimeServiceTest {
 	@Test
 	void getAvailableTimesByTeamMemberReturnsAvailableTimesInOrder() {
 		TeamMember teamMember = createTeamMemberWithScheduleWindow();
-		availabilityRepository.save(AvailableTime.create(
+		availableTimeRepository.save(AvailableTime.create(
 				teamMember,
 				LocalDateTime.of(2026, 8, 2, 16, 0),
 				LocalDateTime.of(2026, 8, 2, 20, 0)
 		));
-		availabilityRepository.save(AvailableTime.create(
+		availableTimeRepository.save(AvailableTime.create(
 				teamMember,
 				LocalDateTime.of(2026, 8, 1, 15, 0),
 				LocalDateTime.of(2026, 8, 1, 18, 0)
@@ -291,7 +291,7 @@ class AvailableTimeServiceTest {
 	@Test
 	void getAvailableTimesByTeamReturnsTeamAvailableTimes() {
 		TeamMember teamMember = createTeamMemberWithScheduleWindow();
-		availabilityRepository.save(AvailableTime.create(
+		availableTimeRepository.save(AvailableTime.create(
 				teamMember,
 				LocalDateTime.of(2026, 8, 1, 15, 0),
 				LocalDateTime.of(2026, 8, 1, 18, 0)
@@ -319,17 +319,17 @@ class AvailableTimeServiceTest {
 		TeamMember guitar = createTeamMember(performance, team, "Choi Guitar", "20261235", Part.GUITAR);
 		TeamMember drum = createTeamMember(performance, team, "Park Drum", "20261236", Part.DRUM);
 
-		availabilityRepository.save(AvailableTime.create(
+		availableTimeRepository.save(AvailableTime.create(
 				vocal,
 				LocalDateTime.of(2026, 8, 1, 15, 0),
 				LocalDateTime.of(2026, 8, 1, 18, 0)
 		));
-		availabilityRepository.save(AvailableTime.create(
+		availableTimeRepository.save(AvailableTime.create(
 				guitar,
 				LocalDateTime.of(2026, 8, 1, 16, 0),
 				LocalDateTime.of(2026, 8, 1, 19, 0)
 		));
-		availabilityRepository.save(AvailableTime.create(
+		availableTimeRepository.save(AvailableTime.create(
 				drum,
 				LocalDateTime.of(2026, 8, 1, 14, 0),
 				LocalDateTime.of(2026, 8, 1, 17, 0)
@@ -358,7 +358,7 @@ class AvailableTimeServiceTest {
 		Team team = teamRepository.save(Team.create(performance, "Team A", "Song A"));
 		TeamMember vocal = createTeamMember(performance, team, "Kim Vocal", "20261234", Part.VOCAL);
 		createTeamMember(performance, team, "Choi Guitar", "20261235", Part.GUITAR);
-		availabilityRepository.save(AvailableTime.create(
+		availableTimeRepository.save(AvailableTime.create(
 				vocal,
 				LocalDateTime.of(2026, 8, 1, 15, 0),
 				LocalDateTime.of(2026, 8, 1, 18, 0)

@@ -37,7 +37,9 @@ public class FinalScheduleService {
 		Team team = teamRepository.findById(teamId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_NOT_FOUND, "Team not found: " + teamId));
 
-		// 합주 일정이 다른 팀과 중복되지 않는지 검증
+		// 모든 공연이 하나의 동아리방을 공유하므로, 공연이 달라도 최종 합주 일정은 서로 겹칠 수 없다.
+		// 따라서 전체 FinalSchedule을 기준으로 시간 충돌을 검증한다.
+
 		// 세 번째 파라미터 null의 의미: 일정 수정(Update) 시에는 "자기 자신의 일정 ID"를 넘겨주어 본인을 제외하고 겹침을 검사함
 		// 지금은 신규 생성(Create)이므로 비교에서 제외할 기존 ID가 없어 null을 넘겨줌
 		validateNoOverlap(request.startDateTime(), request.endDateTime(), null);
@@ -142,9 +144,6 @@ public class FinalScheduleService {
 			LocalDateTime endDateTime,
 			Long excludedFinalScheduleId
 	) {
-		if (startDateTime == null || endDateTime == null) {
-			throw new BusinessException(ErrorCode.FINAL_SCHEDULE_DATES_REQUIRED_TOGETHER, "Final schedule start and end date time must be set together");
-		}
 		if (!startDateTime.isBefore(endDateTime)) {
 			throw new BusinessException(ErrorCode.FINAL_SCHEDULE_START_NOT_BEFORE_END, "Final schedule start date time must be before end date time");
 		}

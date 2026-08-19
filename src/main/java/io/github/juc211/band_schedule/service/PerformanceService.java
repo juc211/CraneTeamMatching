@@ -8,7 +8,7 @@ import io.github.juc211.band_schedule.domain.InputLinkType;
 import io.github.juc211.band_schedule.dto.PerformanceDto;
 import io.github.juc211.band_schedule.exception.BusinessException;
 import io.github.juc211.band_schedule.exception.ErrorCode;
-import io.github.juc211.band_schedule.repository.AvailabilityRepository;
+import io.github.juc211.band_schedule.repository.AvailableTimeRepository;
 import io.github.juc211.band_schedule.repository.FinalScheduleRepository;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.PerformanceConfirmedSongRepository;
@@ -39,7 +39,7 @@ public class PerformanceService {
     private final PerformanceRepository performanceRepository;
     private final PerformanceMemberRepository performanceMemberRepository;
     private final UserRepository userRepository;
-    private final AvailabilityRepository availabilityRepository;
+    private final AvailableTimeRepository availableTimeRepository;
     private final FinalScheduleRepository finalScheduleRepository;
     private final TeamRepository teamRepository;
     private final TeamMemberRepository teamMemberRepository;
@@ -202,7 +202,7 @@ public class PerformanceService {
      * 공연 합주 기간 삭제 가능 여부 검증
      */
     private void validateScheduleWindowCanBeDeleted(Long performanceId) {
-        if (availabilityRepository.existsByTeamMemberTeamPerformanceId(performanceId)) {
+        if (availableTimeRepository.existsByTeamMemberTeamPerformanceId(performanceId)) {
             throw new BusinessException(ErrorCode.SCHEDULE_WINDOW_DELETE_BLOCKED_BY_AVAILABLE_TIMES, "Cannot delete schedule window because available times exist");
         }
         if (finalScheduleRepository.existsByTeamPerformanceId(performanceId)) {
@@ -308,7 +308,7 @@ public class PerformanceService {
         songRequestRepository.deleteByRequestedByMemberId(performanceMemberId);
         songVoteRepository.deleteByVoterMemberId(performanceMemberId);
         songPreferenceRepository.deleteByPerformanceMemberId(performanceMemberId);
-        availabilityRepository.deleteByTeamMemberPerformanceMemberId(performanceMemberId);
+        availableTimeRepository.deleteByTeamMemberPerformanceMemberId(performanceMemberId);
         teamMemberRepository.deleteByPerformanceMemberId(performanceMemberId);
         performanceMemberRepository.delete(performanceMember);
     }
@@ -327,7 +327,7 @@ public class PerformanceService {
         performanceSetlistItemRepository.deleteByPerformanceId(performanceId);
         songVoteRepository.deleteBySongRequestPerformanceId(performanceId);
         songRequestRepository.deleteByPerformanceId(performanceId);
-        availabilityRepository.deleteByTeamMemberTeamPerformanceId(performanceId);
+        availableTimeRepository.deleteByTeamMemberTeamPerformanceId(performanceId);
         teamMemberRepository.deleteByTeamPerformanceId(performanceId);
         teamRepository.deleteByPerformanceId(performanceId);
         performanceMemberRepository.deleteByPerformanceId(performanceId);

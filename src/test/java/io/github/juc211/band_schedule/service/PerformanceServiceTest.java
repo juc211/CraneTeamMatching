@@ -19,7 +19,7 @@ import io.github.juc211.band_schedule.domain.User;
 import io.github.juc211.band_schedule.domain.Vote;
 import io.github.juc211.band_schedule.dto.PerformanceDto;
 import io.github.juc211.band_schedule.exception.BusinessException;
-import io.github.juc211.band_schedule.repository.AvailabilityRepository;
+import io.github.juc211.band_schedule.repository.AvailableTimeRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
 import io.github.juc211.band_schedule.repository.FinalScheduleRepository;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
@@ -60,7 +60,7 @@ class PerformanceServiceTest {
 	private TeamMemberRepository teamMemberRepository;
 
 	@Autowired
-	private AvailabilityRepository availabilityRepository;
+	private AvailableTimeRepository availableTimeRepository;
 
 	@Autowired
 	private UserRepository userRepository;
@@ -275,7 +275,7 @@ class PerformanceServiceTest {
 		PerformanceMember performanceMember = performanceMemberRepository.save(PerformanceMember.create(performance, user));
 		Team team = teamRepository.save(Team.create(performance, "Team A", "Song A"));
 		TeamMember teamMember = teamMemberRepository.save(TeamMember.create(team, performanceMember, Part.VOCAL));
-		availabilityRepository.save(AvailableTime.create(
+		availableTimeRepository.save(AvailableTime.create(
 				teamMember,
 				LocalDateTime.of(2026, 8, 1, 15, 0),
 				LocalDateTime.of(2026, 8, 1, 18, 0)
@@ -331,7 +331,7 @@ class PerformanceServiceTest {
 		PerformanceMember performanceMember = performanceMemberRepository.save(PerformanceMember.create(performance, user));
 		Team team = teamRepository.save(Team.create(performance, "Team A", "Song A"));
 		TeamMember teamMember = teamMemberRepository.save(TeamMember.create(team, performanceMember, Part.VOCAL));
-		AvailableTime availableTime = availabilityRepository.save(AvailableTime.create(
+		AvailableTime availableTime = availableTimeRepository.save(AvailableTime.create(
 				teamMember,
 				LocalDateTime.of(2026, 8, 1, 15, 0),
 				LocalDateTime.of(2026, 8, 1, 18, 0)
@@ -343,7 +343,7 @@ class PerformanceServiceTest {
 
 		assertThat(songVoteRepository.findById(songVote.getId())).isEmpty();
 		assertThat(songRequestRepository.findById(songRequest.getId())).isEmpty();
-		assertThat(availabilityRepository.findById(availableTime.getId())).isEmpty();
+		assertThat(availableTimeRepository.findById(availableTime.getId())).isEmpty();
 		assertThat(teamMemberRepository.findById(teamMember.getId())).isEmpty();
 		assertThat(performanceMemberRepository.findById(performanceMember.getId())).isEmpty();
 		assertThat(userRepository.findById(user.getId())).isPresent();
@@ -363,7 +363,7 @@ class PerformanceServiceTest {
 		TeamMember teamMember = teamMemberRepository.save(TeamMember.create(team, performanceMember, Part.VOCAL));
 		InputLink inputLink = inputLinkRepository.save(InputLink.create("available-token", performance, InputLinkType.AVAILABLE_TIME, true, null));
 		PerformanceConfirmedSong confirmedSong = performanceConfirmedSongRepository.save(PerformanceConfirmedSong.create(performance, "Song A - Artist A"));
-		AvailableTime availableTime = availabilityRepository.save(AvailableTime.create(
+		AvailableTime availableTime = availableTimeRepository.save(AvailableTime.create(
 				teamMember,
 				LocalDateTime.of(2026, 8, 1, 15, 0),
 				LocalDateTime.of(2026, 8, 1, 18, 0)
@@ -384,7 +384,7 @@ class PerformanceServiceTest {
 		assertThat(finalScheduleRepository.findById(finalSchedule.getId())).isEmpty();
 		assertThat(songVoteRepository.findById(songVote.getId())).isEmpty();
 		assertThat(songRequestRepository.findById(songRequest.getId())).isEmpty();
-		assertThat(availabilityRepository.findById(availableTime.getId())).isEmpty();
+		assertThat(availableTimeRepository.findById(availableTime.getId())).isEmpty();
 		assertThat(teamMemberRepository.findById(teamMember.getId())).isEmpty();
 		assertThat(teamRepository.findById(team.getId())).isEmpty();
 		assertThat(performanceMemberRepository.findById(performanceMember.getId())).isEmpty();

@@ -11,7 +11,7 @@ import io.github.juc211.band_schedule.dto.TeamDto;
 import io.github.juc211.band_schedule.exception.BusinessException;
 import io.github.juc211.band_schedule.exception.ErrorCode;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
-import io.github.juc211.band_schedule.repository.AvailabilityRepository;
+import io.github.juc211.band_schedule.repository.AvailableTimeRepository;
 import io.github.juc211.band_schedule.repository.FinalScheduleRepository;
 import io.github.juc211.band_schedule.repository.PerformanceConfirmedSongRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
@@ -38,7 +38,7 @@ public class TeamService {
 	private final PerformanceMemberRepository performanceMemberRepository;
 	private final TeamMemberRepository teamMemberRepository;
 	private final InputLinkRepository inputLinkRepository;
-	private final AvailabilityRepository availabilityRepository;
+	private final AvailableTimeRepository availableTimeRepository;
 	private final FinalScheduleRepository finalScheduleRepository;
 	private final SongRequestRepository songRequestRepository;
 	private final SongVoteRepository songVoteRepository;
@@ -203,7 +203,7 @@ public class TeamService {
 		TeamMember teamMember = teamMemberRepository.findById(teamMemberId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_MEMBER_NOT_FOUND, "TeamMember not found: " + teamMemberId));
 
-		availabilityRepository.deleteByTeamMemberId(teamMemberId);
+		availableTimeRepository.deleteByTeamMemberId(teamMemberId);
 		teamMemberRepository.delete(teamMember);
 	}
 
@@ -218,7 +218,7 @@ public class TeamService {
 		performanceSetlistItemRepository.deleteByTeamId(teamId);
 		songVoteRepository.deleteBySongRequestTeamId(teamId);
 		songRequestRepository.deleteByTeamId(teamId);
-		availabilityRepository.deleteByTeamMemberTeamId(teamId);
+		availableTimeRepository.deleteByTeamMemberTeamId(teamId);
 		teamMemberRepository.deleteByTeamId(teamId);
 		teamRepository.delete(team);
 	}
