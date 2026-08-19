@@ -3,6 +3,8 @@ package io.github.juc211.band_schedule.controller;
 import io.github.juc211.band_schedule.dto.FinalScheduleDto;
 import io.github.juc211.band_schedule.service.FinalScheduleService;
 import java.util.List;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +30,7 @@ public class FinalScheduleController {
 	@PostMapping("/teams/{teamId}/final-schedules")
 	public ResponseEntity<FinalScheduleDto.FinalScheduleResponse> createFinalSchedule(
 			@PathVariable Long teamId,
-			@RequestBody FinalScheduleDto.FinalScheduleCreateRequest request
+			@Valid @RequestBody FinalScheduleDto.FinalScheduleCreateRequest request
 	) {
 		FinalScheduleDto.FinalScheduleResponse response = finalScheduleService.createFinalSchedule(teamId, request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -75,7 +77,7 @@ public class FinalScheduleController {
 	@PatchMapping("/final-schedules/{finalScheduleId}")
 	public ResponseEntity<FinalScheduleDto.FinalScheduleResponse> updateFinalSchedule(
 			@PathVariable Long finalScheduleId,
-			@RequestBody FinalScheduleDto.FinalScheduleUpdateRequest request
+			@Valid @RequestBody FinalScheduleDto.FinalScheduleUpdateRequest request
 	) {
 		return ResponseEntity.ok(finalScheduleService.updateFinalSchedule(finalScheduleId, request));
 	}

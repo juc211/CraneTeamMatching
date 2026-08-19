@@ -8,7 +8,7 @@ import io.github.juc211.band_schedule.domain.TeamMember;
 import io.github.juc211.band_schedule.dto.AvailableTimeDto;
 import io.github.juc211.band_schedule.exception.BusinessException;
 import io.github.juc211.band_schedule.exception.ErrorCode;
-import io.github.juc211.band_schedule.repository.AvailabilityRepository;
+import io.github.juc211.band_schedule.repository.AvailableTimeRepository;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.TeamRepository;
 import io.github.juc211.band_schedule.repository.TeamMemberRepository;
@@ -26,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AvailableTimeService {
 
-	private final AvailabilityRepository availabilityRepository;
+	private final AvailableTimeRepository availableTimeRepository;
 	private final TeamMemberRepository teamMemberRepository;
 	private final TeamRepository teamRepository;
 	private final InputLinkRepository inputLinkRepository;
@@ -87,10 +87,10 @@ public class AvailableTimeService {
 		);
 
 		// 해당 팀원이 이전에 제출했던 가능 시간 데이터를 일괄 삭제
-		availabilityRepository.deleteByTeamMemberId(teamMember.getId());
+		availableTimeRepository.deleteByTeamMemberId(teamMember.getId());
 
 		// 엔티티 생성, 저장 및 Response DTO 변환
-		return availabilityRepository.saveAll(
+		return availableTimeRepository.saveAll(
 						availableTimeRequests.stream()
 								.map(availableTimeRequest -> AvailableTime.create(
 										teamMember,
@@ -111,7 +111,7 @@ public class AvailableTimeService {
 	public List<AvailableTimeDto.AvailableTimeResponse> getAvailableTimesByTeamMember(Long teamMemberId) {
 		validateTeamMemberExists(teamMemberId);
 
-		return availabilityRepository.findByTeamMemberIdOrderByStartDateTimeAscIdAsc(teamMemberId)
+		return availableTimeRepository.findByTeamMemberIdOrderByStartDateTimeAscIdAsc(teamMemberId)
 				.stream()
 				.map(this::toAvailableTimeResponse)
 				.toList();
@@ -131,7 +131,7 @@ public class AvailableTimeService {
 		validateLinkType(inputLink, InputLinkType.AVAILABLE_TIME);
 		validateSamePerformance(inputLink, teamMember);
 
-		return availabilityRepository.findByTeamMemberIdOrderByStartDateTimeAscIdAsc(teamMemberId)
+		return availableTimeRepository.findByTeamMemberIdOrderByStartDateTimeAscIdAsc(teamMemberId)
 				.stream()
 				.map(this::toAvailableTimeResponse)
 				.toList();
@@ -144,7 +144,7 @@ public class AvailableTimeService {
 	public List<AvailableTimeDto.AvailableTimeResponse> getAvailableTimesByTeam(Long teamId) {
 		validateTeamExists(teamId);
 
-		return availabilityRepository.findByTeamMemberTeamIdOrderByStartDateTimeAscIdAsc(teamId)
+		return availableTimeRepository.findByTeamMemberTeamIdOrderByStartDateTimeAscIdAsc(teamId)
 				.stream()
 				.map(this::toAvailableTimeResponse)
 				.toList();
@@ -268,7 +268,7 @@ public class AvailableTimeService {
 	 * 팀원 가능 시간 목록 병합 정규화
 	 */
 	private List<TimeRange> getNormalizedAvailableTimeRanges(Long teamMemberId) {
-		List<TimeRange> sortedRanges = availabilityRepository.findByTeamMemberIdOrderByStartDateTimeAscIdAsc(teamMemberId)
+		List<TimeRange> sortedRanges = availableTimeRepository.findByTeamMemberIdOrderByStartDateTimeAscIdAsc(teamMemberId)
 				.stream()
 				.map(availableTime -> new TimeRange(availableTime.getStartDateTime(), availableTime.getEndDateTime()))
 				.sorted(Comparator.comparing(TimeRange::startDateTime).thenComparing(TimeRange::endDateTime))

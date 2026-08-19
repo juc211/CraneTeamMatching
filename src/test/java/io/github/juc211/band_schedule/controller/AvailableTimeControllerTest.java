@@ -14,7 +14,7 @@ import io.github.juc211.band_schedule.domain.PerformanceMember;
 import io.github.juc211.band_schedule.domain.Team;
 import io.github.juc211.band_schedule.domain.TeamMember;
 import io.github.juc211.band_schedule.domain.User;
-import io.github.juc211.band_schedule.repository.AvailabilityRepository;
+import io.github.juc211.band_schedule.repository.AvailableTimeRepository;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
@@ -42,7 +42,7 @@ class AvailableTimeControllerTest {
 	private MockMvc mockMvc;
 
 	@Autowired
-	private AvailabilityRepository availabilityRepository;
+	private AvailableTimeRepository availableTimeRepository;
 
 	@Autowired
 	private PerformanceRepository performanceRepository;
@@ -96,7 +96,7 @@ class AvailableTimeControllerTest {
 	@Test
 	void getAvailableTimesByTeamMemberReturnsOkStatus() throws Exception {
 		TeamMember teamMember = createTeamMemberWithScheduleWindow();
-		AvailableTime availableTime = availabilityRepository.save(AvailableTime.create(
+		AvailableTime availableTime = availableTimeRepository.save(AvailableTime.create(
 				teamMember,
 				LocalDateTime.of(2026, 8, 1, 15, 0),
 				LocalDateTime.of(2026, 8, 1, 18, 0)
@@ -113,7 +113,7 @@ class AvailableTimeControllerTest {
 	@Test
 	void getAvailableTimesByTeamReturnsOkStatus() throws Exception {
 		TeamMember teamMember = createTeamMemberWithScheduleWindow();
-		availabilityRepository.save(AvailableTime.create(
+		availableTimeRepository.save(AvailableTime.create(
 				teamMember,
 				LocalDateTime.of(2026, 8, 1, 15, 0),
 				LocalDateTime.of(2026, 8, 1, 18, 0)
@@ -138,17 +138,17 @@ class AvailableTimeControllerTest {
 		TeamMember vocal = createTeamMember(performance, team, "Kim Vocal", "20261234", Part.VOCAL);
 		TeamMember guitar = createTeamMember(performance, team, "Choi Guitar", "20261235", Part.GUITAR);
 		TeamMember drum = createTeamMember(performance, team, "Park Drum", "20261236", Part.DRUM);
-		availabilityRepository.save(AvailableTime.create(
+		availableTimeRepository.save(AvailableTime.create(
 				vocal,
 				LocalDateTime.of(2026, 8, 1, 15, 0),
 				LocalDateTime.of(2026, 8, 1, 18, 0)
 		));
-		availabilityRepository.save(AvailableTime.create(
+		availableTimeRepository.save(AvailableTime.create(
 				guitar,
 				LocalDateTime.of(2026, 8, 1, 16, 0),
 				LocalDateTime.of(2026, 8, 1, 19, 0)
 		));
-		availabilityRepository.save(AvailableTime.create(
+		availableTimeRepository.save(AvailableTime.create(
 				drum,
 				LocalDateTime.of(2026, 8, 1, 14, 0),
 				LocalDateTime.of(2026, 8, 1, 17, 0)
@@ -166,7 +166,7 @@ class AvailableTimeControllerTest {
 	@Test
 	void replaceAvailableTimesByTeamMemberCanClearAvailableTimes() throws Exception {
 		TeamMember teamMember = createTeamMemberWithScheduleWindow();
-		availabilityRepository.save(AvailableTime.create(
+		availableTimeRepository.save(AvailableTime.create(
 				teamMember,
 				LocalDateTime.of(2026, 8, 1, 15, 0),
 				LocalDateTime.of(2026, 8, 1, 18, 0)

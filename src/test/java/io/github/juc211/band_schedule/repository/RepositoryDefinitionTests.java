@@ -17,7 +17,7 @@ class RepositoryDefinitionTests {
 
 	@Test
 	void remainingEntityRepositoriesExtendJpaRepositoryWithLongId() {
-		assertJpaRepositoryWithDeclaredMethodCount(AvailabilityRepository.class, AvailableTime.class, 7);
+		assertJpaRepositoryWithDeclaredMethodCount(AvailableTimeRepository.class, AvailableTime.class, 7);
 		assertJpaRepositoryWithDeclaredMethodCount(PerformanceConfirmedSongRepository.class, PerformanceConfirmedSong.class, 2);
 		assertJpaRepositoryWithDeclaredMethodCount(PerformanceSetlistItemRepository.class, PerformanceSetlistItem.class, 3);
 		assertJpaRepositoryWithDeclaredMethodCount(FinalScheduleRepository.class, FinalSchedule.class, 6);
