@@ -2,6 +2,7 @@ package io.github.juc211.band_schedule.controller;
 
 import io.github.juc211.band_schedule.dto.SongDto;
 import io.github.juc211.band_schedule.service.SongService;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,7 +29,7 @@ public class SongController {
 	@PostMapping("/song-requests/{token}")
 	public ResponseEntity<SongDto.SongRequestResponse> createSongRequest(
 			@PathVariable String token,
-			@RequestBody SongDto.SongRequestCreateRequest request
+			@Valid @RequestBody SongDto.SongRequestCreateRequest request
 	) {
 		SongDto.SongRequestResponse response = songService.createSongRequest(token, request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -75,7 +76,7 @@ public class SongController {
 	@PatchMapping("/song-requests/{songRequestId}")
 	public ResponseEntity<SongDto.SongRequestResponse> updateSongRequest(
 			@PathVariable Long songRequestId,
-			@RequestBody SongDto.SongRequestUpdateRequest request
+			@Valid @RequestBody SongDto.SongRequestUpdateRequest request
 	) {
 		return ResponseEntity.ok(songService.updateSongRequest(songRequestId, request));
 	}
@@ -95,7 +96,7 @@ public class SongController {
 	@PostMapping("/song-vote/{token}")
 	public ResponseEntity<SongDto.SongVoteResponse> submitSongVote(
 			@PathVariable String token,
-			@RequestBody SongDto.SongVoteSubmitRequest request
+			@Valid @RequestBody SongDto.SongVoteSubmitRequest request
 	) {
 		SongDto.SongVoteResponse response = songService.submitSongVote(token, request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);

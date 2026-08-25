@@ -1,12 +1,24 @@
 package io.github.juc211.band_schedule.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.List;
 
 public abstract class PerformanceDto {
     public record PerformanceCreateRequest(
+            @NotBlank(message = "공연 제목은 필수입니다.")
+            @Size(max = 100, message = "공연 제목은 100자 이하여야 합니다.")
             String title,
+
+            @NotNull(message = "공연일은 필수입니다.")
             LocalDate performanceDate,
+
+            @NotBlank(message = "공연 장소는 필수입니다.")
+            @Size(max = 100, message = "공연 장소는 100자 이하여야 합니다.")
             String location,
             LocalDate scheduleWindowStartDate,
             LocalDate scheduleWindowEndDate
@@ -24,8 +36,15 @@ public abstract class PerformanceDto {
     }
 
     public record PerformanceUpdateRequest(
+            @NotBlank(message = "공연 제목은 필수입니다.")
+            @Size(max = 100, message = "공연 제목은 100자 이하여야 합니다.")
             String title,
+
+            @NotNull(message = "공연일은 필수입니다.")
             LocalDate performanceDate,
+
+            @NotBlank(message = "공연 장소는 필수입니다.")
+            @Size(max = 100, message = "공연 장소는 100자 이하여야 합니다.")
             String location,
             LocalDate scheduleWindowStartDate,
             LocalDate scheduleWindowEndDate
@@ -63,7 +82,8 @@ public abstract class PerformanceDto {
     }
 
     public record PerformanceMemberAddRequest(
-            List<Long> userIds
+            @NotEmpty(message = "유저 ID 목록은 필수입니다.")
+            List<@NotNull(message = "유저 ID는 필수입니다.") @Positive(message = "유저 ID는 양수여야 합니다.") Long> userIds
     ) {
 
     }

@@ -2,6 +2,7 @@ package io.github.juc211.band_schedule.controller;
 
 import io.github.juc211.band_schedule.dto.PerformanceDto;
 import io.github.juc211.band_schedule.service.PerformanceService;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,7 +26,7 @@ public class PerformanceController {
      * 공연 생성
      */
     @PostMapping
-    public ResponseEntity<PerformanceDto.PerformanceCreateResponse> createPerformance(@RequestBody PerformanceDto.PerformanceCreateRequest request) {
+    public ResponseEntity<PerformanceDto.PerformanceCreateResponse> createPerformance(@Valid @RequestBody PerformanceDto.PerformanceCreateRequest request) {
         PerformanceDto.PerformanceCreateResponse response = performanceService.createPerformance(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -52,7 +53,7 @@ public class PerformanceController {
     @PatchMapping("/{performanceId}")
     public ResponseEntity<PerformanceDto.PerformanceResponse> updatePerformance(
             @PathVariable Long performanceId,
-            @RequestBody PerformanceDto.PerformanceUpdateRequest request
+            @Valid @RequestBody PerformanceDto.PerformanceUpdateRequest request
     ) {
         return ResponseEntity.ok(performanceService.updatePerformance(performanceId, request));
     }
@@ -80,7 +81,7 @@ public class PerformanceController {
     @PatchMapping("/{performanceId}/schedule-window")
     public ResponseEntity<PerformanceDto.PerformanceResponse> updatePerformanceScheduleWindow(
             @PathVariable Long performanceId,
-            @RequestBody PerformanceDto.PerformanceScheduleWindowUpdateRequest request
+            @Valid @RequestBody PerformanceDto.PerformanceScheduleWindowUpdateRequest request
     ) {
         return ResponseEntity.ok(performanceService.updatePerformanceScheduleWindow(performanceId, request));
     }
@@ -100,7 +101,7 @@ public class PerformanceController {
     @PostMapping("/{performanceId}/members")
     public ResponseEntity<PerformanceDto.PerformanceMemberAddResponse> addPerformanceMembers(
             @PathVariable Long performanceId,
-            @RequestBody PerformanceDto.PerformanceMemberAddRequest request
+            @Valid @RequestBody PerformanceDto.PerformanceMemberAddRequest request
     ) {
         PerformanceDto.PerformanceMemberAddResponse response = performanceService.addPerformanceMembers(performanceId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);

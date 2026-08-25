@@ -279,15 +279,8 @@ public class PerformanceService {
      * 공연 참여 인원 추가 요청 검증
      */
     private void validatePerformanceMemberAddRequest(Long performanceId, List<Long> userIds) {
-        if (userIds == null || userIds.isEmpty()) {
-            throw new BusinessException(ErrorCode.USER_IDS_REQUIRED, "User ids are required");
-        }
-
         Set<Long> requestedUserIds = new HashSet<>();
         for (Long userId : userIds) {
-            if (userId == null) {
-                throw new BusinessException(ErrorCode.USER_ID_REQUIRED, "User id is required");
-            }
             if (!requestedUserIds.add(userId)) {
                 throw new BusinessException(ErrorCode.DUPLICATE_USER_ID_IN_REQUEST, "Duplicate user id in performance member request: " + userId);
             }

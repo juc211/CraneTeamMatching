@@ -2,6 +2,7 @@ package io.github.juc211.band_schedule.controller;
 
 import io.github.juc211.band_schedule.dto.UserSessionDto;
 import io.github.juc211.band_schedule.service.UserSessionService;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,7 +28,7 @@ public class UserSessionController {
 	@PostMapping("/users/{userId}/sessions")
 	public ResponseEntity<UserSessionDto.UserSessionResponse> createUserSession(
 			@PathVariable Long userId,
-			@RequestBody UserSessionDto.UserSessionCreateRequest request
+			@Valid @RequestBody UserSessionDto.UserSessionCreateRequest request
 	) {
 		UserSessionDto.UserSessionResponse response = userSessionService.createUserSession(userId, request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);

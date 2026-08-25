@@ -98,9 +98,6 @@ public class UserService {
 		User user = userRepository.findById(userId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND, "User not found: " + userId));
 
-		if (request.status() == null) {
-			throw new BusinessException(ErrorCode.USER_STATUS_REQUIRED, "User status is required");
-		}
 		user.updateStatus(request.status());
 
 		return toUserResponse(user);

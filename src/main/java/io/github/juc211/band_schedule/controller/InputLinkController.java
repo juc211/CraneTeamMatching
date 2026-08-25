@@ -4,6 +4,7 @@ import io.github.juc211.band_schedule.dto.InputLinkDto;
 import io.github.juc211.band_schedule.dto.PerformanceDto;
 import io.github.juc211.band_schedule.service.InputLinkService;
 import io.github.juc211.band_schedule.service.PerformanceService;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -31,7 +32,7 @@ public class InputLinkController {
 	@PostMapping("/performances/{performanceId}/input-links")
 	public ResponseEntity<InputLinkDto.InputLinkResponse> createInputLink(
 			@PathVariable Long performanceId,
-			@RequestBody InputLinkDto.InputLinkCreateRequest request
+			@Valid @RequestBody InputLinkDto.InputLinkCreateRequest request
 	) {
 		InputLinkDto.InputLinkResponse response = inputLinkService.createInputLink(performanceId, request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -51,7 +52,7 @@ public class InputLinkController {
 	@PatchMapping("/input-links/{inputLinkId}/active")
 	public ResponseEntity<InputLinkDto.InputLinkResponse> updateInputLinkActive(
 			@PathVariable Long inputLinkId,
-			@RequestBody InputLinkDto.InputLinkActiveUpdateRequest request
+			@Valid @RequestBody InputLinkDto.InputLinkActiveUpdateRequest request
 	) {
 		return ResponseEntity.ok(inputLinkService.updateInputLinkActive(inputLinkId, request));
 	}
@@ -62,7 +63,7 @@ public class InputLinkController {
 	@PatchMapping("/input-links/{inputLinkId}/expires-at")
 	public ResponseEntity<InputLinkDto.InputLinkResponse> updateInputLinkExpiresAt(
 			@PathVariable Long inputLinkId,
-			@RequestBody InputLinkDto.InputLinkExpiresAtUpdateRequest request
+			@Valid @RequestBody InputLinkDto.InputLinkExpiresAtUpdateRequest request
 	) {
 		return ResponseEntity.ok(inputLinkService.updateInputLinkExpiresAt(inputLinkId, request));
 	}
@@ -106,7 +107,7 @@ public class InputLinkController {
 	@PostMapping("/input-links/{token}/identify")
 	public ResponseEntity<InputLinkDto.InputLinkIdentifyResponse> identifyPerformanceMember(
 			@PathVariable String token,
-			@RequestBody InputLinkDto.InputLinkIdentifyRequest request
+			@Valid @RequestBody InputLinkDto.InputLinkIdentifyRequest request
 	) {
 		return ResponseEntity.ok(inputLinkService.identifyPerformanceMember(token, request));
 	}

@@ -2,6 +2,7 @@ package io.github.juc211.band_schedule.controller;
 
 import io.github.juc211.band_schedule.dto.PerformanceConfirmedSongDto;
 import io.github.juc211.band_schedule.service.PerformanceConfirmedSongService;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -31,7 +32,7 @@ public class PerformanceConfirmedSongController {
 	@PostMapping("/performances/{performanceId}/performance-confirmed-songs")
 	public ResponseEntity<PerformanceConfirmedSongDto.PerformanceConfirmedSongResponse> createPerformanceConfirmedSong(
 			@PathVariable Long performanceId,
-			@RequestBody PerformanceConfirmedSongDto.PerformanceConfirmedSongCreateRequest request
+			@Valid @RequestBody PerformanceConfirmedSongDto.PerformanceConfirmedSongCreateRequest request
 	) {
 		PerformanceConfirmedSongDto.PerformanceConfirmedSongResponse response = performanceConfirmedSongService.createPerformanceConfirmedSong(performanceId, request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -59,7 +60,7 @@ public class PerformanceConfirmedSongController {
 	@PatchMapping("/performance-confirmed-songs/{performanceConfirmedSongId}")
 	public ResponseEntity<PerformanceConfirmedSongDto.PerformanceConfirmedSongResponse> updatePerformanceConfirmedSong(
 			@PathVariable Long performanceConfirmedSongId,
-			@RequestBody PerformanceConfirmedSongDto.PerformanceConfirmedSongUpdateRequest request
+			@Valid @RequestBody PerformanceConfirmedSongDto.PerformanceConfirmedSongUpdateRequest request
 	) {
 		return ResponseEntity.ok(performanceConfirmedSongService.updatePerformanceConfirmedSong(performanceConfirmedSongId, request));
 	}

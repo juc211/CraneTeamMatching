@@ -2,6 +2,7 @@ package io.github.juc211.band_schedule.controller;
 
 import io.github.juc211.band_schedule.dto.TeamDto;
 import io.github.juc211.band_schedule.service.TeamService;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,7 +29,7 @@ public class TeamController {
 	@PostMapping("/performances/{performanceId}/teams")
 	public ResponseEntity<TeamDto.TeamResponse> createTeam(
 			@PathVariable Long performanceId,
-			@RequestBody TeamDto.TeamCreateRequest request
+			@Valid @RequestBody TeamDto.TeamCreateRequest request
 	) {
 		TeamDto.TeamResponse response = teamService.createTeam(performanceId, request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -40,7 +41,7 @@ public class TeamController {
 	@PatchMapping("/teams/{teamId}")
 	public ResponseEntity<TeamDto.TeamResponse> updateTeam(
 			@PathVariable Long teamId,
-			@RequestBody TeamDto.TeamUpdateRequest request
+			@Valid @RequestBody TeamDto.TeamUpdateRequest request
 	) {
 		return ResponseEntity.ok(teamService.updateTeam(teamId, request));
 	}
@@ -59,7 +60,7 @@ public class TeamController {
 	@PatchMapping("/teams/{teamId}/confirmed-song")
 	public ResponseEntity<TeamDto.TeamResponse> updateTeamConfirmedSong(
 			@PathVariable Long teamId,
-			@RequestBody TeamDto.TeamConfirmedSongUpdateRequest request
+			@Valid @RequestBody TeamDto.TeamConfirmedSongUpdateRequest request
 	) {
 		return ResponseEntity.ok(teamService.updateTeamConfirmedSong(teamId, request));
 	}
@@ -95,7 +96,7 @@ public class TeamController {
 	@PostMapping("/teams/{teamId}/members")
 	public ResponseEntity<TeamDto.TeamMemberResponse> addTeamMember(
 			@PathVariable Long teamId,
-			@RequestBody TeamDto.TeamMemberAddRequest request
+			@Valid @RequestBody TeamDto.TeamMemberAddRequest request
 	) {
 		TeamDto.TeamMemberResponse response = teamService.addTeamMember(teamId, request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -107,7 +108,7 @@ public class TeamController {
 	@PatchMapping("/team-members/{teamMemberId}")
 	public ResponseEntity<TeamDto.TeamMemberResponse> updateTeamMember(
 			@PathVariable Long teamMemberId,
-			@RequestBody TeamDto.TeamMemberUpdateRequest request
+			@Valid @RequestBody TeamDto.TeamMemberUpdateRequest request
 	) {
 		return ResponseEntity.ok(teamService.updateTeamMember(teamMemberId, request));
 	}

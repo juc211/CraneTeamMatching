@@ -12,7 +12,6 @@ import io.github.juc211.band_schedule.repository.PerformanceRepository;
 import io.github.juc211.band_schedule.repository.PerformanceSetlistItemRepository;
 import io.github.juc211.band_schedule.repository.TeamRepository;
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,18 +109,6 @@ class PerformanceSetlistServiceTest {
 		))
 				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("Setlist cannot contain duplicate sequence number");
-	}
-
-	@Test
-	void replaceSetlistRejectsNullItem() {
-		Performance performance = createPerformance();
-
-		assertThatThrownBy(() -> performanceSetlistService.replaceSetlist(
-				performance.getId(),
-				new PerformanceSetlistDto.PerformanceSetlistReplaceRequest(Collections.singletonList(null))
-		))
-				.isInstanceOf(BusinessException.class)
-				.hasMessageContaining("Setlist item is required");
 	}
 
 	@Test

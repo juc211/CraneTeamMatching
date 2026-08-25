@@ -2,6 +2,7 @@ package io.github.juc211.band_schedule.controller;
 
 import io.github.juc211.band_schedule.dto.AvailableTimeDto;
 import io.github.juc211.band_schedule.service.AvailableTimeService;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ public class AvailableTimeController {
 	@PutMapping("/team-members/{teamMemberId}/available-times")
 	public ResponseEntity<List<AvailableTimeDto.AvailableTimeResponse>> replaceAvailableTimesByTeamMember(
 			@PathVariable Long teamMemberId,
-			@RequestBody AvailableTimeDto.AvailableTimesReplaceRequest request
+			@Valid @RequestBody AvailableTimeDto.AvailableTimesReplaceRequest request
 	) {
 		return ResponseEntity.ok(availableTimeService.replaceAvailableTimesByTeamMember(teamMemberId, request));
 	}
@@ -37,7 +38,7 @@ public class AvailableTimeController {
 	public ResponseEntity<List<AvailableTimeDto.AvailableTimeResponse>> replaceAvailableTimesByTeamMember(
 			@PathVariable String token,
 			@PathVariable Long teamMemberId,
-			@RequestBody AvailableTimeDto.AvailableTimesReplaceRequest request
+			@Valid @RequestBody AvailableTimeDto.AvailableTimesReplaceRequest request
 	) {
 		return ResponseEntity.ok(availableTimeService.replaceAvailableTimesByTeamMember(token, teamMemberId, request));
 	}
