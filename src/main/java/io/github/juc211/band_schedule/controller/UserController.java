@@ -3,6 +3,7 @@ package io.github.juc211.band_schedule.controller;
 import io.github.juc211.band_schedule.domain.UserStatus;
 import io.github.juc211.band_schedule.dto.UserDto;
 import io.github.juc211.band_schedule.service.UserService;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,7 +29,7 @@ public class UserController {
 	 * 밴드 멤버 생성
 	 */
 	@PostMapping
-	public ResponseEntity<UserDto.UserCreateResponse> createUser(@RequestBody UserDto.UserCreateRequest request) {
+	public ResponseEntity<UserDto.UserCreateResponse> createUser(@Valid @RequestBody UserDto.UserCreateRequest request) {
 		UserDto.UserCreateResponse response = userService.createUser(request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
@@ -55,7 +56,7 @@ public class UserController {
 	@PatchMapping("/{userId}")
 	public ResponseEntity<UserDto.UserResponse> updateUser(
 			@PathVariable Long userId,
-			@RequestBody UserDto.UserUpdateRequest request
+			@Valid @RequestBody UserDto.UserUpdateRequest request
 	) {
 		return ResponseEntity.ok(userService.updateUser(userId, request));
 	}
@@ -66,7 +67,7 @@ public class UserController {
 	@PatchMapping("/{userId}/status")
 	public ResponseEntity<UserDto.UserResponse> updateUserStatus(
 			@PathVariable Long userId,
-			@RequestBody UserDto.UserStatusUpdateRequest request
+			@Valid @RequestBody UserDto.UserStatusUpdateRequest request
 	) {
 		return ResponseEntity.ok(userService.updateUserStatus(userId, request));
 	}

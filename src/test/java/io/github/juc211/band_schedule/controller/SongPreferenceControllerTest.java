@@ -83,6 +83,25 @@ class SongPreferenceControllerTest {
 	}
 
 	@Test
+	void submitSongPreferencesRejectsNullPreferenceItemByDtoValidation() throws Exception {
+		Performance performance = createPerformance();
+		InputLink inputLink = inputLinkRepository.save(InputLink.create("preference-token-validation", performance, InputLinkType.SONG_PREFERENCE, true, null));
+		PerformanceMember performanceMember = createPerformanceMember(performance, "김보컬", "20260001");
+
+		mockMvc.perform(put("/api/song-preferences/{token}", inputLink.getToken())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "performanceMemberId": %d,
+								  "preferences": [null]
+								}
+								""".formatted(performanceMember.getId())))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+				.andExpect(jsonPath("$.message").value("선호도 항목은 필수입니다."));
+	}
+
+	@Test
 	void getSongPreferenceResultsReturnsOkStatus() throws Exception {
 		Performance performance = createPerformance();
 		PerformanceMember performanceMember = createPerformanceMember(performance, "김보컬", "20260001");

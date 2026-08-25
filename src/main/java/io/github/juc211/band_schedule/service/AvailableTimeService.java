@@ -76,10 +76,7 @@ public class AvailableTimeService {
 			TeamMember teamMember,
 			AvailableTimeDto.AvailableTimesReplaceRequest request
 	) {
-		// Null방지
-		List<AvailableTimeDto.AvailableTimeRequest> availableTimeRequests = request.availableTimes() == null
-				? List.of()
-				: request.availableTimes();
+		List<AvailableTimeDto.AvailableTimeRequest> availableTimeRequests = request.availableTimes();
 
 		// List를 순회하며 가능 시간이 합주 기간에 있는지 검증
 		availableTimeRequests.forEach(availableTimeRequest ->
@@ -218,9 +215,6 @@ public class AvailableTimeService {
 
 		if (scheduleWindowStartDate == null || scheduleWindowEndDate == null) {
 			throw new BusinessException(ErrorCode.SCHEDULE_WINDOW_REQUIRED, "Performance schedule window is required to submit available time");
-		}
-		if (startDateTime == null || endDateTime == null) {
-			throw new BusinessException(ErrorCode.AVAILABLE_TIME_DATES_REQUIRED_TOGETHER, "Available time start and end date time must be set together");
 		}
 		if (!startDateTime.isBefore(endDateTime)) {
 			throw new BusinessException(ErrorCode.AVAILABLE_TIME_START_NOT_BEFORE_END, "Available time start date time must be before end date time");

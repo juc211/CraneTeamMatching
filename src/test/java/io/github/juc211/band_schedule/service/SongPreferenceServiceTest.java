@@ -19,7 +19,6 @@ import io.github.juc211.band_schedule.repository.PerformanceRepository;
 import io.github.juc211.band_schedule.repository.SongPreferenceRepository;
 import io.github.juc211.band_schedule.repository.UserRepository;
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -160,24 +159,6 @@ class SongPreferenceServiceTest {
 		))
 				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("Song preference cannot contain duplicate confirmed song");
-	}
-
-	@Test
-	void submitSongPreferencesRejectsNullPreferenceItem() {
-		Performance performance = createPerformance();
-		InputLink inputLink = inputLinkRepository.save(InputLink.create("preference-token", performance, InputLinkType.SONG_PREFERENCE, true, null));
-		PerformanceMember performanceMember = createPerformanceMember(performance, "김보컬", "20260001");
-		performanceConfirmedSongRepository.save(PerformanceConfirmedSong.create(performance, "Song A"));
-
-		assertThatThrownBy(() -> songPreferenceService.submitSongPreferences(
-				inputLink.getToken(),
-				new SongPreferenceDto.SongPreferenceSubmitRequest(
-						performanceMember.getId(),
-						Collections.singletonList(null)
-				)
-		))
-				.isInstanceOf(BusinessException.class)
-				.hasMessageContaining("Song preference item is required");
 	}
 
 	@Test

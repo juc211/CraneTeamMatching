@@ -40,10 +40,6 @@ public class InputLinkService {
 		Performance performance = performanceRepository.findById(performanceId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND, "Performance not found: " + performanceId));
 
-		if (request.type() == null) {
-			throw new BusinessException(ErrorCode.INPUT_LINK_TYPE_REQUIRED, "InputLink type is required");
-		}
-
 		InputLink savedInputLink = inputLinkRepository.save(InputLink.create(
 				// generateUniqueToken - 토큰 생성 메서드
 				generateUniqueToken(),

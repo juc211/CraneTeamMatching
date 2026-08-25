@@ -67,6 +67,22 @@ class PerformanceSetlistControllerTest {
 	}
 
 	@Test
+	void replaceSetlistRejectsNullItemByDtoValidation() throws Exception {
+		Performance performance = createPerformance();
+
+		mockMvc.perform(put("/api/performances/{performanceId}/setlist", performance.getId())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "items": [null]
+								}
+								"""))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+				.andExpect(jsonPath("$.message").value("셋리스트 항목은 필수입니다."));
+	}
+
+	@Test
 	void getSetlistReturnsOkStatus() throws Exception {
 		Performance performance = createPerformance();
 		Team firstTeam = teamRepository.save(Team.create(performance, "Team A", "Song A"));

@@ -2,6 +2,7 @@ package io.github.juc211.band_schedule.controller;
 
 import io.github.juc211.band_schedule.dto.SongPreferenceDto;
 import io.github.juc211.band_schedule.service.SongPreferenceService;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class SongPreferenceController {
 	@PutMapping("/song-preferences/{token}")
 	public ResponseEntity<List<SongPreferenceDto.SongPreferenceResponse>> submitSongPreferences(
 			@PathVariable String token,
-			@RequestBody SongPreferenceDto.SongPreferenceSubmitRequest request
+			@Valid @RequestBody SongPreferenceDto.SongPreferenceSubmitRequest request
 	) {
 		return ResponseEntity.ok(songPreferenceService.submitSongPreferences(token, request));
 	}

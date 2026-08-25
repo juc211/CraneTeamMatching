@@ -35,9 +35,7 @@ public class PerformanceSetlistService {
 		Performance performance = performanceRepository.findById(performanceId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND, "Performance not found: " + performanceId));
 
-		List<PerformanceSetlistDto.PerformanceSetlistItemRequest> items = request.items() == null
-				? List.of()
-				: request.items();
+		List<PerformanceSetlistDto.PerformanceSetlistItemRequest> items = request.items();
 		List<PerformanceSetlistItem> setlistItems = validateAndCreateSetlistItems(performance, items);
 
 		performanceSetlistItemRepository.deleteByPerformanceId(performanceId);
@@ -100,15 +98,6 @@ public class PerformanceSetlistService {
 			Set<Long> teamIds,
 			Set<Integer> sequenceNumbers
 	) {
-		if (item == null) {
-			throw new BusinessException(ErrorCode.SETLIST_ITEM_REQUIRED, "Setlist item is required");
-		}
-		if (item.teamId() == null) {
-			throw new BusinessException(ErrorCode.SETLIST_TEAM_ID_REQUIRED, "Setlist team id is required");
-		}
-		if (item.sequenceNumber() == null || item.sequenceNumber() < 1) {
-			throw new BusinessException(ErrorCode.SETLIST_SEQUENCE_INVALID, "Setlist sequence number must be positive");
-		}
 		if (!teamIds.add(item.teamId())) {
 			throw new BusinessException(ErrorCode.DUPLICATE_SETLIST_TEAM, "Setlist cannot contain duplicate team");
 		}

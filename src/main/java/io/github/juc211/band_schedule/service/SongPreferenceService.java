@@ -55,10 +55,7 @@ public class SongPreferenceService {
 		validatePerformanceMemberBelongsToLinkPerformance(inputLink, performanceMember);
 
 
-		// null 차단 - request.preferences() (raw 데이터)가 null이 아닐경우 preference로 변환
-		List<SongPreferenceDto.SongPreferenceItemRequest> preferences = request.preferences() == null
-				? List.of() // null일 경우 NPE를 막기위해 빈 List로 치환
-				: request.preferences();
+		List<SongPreferenceDto.SongPreferenceItemRequest> preferences = request.preferences();
 
 		// Entity 변환
 		List<SongPreference> songPreferences = validateAndCreateSongPreferences(inputLink.getPerformance(), performanceMember, preferences);
@@ -187,15 +184,6 @@ public class SongPreferenceService {
 			SongPreferenceDto.SongPreferenceItemRequest preference,
 			Set<Long> confirmedSongIds
 	) {
-		if (preference == null) {
-			throw new BusinessException(ErrorCode.SONG_PREFERENCE_ITEM_REQUIRED, "Song preference item is required");
-		}
-		if (preference.performanceConfirmedSongId() == null) {
-			throw new BusinessException(ErrorCode.PERFORMANCE_CONFIRMED_SONG_ID_REQUIRED, "PerformanceConfirmedSong id is required");
-		}
-		if (preference.rank() == null || preference.rank() < 1) {
-			throw new BusinessException(ErrorCode.SONG_PREFERENCE_RANK_INVALID, "Song preference rank must be positive");
-		}
 		if (!confirmedSongIds.add(preference.performanceConfirmedSongId())) {
 			throw new BusinessException(ErrorCode.DUPLICATE_SONG_PREFERENCE_CONFIRMED_SONG, "Song preference cannot contain duplicate confirmed song");
 		}

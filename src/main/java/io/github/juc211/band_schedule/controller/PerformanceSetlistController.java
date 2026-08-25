@@ -2,6 +2,7 @@ package io.github.juc211.band_schedule.controller;
 
 import io.github.juc211.band_schedule.dto.PerformanceSetlistDto;
 import io.github.juc211.band_schedule.service.PerformanceSetlistService;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class PerformanceSetlistController {
 	@PutMapping("/performances/{performanceId}/setlist")
 	public ResponseEntity<List<PerformanceSetlistDto.PerformanceSetlistItemResponse>> replaceSetlist(
 			@PathVariable Long performanceId,
-			@RequestBody PerformanceSetlistDto.PerformanceSetlistReplaceRequest request
+			@Valid @RequestBody PerformanceSetlistDto.PerformanceSetlistReplaceRequest request
 	) {
 		return ResponseEntity.ok(performanceSetlistService.replaceSetlist(performanceId, request));
 	}
