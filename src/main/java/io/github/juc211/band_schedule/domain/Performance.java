@@ -1,10 +1,7 @@
 package io.github.juc211.band_schedule.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
@@ -24,16 +21,20 @@ public class Performance {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	@Column(nullable = false, length = 100)
 	private String title;
 
+	@Column(nullable = false)
 	private LocalDate performanceDate;
 
+	@Column(nullable = false, length = 100)
 	private String location;
 
 	private LocalDate scheduleWindowStartDate;
 
 	private LocalDate scheduleWindowEndDate;
 
+	@Column(nullable = false)
 	private LocalDateTime createdAt;
 
 	public static Performance create(String title, LocalDate performanceDate, String location) {

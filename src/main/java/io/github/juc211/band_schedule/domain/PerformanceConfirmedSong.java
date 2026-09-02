@@ -1,12 +1,7 @@
 package io.github.juc211.band_schedule.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -23,12 +18,16 @@ public class PerformanceConfirmedSong {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "performance_id", nullable = false)
 	private Performance performance;
 
+	@Column(nullable = false, length = 200)
 	private String song;
 
+	@Column(length = 1000)
 	private String adminMemo;
 
+	@Column(nullable = false)
 	private LocalDateTime createdAt;
 
 	public static PerformanceConfirmedSong create(Performance performance, String song) {

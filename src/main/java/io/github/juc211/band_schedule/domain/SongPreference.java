@@ -1,18 +1,23 @@
 package io.github.juc211.band_schedule.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "song_preferences")
+@Table(
+		name = "song_preferences",
+		uniqueConstraints = {
+			@UniqueConstraint(
+				name = "uk_song_preferences_song_member",
+				columnNames = {
+					"performance_confirmed_song_id",
+					"performance_member_id"
+				}
+			)
+		}
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 /**
@@ -25,11 +30,14 @@ public class SongPreference {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "performance_confirmed_song_id", nullable = false)
 	private PerformanceConfirmedSong performanceConfirmedSong;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "performance_member_id", nullable = false)
 	private PerformanceMember performanceMember;
 
+	@Column(nullable = false)
 	private Integer rank;
 
 	public static SongPreference create(

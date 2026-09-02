@@ -1,18 +1,30 @@
 package io.github.juc211.band_schedule.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "performance_setlist_items")
+@Table(
+		name = "performance_setlist_items",
+		uniqueConstraints = {
+				@UniqueConstraint(
+						name = "uk_setlist_items_performance_team",
+						columnNames = {
+								"performance_id",
+								"team_id"
+						}
+				),
+				@UniqueConstraint(
+						name = "uk_setlist_items_performance_sequence",
+						columnNames = {
+								"performance_id",
+								"sequence_number"
+						}
+				)
+		}
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 /**
@@ -25,11 +37,14 @@ public class PerformanceSetlistItem {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "performance_id", nullable = false)
 	private Performance performance;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "team_id", nullable = false)
 	private Team team;
 
+	@Column(nullable = false)
 	private Integer sequenceNumber;
 
 	public static PerformanceSetlistItem create(Performance performance, Team team, Integer sequenceNumber) {

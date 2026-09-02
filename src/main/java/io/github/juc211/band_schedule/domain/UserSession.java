@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Table(name = "user_session")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 /**
  * 밴드 멤버에 해당하는 세션
@@ -18,10 +19,12 @@ public class UserSession {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    //세션
+    //음악세션(보컬, 기타, 드럼 등..)
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
     private Part part;
 
     public static UserSession create(User user, Part part) {

@@ -1,12 +1,7 @@
 package io.github.juc211.band_schedule.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -26,12 +21,16 @@ public class FinalSchedule {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "team_id", nullable = false)
 	private Team team;
 
+	@Column(nullable = false)
 	private LocalDateTime startDateTime;
 
+	@Column(nullable = false)
 	private LocalDateTime endDateTime;
 
+	@Column(length = 1000)
 	private String memo;
 
 	public static FinalSchedule create(Team team, LocalDateTime startDateTime, LocalDateTime endDateTime, String memo) {
