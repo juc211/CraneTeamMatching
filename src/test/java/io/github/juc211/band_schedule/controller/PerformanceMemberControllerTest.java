@@ -48,7 +48,8 @@ class PerformanceMemberControllerTest {
 		User bass = userRepository.save(User.create("Lee Bass", "20261235"));
 
 		mockMvc.perform(post("/api/performances/{performanceId}/members", performance.getId())
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken())
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "userIds": [%d, %d]

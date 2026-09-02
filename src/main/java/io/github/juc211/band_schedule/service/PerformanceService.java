@@ -58,10 +58,11 @@ public class PerformanceService {
      */
     public PerformanceDto.PerformanceCreateResponse createPerformance(PerformanceDto.PerformanceCreateRequest request) {
         Long clubId = request.clubId();
-        Club club = clubId == null
-                ? Club.create("Default Club")
-                : clubRepository.findById(clubId)
-                        .orElseThrow(() -> new BusinessException(ErrorCode.CLUB_NOT_FOUND, "Club not found: " + clubId));
+        if (clubId == null) {
+            throw new BusinessException(ErrorCode.CLUB_NOT_FOUND, "Club id is required");
+        }
+        Club club = clubRepository.findById(clubId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CLUB_NOT_FOUND, "Club not found: " + clubId));
         return createPerformance(club, request);
     }
 

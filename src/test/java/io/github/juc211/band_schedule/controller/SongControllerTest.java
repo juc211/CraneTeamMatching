@@ -171,7 +171,8 @@ class SongControllerTest {
 		);
 
 		mockMvc.perform(patch("/api/song-requests/{songRequestId}", songRequest.getId())
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken())
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "teamId": %d,

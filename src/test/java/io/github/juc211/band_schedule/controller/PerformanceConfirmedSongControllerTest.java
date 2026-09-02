@@ -49,7 +49,8 @@ class PerformanceConfirmedSongControllerTest {
 		);
 
 		mockMvc.perform(post("/api/performances/{performanceId}/performance-confirmed-songs", performance.getId())
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken())
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "song": "Confirmed Song - Artist A",
@@ -101,7 +102,8 @@ class PerformanceConfirmedSongControllerTest {
 		);
 
 		mockMvc.perform(patch("/api/performance-confirmed-songs/{performanceConfirmedSongId}", confirmedSong.getId())
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken())
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "song": "New Song",

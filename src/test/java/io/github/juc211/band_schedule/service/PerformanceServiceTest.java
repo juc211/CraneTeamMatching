@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.github.juc211.band_schedule.domain.AvailableTime;
+import io.github.juc211.band_schedule.domain.Club;
 import io.github.juc211.band_schedule.domain.FinalSchedule;
 import io.github.juc211.band_schedule.domain.InputLink;
 import io.github.juc211.band_schedule.domain.InputLinkType;
@@ -20,6 +21,7 @@ import io.github.juc211.band_schedule.domain.Vote;
 import io.github.juc211.band_schedule.dto.PerformanceDto;
 import io.github.juc211.band_schedule.exception.BusinessException;
 import io.github.juc211.band_schedule.repository.AvailableTimeRepository;
+import io.github.juc211.band_schedule.repository.ClubRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
 import io.github.juc211.band_schedule.repository.FinalScheduleRepository;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
@@ -80,15 +82,19 @@ class PerformanceServiceTest {
 	@Autowired
 	private SongVoteRepository songVoteRepository;
 
+	@Autowired
+	private ClubRepository clubRepository;
+
 	@Test
 	void createPerformancePersistsPerformanceAndReturnsResponse() {
-		PerformanceDto.PerformanceCreateRequest request = new PerformanceDto.PerformanceCreateRequest(
-				"2026 Summer Concert",
-				LocalDate.of(2026, 8, 15),
-				"Main Hall",
-				LocalDate.of(2026, 8, 1),
-				LocalDate.of(2026, 8, 14)
-		);
+			PerformanceDto.PerformanceCreateRequest request = new PerformanceDto.PerformanceCreateRequest(
+					"2026 Summer Concert",
+					LocalDate.of(2026, 8, 15),
+					"Main Hall",
+					LocalDate.of(2026, 8, 1),
+					LocalDate.of(2026, 8, 14),
+					createClub().getId()
+			);
 
 		PerformanceDto.PerformanceCreateResponse response = performanceService.createPerformance(request);
 
@@ -291,10 +297,11 @@ class PerformanceServiceTest {
 		PerformanceDto.PerformanceCreateRequest request = new PerformanceDto.PerformanceCreateRequest(
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 20),
-				"Main Hall",
-				LocalDate.of(2026, 8, 1),
-				LocalDate.of(2026, 8, 21)
-		);
+					"Main Hall",
+					LocalDate.of(2026, 8, 1),
+					LocalDate.of(2026, 8, 21),
+					createClub().getId()
+			);
 
 		assertThatThrownBy(() -> performanceService.createPerformance(request))
 				.isInstanceOf(BusinessException.class)
@@ -390,5 +397,9 @@ class PerformanceServiceTest {
 		assertThat(performanceMemberRepository.findById(performanceMember.getId())).isEmpty();
 		assertThat(performanceRepository.findById(performance.getId())).isEmpty();
 		assertThat(userRepository.findById(user.getId())).isPresent();
+	}
+
+	private Club createClub() {
+		return clubRepository.save(Club.create("Crane"));
 	}
 }

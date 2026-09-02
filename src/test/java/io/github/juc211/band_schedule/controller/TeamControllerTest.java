@@ -70,7 +70,8 @@ class TeamControllerTest {
 		);
 
 		String createdTeamResponse = mockMvc.perform(post("/api/performances/{performanceId}/teams", performance.getId())
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken())
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "name": "Team A",
@@ -87,7 +88,8 @@ class TeamControllerTest {
 		Long teamId = Long.valueOf(createdTeamResponse.replaceAll(".*\\\"teamId\\\":(\\d+).*", "$1"));
 
 		mockMvc.perform(patch("/api/teams/{teamId}", teamId)
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken())
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "name": "Team B",
@@ -110,7 +112,8 @@ class TeamControllerTest {
 		);
 
 		mockMvc.perform(post("/api/performances/{performanceId}/teams", performance.getId())
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken())
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "name": "Team A",
@@ -130,7 +133,8 @@ class TeamControllerTest {
 		Team team = teamRepository.save(Team.create(performance, "Team A", null));
 
 		mockMvc.perform(patch("/api/teams/{teamId}/confirmed-song", team.getId())
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken())
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "confirmedSong": "Confirmed Song - Artist A"
@@ -150,7 +154,8 @@ class TeamControllerTest {
 		Team team = teamRepository.save(Team.create(performance, "Team A", "Old Song"));
 
 		mockMvc.perform(patch("/api/teams/{teamId}/confirmed-song", team.getId())
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken())
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "confirmedSong": "New Song"
@@ -226,7 +231,8 @@ class TeamControllerTest {
 		Team firstTeam = teamRepository.save(Team.create(performance, "Team A", "Song A"));
 
 		mockMvc.perform(post("/api/teams/{teamId}/members", firstTeam.getId())
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken())
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "performanceMemberId": %d,

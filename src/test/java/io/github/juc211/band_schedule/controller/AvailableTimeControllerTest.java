@@ -67,7 +67,8 @@ class AvailableTimeControllerTest {
 		TeamMember teamMember = createTeamMemberWithScheduleWindow();
 
 		mockMvc.perform(put("/api/team-members/{teamMemberId}/available-times", teamMember.getId())
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Club-Admin-Token", teamMember.getTeam().getPerformance().getClub().getAdminToken())
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "availableTimes": [
@@ -173,7 +174,8 @@ class AvailableTimeControllerTest {
 		));
 
 		mockMvc.perform(put("/api/team-members/{teamMemberId}/available-times", teamMember.getId())
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Club-Admin-Token", teamMember.getTeam().getPerformance().getClub().getAdminToken())
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "availableTimes": []

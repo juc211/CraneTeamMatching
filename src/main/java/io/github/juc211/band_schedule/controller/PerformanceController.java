@@ -26,19 +26,6 @@ public class PerformanceController {
     private final AdminAuthService adminAuthService;
 
     /**
-     * 공연 생성
-     */
-    @PostMapping
-    public ResponseEntity<PerformanceDto.PerformanceCreateResponse> createPerformance(
-            @RequestHeader(value = "X-Master-Admin-Token", required = false) String masterAdminToken,
-            @Valid @RequestBody PerformanceDto.PerformanceCreateRequest request
-    ) {
-        adminAuthService.requireMasterAdmin(masterAdminToken);
-        PerformanceDto.PerformanceCreateResponse response = performanceService.createPerformance(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    /**
      * 공연 목록 조회
      */
     @GetMapping

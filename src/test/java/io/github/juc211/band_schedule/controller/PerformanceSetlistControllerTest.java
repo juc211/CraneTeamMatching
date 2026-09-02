@@ -47,7 +47,8 @@ class PerformanceSetlistControllerTest {
 		Team secondTeam = teamRepository.save(Team.create(performance, "Team B", "Song B"));
 
 		mockMvc.perform(put("/api/performances/{performanceId}/setlist", performance.getId())
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken())
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "items": [
@@ -71,7 +72,8 @@ class PerformanceSetlistControllerTest {
 		Performance performance = createPerformance();
 
 		mockMvc.perform(put("/api/performances/{performanceId}/setlist", performance.getId())
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken())
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "items": [null]
