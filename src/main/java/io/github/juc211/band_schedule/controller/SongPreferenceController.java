@@ -1,6 +1,7 @@
 package io.github.juc211.band_schedule.controller;
 
 import io.github.juc211.band_schedule.dto.SongPreferenceDto;
+import io.github.juc211.band_schedule.service.AdminAuthService;
 import io.github.juc211.band_schedule.service.SongPreferenceService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class SongPreferenceController {
 
 	private final SongPreferenceService songPreferenceService;
+	private final AdminAuthService adminAuthService;
 
 	/**
 	 * 링크 기반 확정곡 선호도 제출 및 전체 교체
@@ -55,7 +58,11 @@ public class SongPreferenceController {
 	 * 선호도 응답 삭제
 	 */
 	@DeleteMapping("/song-preferences/{songPreferenceId}")
-	public ResponseEntity<Void> deleteSongPreference(@PathVariable Long songPreferenceId) {
+	public ResponseEntity<Void> deleteSongPreference(
+			@RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
+			@PathVariable Long songPreferenceId
+	) {
+		adminAuthService.requireClubAdminForSongPreference(clubAdminToken, songPreferenceId);
 		songPreferenceService.deleteSongPreference(songPreferenceId);
 		return ResponseEntity.noContent().build();
 	}

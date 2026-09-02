@@ -61,6 +61,13 @@ class UserServiceTest {
 	}
 
 	@Test
+	void createUserRejectsInvalidStudentNumber() {
+		assertThatThrownBy(() -> userService.createUser(new UserDto.UserCreateRequest("Kim Band", "2026123A")))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("Student number must be exactly 8 digits");
+	}
+
+	@Test
 	void getUsersReturnsRegisteredUsers() {
 		userService.createUser(new UserDto.UserCreateRequest("Kim Band", "20261234"));
 		userService.createUser(new UserDto.UserCreateRequest("Lee Bass", "20261235"));
@@ -129,6 +136,20 @@ class UserServiceTest {
 		))
 				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("Student number already exists");
+	}
+
+	@Test
+	void updateUserRejectsInvalidStudentNumber() {
+		UserDto.UserCreateResponse createdUser = userService.createUser(
+				new UserDto.UserCreateRequest("Kim Band", "20261234")
+		);
+
+		assertThatThrownBy(() -> userService.updateUser(
+				createdUser.userId(),
+				new UserDto.UserUpdateRequest("Kim Band", "202612345")
+		))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("Student number must be exactly 8 digits");
 	}
 
 	@Test

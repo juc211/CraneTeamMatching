@@ -12,3 +12,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+
+admin:
+  master-token: test-master-token

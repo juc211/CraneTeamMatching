@@ -21,10 +21,15 @@ public abstract class PerformanceDto {
             @Size(max = 100, message = "공연 장소는 100자 이하여야 합니다.")
             String location,
             LocalDate scheduleWindowStartDate,
-            LocalDate scheduleWindowEndDate
+            LocalDate scheduleWindowEndDate,
+            Long clubId
     ) {
         public PerformanceCreateRequest(String title, LocalDate performanceDate, String location) {
-            this(title, performanceDate, location, null, null);
+            this(title, performanceDate, location, null, null, null);
+        }
+
+        public PerformanceCreateRequest(String title, LocalDate performanceDate, String location, LocalDate scheduleWindowStartDate, LocalDate scheduleWindowEndDate) {
+            this(title, performanceDate, location, scheduleWindowStartDate, scheduleWindowEndDate, null);
         }
 
     }

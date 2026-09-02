@@ -2,6 +2,7 @@ package io.github.juc211.band_schedule.controller;
 
 import io.github.juc211.band_schedule.dto.InputLinkDto;
 import io.github.juc211.band_schedule.dto.PerformanceDto;
+import io.github.juc211.band_schedule.service.AdminAuthService;
 import io.github.juc211.band_schedule.service.InputLinkService;
 import io.github.juc211.band_schedule.service.PerformanceService;
 import jakarta.validation.Valid;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,15 +27,18 @@ public class InputLinkController {
 
 	private final InputLinkService inputLinkService;
 	private final PerformanceService performanceService;
+	private final AdminAuthService adminAuthService;
 
 	/**
 	 * 공연 입력/조회 링크 생성
 	 */
 	@PostMapping("/performances/{performanceId}/input-links")
 	public ResponseEntity<InputLinkDto.InputLinkResponse> createInputLink(
+			@RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
 			@PathVariable Long performanceId,
 			@Valid @RequestBody InputLinkDto.InputLinkCreateRequest request
 	) {
+		adminAuthService.requireClubAdminForPerformance(clubAdminToken, performanceId);
 		InputLinkDto.InputLinkResponse response = inputLinkService.createInputLink(performanceId, request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
@@ -51,9 +56,11 @@ public class InputLinkController {
 	 */
 	@PatchMapping("/input-links/{inputLinkId}/active")
 	public ResponseEntity<InputLinkDto.InputLinkResponse> updateInputLinkActive(
+			@RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
 			@PathVariable Long inputLinkId,
 			@Valid @RequestBody InputLinkDto.InputLinkActiveUpdateRequest request
 	) {
+		adminAuthService.requireClubAdminForInputLink(clubAdminToken, inputLinkId);
 		return ResponseEntity.ok(inputLinkService.updateInputLinkActive(inputLinkId, request));
 	}
 
@@ -62,9 +69,11 @@ public class InputLinkController {
 	 */
 	@PatchMapping("/input-links/{inputLinkId}/expires-at")
 	public ResponseEntity<InputLinkDto.InputLinkResponse> updateInputLinkExpiresAt(
+			@RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
 			@PathVariable Long inputLinkId,
 			@Valid @RequestBody InputLinkDto.InputLinkExpiresAtUpdateRequest request
 	) {
+		adminAuthService.requireClubAdminForInputLink(clubAdminToken, inputLinkId);
 		return ResponseEntity.ok(inputLinkService.updateInputLinkExpiresAt(inputLinkId, request));
 	}
 
@@ -72,7 +81,11 @@ public class InputLinkController {
 	 * 링크 삭제
 	 */
 	@DeleteMapping("/input-links/{inputLinkId}")
-	public ResponseEntity<Void> deleteInputLink(@PathVariable Long inputLinkId) {
+	public ResponseEntity<Void> deleteInputLink(
+			@RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
+			@PathVariable Long inputLinkId
+	) {
+		adminAuthService.requireClubAdminForInputLink(clubAdminToken, inputLinkId);
 		inputLinkService.deleteInputLink(inputLinkId);
 		return ResponseEntity.noContent().build();
 	}

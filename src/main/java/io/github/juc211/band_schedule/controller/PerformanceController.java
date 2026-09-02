@@ -1,6 +1,7 @@
 package io.github.juc211.band_schedule.controller;
 
 import io.github.juc211.band_schedule.dto.PerformanceDto;
+import io.github.juc211.band_schedule.service.AdminAuthService;
 import io.github.juc211.band_schedule.service.PerformanceService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,12 +23,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/performances")
 public class PerformanceController {
     private final PerformanceService performanceService;
+    private final AdminAuthService adminAuthService;
 
     /**
      * 공연 생성
      */
     @PostMapping
-    public ResponseEntity<PerformanceDto.PerformanceCreateResponse> createPerformance(@Valid @RequestBody PerformanceDto.PerformanceCreateRequest request) {
+    public ResponseEntity<PerformanceDto.PerformanceCreateResponse> createPerformance(
+            @RequestHeader(value = "X-Master-Admin-Token", required = false) String masterAdminToken,
+            @Valid @RequestBody PerformanceDto.PerformanceCreateRequest request
+    ) {
+        adminAuthService.requireMasterAdmin(masterAdminToken);
         PerformanceDto.PerformanceCreateResponse response = performanceService.createPerformance(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -52,9 +59,11 @@ public class PerformanceController {
      */
     @PatchMapping("/{performanceId}")
     public ResponseEntity<PerformanceDto.PerformanceResponse> updatePerformance(
+            @RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
             @PathVariable Long performanceId,
             @Valid @RequestBody PerformanceDto.PerformanceUpdateRequest request
     ) {
+        adminAuthService.requireClubAdminForPerformance(clubAdminToken, performanceId);
         return ResponseEntity.ok(performanceService.updatePerformance(performanceId, request));
     }
 
@@ -62,7 +71,11 @@ public class PerformanceController {
      * 공연 삭제(공연 하위 데이터도 함께 삭제)
      */
     @DeleteMapping("/{performanceId}")
-    public ResponseEntity<Void> deletePerformance(@PathVariable Long performanceId) {
+    public ResponseEntity<Void> deletePerformance(
+            @RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
+            @PathVariable Long performanceId
+    ) {
+        adminAuthService.requireClubAdminForPerformance(clubAdminToken, performanceId);
         performanceService.deletePerformance(performanceId);
         return ResponseEntity.noContent().build();
     }
@@ -80,9 +93,11 @@ public class PerformanceController {
      */
     @PatchMapping("/{performanceId}/schedule-window")
     public ResponseEntity<PerformanceDto.PerformanceResponse> updatePerformanceScheduleWindow(
+            @RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
             @PathVariable Long performanceId,
             @Valid @RequestBody PerformanceDto.PerformanceScheduleWindowUpdateRequest request
     ) {
+        adminAuthService.requireClubAdminForPerformance(clubAdminToken, performanceId);
         return ResponseEntity.ok(performanceService.updatePerformanceScheduleWindow(performanceId, request));
     }
 
@@ -90,7 +105,11 @@ public class PerformanceController {
      * 공연 합주 기간 삭제
      */
     @DeleteMapping("/{performanceId}/schedule-window")
-    public ResponseEntity<Void> deletePerformanceScheduleWindow(@PathVariable Long performanceId) {
+    public ResponseEntity<Void> deletePerformanceScheduleWindow(
+            @RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
+            @PathVariable Long performanceId
+    ) {
+        adminAuthService.requireClubAdminForPerformance(clubAdminToken, performanceId);
         performanceService.deletePerformanceScheduleWindow(performanceId);
         return ResponseEntity.noContent().build();
     }
@@ -100,9 +119,11 @@ public class PerformanceController {
      */
     @PostMapping("/{performanceId}/members")
     public ResponseEntity<PerformanceDto.PerformanceMemberAddResponse> addPerformanceMembers(
+            @RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
             @PathVariable Long performanceId,
             @Valid @RequestBody PerformanceDto.PerformanceMemberAddRequest request
     ) {
+        adminAuthService.requireClubAdminForPerformance(clubAdminToken, performanceId);
         PerformanceDto.PerformanceMemberAddResponse response = performanceService.addPerformanceMembers(performanceId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

@@ -13,6 +13,8 @@ import lombok.NoArgsConstructor;
  * 밴드 멤버 전원(동아리 세션 인원 전원) - 인원 변경 시 db 수정
  */
 public class User {
+	private static final String STUDENT_NUMBER_PATTERN = "\\d{8}";
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -21,7 +23,7 @@ public class User {
 	private String name;
 
 	//8개 숫자로 이루어진 학번
-	@Column(nullable = false, length = 10, unique = true)
+	@Column(nullable = false, length = 8, unique = true)
 	private String studentNumber;
 
 	@Enumerated(EnumType.STRING)
@@ -29,6 +31,7 @@ public class User {
 	private UserStatus status;
 
 	public static User create(String name, String studentNumber) {
+		validateStudentNumber(studentNumber);
 		User user = new User();
 		user.name = name;
 		user.studentNumber = studentNumber;
@@ -37,6 +40,7 @@ public class User {
 	}
 
 	public void update(String name, String studentNumber) {
+		validateStudentNumber(studentNumber);
 		this.name = name;
 		this.studentNumber = studentNumber;
 	}
@@ -46,5 +50,11 @@ public class User {
 			throw new IllegalArgumentException("User status is required");
 		}
 		this.status = status;
+	}
+
+	private static void validateStudentNumber(String studentNumber) {
+		if (studentNumber == null || !studentNumber.matches(STUDENT_NUMBER_PATTERN)) {
+			throw new IllegalArgumentException("Student number must be exactly 8 digits");
+		}
 	}
 }

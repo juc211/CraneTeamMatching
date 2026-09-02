@@ -43,6 +43,7 @@ class DomainEntityMappingTests {
 	void relationshipFieldsUseLazyManyToOne() throws NoSuchFieldException {
 		assertLazyManyToOne(PerformanceMember.class, "performance");
 		assertLazyManyToOne(PerformanceMember.class, "user");
+		assertLazyManyToOne(Performance.class, "club");
 		assertLazyManyToOne(Team.class, "performance");
 		assertLazyManyToOne(PerformanceConfirmedSong.class, "performance");
 		assertLazyManyToOne(PerformanceSetlistItem.class, "performance");
@@ -64,9 +65,10 @@ class DomainEntityMappingTests {
 
 	private List<Class<?>> entityTypes() {
 		return List.of(
-				User.class,
-				UserSession.class,
-				Performance.class,
+					User.class,
+					UserSession.class,
+					Club.class,
+					Performance.class,
 				PerformanceMember.class,
 				PerformanceConfirmedSong.class,
 				PerformanceSetlistItem.class,

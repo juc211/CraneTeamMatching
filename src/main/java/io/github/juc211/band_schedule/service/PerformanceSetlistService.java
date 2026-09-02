@@ -39,6 +39,7 @@ public class PerformanceSetlistService {
 		List<PerformanceSetlistItem> setlistItems = validateAndCreateSetlistItems(performance, items);
 
 		performanceSetlistItemRepository.deleteByPerformanceId(performanceId);
+		performanceSetlistItemRepository.flush();
 		performanceSetlistItemRepository.saveAll(setlistItems);
 
 		return performanceSetlistItemRepository.findByPerformanceIdOrderBySequenceNumberAscIdAsc(performanceId)

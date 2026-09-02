@@ -1,6 +1,7 @@
 package io.github.juc211.band_schedule.controller;
 
 import io.github.juc211.band_schedule.dto.FinalScheduleDto;
+import io.github.juc211.band_schedule.service.AdminAuthService;
 import io.github.juc211.band_schedule.service.FinalScheduleService;
 import java.util.List;
 
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,15 +25,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class FinalScheduleController {
 
 	private final FinalScheduleService finalScheduleService;
+	private final AdminAuthService adminAuthService;
 
 	/**
 	 * 팀 최종 합주 일정 생성
 	 */
 	@PostMapping("/teams/{teamId}/final-schedules")
 	public ResponseEntity<FinalScheduleDto.FinalScheduleResponse> createFinalSchedule(
+			@RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
 			@PathVariable Long teamId,
 			@Valid @RequestBody FinalScheduleDto.FinalScheduleCreateRequest request
 	) {
+		adminAuthService.requireClubAdminForTeam(clubAdminToken, teamId);
 		FinalScheduleDto.FinalScheduleResponse response = finalScheduleService.createFinalSchedule(teamId, request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
@@ -76,9 +81,11 @@ public class FinalScheduleController {
 	 */
 	@PatchMapping("/final-schedules/{finalScheduleId}")
 	public ResponseEntity<FinalScheduleDto.FinalScheduleResponse> updateFinalSchedule(
+			@RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
 			@PathVariable Long finalScheduleId,
 			@Valid @RequestBody FinalScheduleDto.FinalScheduleUpdateRequest request
 	) {
+		adminAuthService.requireClubAdminForFinalSchedule(clubAdminToken, finalScheduleId);
 		return ResponseEntity.ok(finalScheduleService.updateFinalSchedule(finalScheduleId, request));
 	}
 
@@ -86,7 +93,11 @@ public class FinalScheduleController {
 	 * 최종 합주 일정 삭제
 	 */
 	@DeleteMapping("/final-schedules/{finalScheduleId}")
-	public ResponseEntity<Void> deleteFinalSchedule(@PathVariable Long finalScheduleId) {
+	public ResponseEntity<Void> deleteFinalSchedule(
+			@RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
+			@PathVariable Long finalScheduleId
+	) {
+		adminAuthService.requireClubAdminForFinalSchedule(clubAdminToken, finalScheduleId);
 		finalScheduleService.deleteFinalSchedule(finalScheduleId);
 		return ResponseEntity.noContent().build();
 	}

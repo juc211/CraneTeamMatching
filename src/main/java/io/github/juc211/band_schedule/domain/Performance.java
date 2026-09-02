@@ -21,6 +21,10 @@ public class Performance {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+	@JoinColumn(name = "club_id", nullable = false)
+	private Club club;
+
 	@Column(nullable = false, length = 100)
 	private String title;
 
@@ -37,8 +41,30 @@ public class Performance {
 	@Column(nullable = false)
 	private LocalDateTime createdAt;
 
+	public static Performance create(Club club, String title, LocalDate performanceDate, String location) {
+		return create(club, title, performanceDate, location, null, null);
+	}
+
+	public static Performance create(
+			Club club,
+			String title,
+			LocalDate performanceDate,
+			String location,
+			LocalDate scheduleWindowStartDate,
+			LocalDate scheduleWindowEndDate
+	) {
+		Performance performance = new Performance();
+		performance.club = club;
+		performance.title = title;
+		performance.performanceDate = performanceDate;
+		performance.location = location;
+		performance.updateScheduleWindowFields(scheduleWindowStartDate, scheduleWindowEndDate);
+		performance.createdAt = LocalDateTime.now();
+		return performance;
+	}
+
 	public static Performance create(String title, LocalDate performanceDate, String location) {
-		return create(title, performanceDate, location, null, null);
+		return create(Club.create("Default Club"), title, performanceDate, location, null, null);
 	}
 
 	public static Performance create(
@@ -48,13 +74,7 @@ public class Performance {
 			LocalDate scheduleWindowStartDate,
 			LocalDate scheduleWindowEndDate
 	) {
-		Performance performance = new Performance();
-		performance.title = title;
-		performance.performanceDate = performanceDate;
-		performance.location = location;
-		performance.updateScheduleWindowFields(scheduleWindowStartDate, scheduleWindowEndDate);
-		performance.createdAt = LocalDateTime.now();
-		return performance;
+		return create(Club.create("Default Club"), title, performanceDate, location, scheduleWindowStartDate, scheduleWindowEndDate);
 	}
 
 	public void update(

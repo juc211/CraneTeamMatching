@@ -64,11 +64,12 @@ public class SongPreferenceService {
 		validateAllConfirmedSongsAreSubmitted(inputLink.getPerformance().getId(), preferences);
 
 		// 기존 선호도 데이터 삭제 (재제출 처리)
-		songPreferenceRepository.deleteByPerformanceMemberIdAndPerformanceConfirmedSongPerformanceId(
-				performanceMember.getId(),
-				inputLink.getPerformance().getId()
-		);
-		// 새 선호도 일괄 저장
+			songPreferenceRepository.deleteByPerformanceMemberIdAndPerformanceConfirmedSongPerformanceId(
+					performanceMember.getId(),
+					inputLink.getPerformance().getId()
+			);
+			songPreferenceRepository.flush();
+			// 새 선호도 일괄 저장
 		songPreferenceRepository.saveAll(songPreferences);
 
 		//dto 변환

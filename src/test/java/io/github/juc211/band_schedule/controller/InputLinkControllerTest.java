@@ -204,6 +204,25 @@ class InputLinkControllerTest {
 				.andExpect(jsonPath("$.teamMembers[0].part").value("VOCAL"));
 	}
 
+	@Test
+	void identifyPerformanceMemberRejectsInvalidStudentNumber() throws Exception {
+		Performance performance = createPerformance();
+		InputLink inputLink = inputLinkRepository.save(
+				InputLink.create("available-token", performance, InputLinkType.AVAILABLE_TIME, true, null)
+		);
+
+		mockMvc.perform(post("/api/input-links/{token}/identify", inputLink.getToken())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "name": "김보컬",
+								  "studentNumber": "2026000A"
+								}
+								"""))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("학번은 8자리 숫자여야 합니다."));
+	}
+
 	private Performance createPerformance() {
 		return performanceRepository.save(Performance.create(
 				"2026 Summer Concert",
