@@ -1,6 +1,7 @@
 package io.github.juc211.band_schedule.controller;
 
 import io.github.juc211.band_schedule.dto.TeamDto;
+import io.github.juc211.band_schedule.service.AdminAuthService;
 import io.github.juc211.band_schedule.service.TeamService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,15 +24,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class TeamController {
 
 	private final TeamService teamService;
+	private final AdminAuthService adminAuthService;
 
 	/**
 	 * 팀 생성
 	 */
 	@PostMapping("/performances/{performanceId}/teams")
 	public ResponseEntity<TeamDto.TeamResponse> createTeam(
+			@RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
 			@PathVariable Long performanceId,
 			@Valid @RequestBody TeamDto.TeamCreateRequest request
 	) {
+		adminAuthService.requireClubAdminForPerformance(clubAdminToken, performanceId);
 		TeamDto.TeamResponse response = teamService.createTeam(performanceId, request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
@@ -40,9 +45,11 @@ public class TeamController {
 	 */
 	@PatchMapping("/teams/{teamId}")
 	public ResponseEntity<TeamDto.TeamResponse> updateTeam(
+			@RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
 			@PathVariable Long teamId,
 			@Valid @RequestBody TeamDto.TeamUpdateRequest request
 	) {
+		adminAuthService.requireClubAdminForTeam(clubAdminToken, teamId);
 		return ResponseEntity.ok(teamService.updateTeam(teamId, request));
 	}
 
@@ -59,9 +66,11 @@ public class TeamController {
 	 */
 	@PatchMapping("/teams/{teamId}/confirmed-song")
 	public ResponseEntity<TeamDto.TeamResponse> updateTeamConfirmedSong(
+			@RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
 			@PathVariable Long teamId,
 			@Valid @RequestBody TeamDto.TeamConfirmedSongUpdateRequest request
 	) {
+		adminAuthService.requireClubAdminForTeam(clubAdminToken, teamId);
 		return ResponseEntity.ok(teamService.updateTeamConfirmedSong(teamId, request));
 	}
 
@@ -69,7 +78,11 @@ public class TeamController {
 	 * 팀 단위 확정곡 삭제
 	 */
 	@DeleteMapping("/teams/{teamId}/confirmed-song")
-	public ResponseEntity<Void> deleteTeamConfirmedSong(@PathVariable Long teamId) {
+	public ResponseEntity<Void> deleteTeamConfirmedSong(
+			@RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
+			@PathVariable Long teamId
+	) {
+		adminAuthService.requireClubAdminForTeam(clubAdminToken, teamId);
 		teamService.deleteTeamConfirmedSong(teamId);
 		return ResponseEntity.noContent().build();
 	}
@@ -95,9 +108,11 @@ public class TeamController {
 	 */
 	@PostMapping("/teams/{teamId}/members")
 	public ResponseEntity<TeamDto.TeamMemberResponse> addTeamMember(
+			@RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
 			@PathVariable Long teamId,
 			@Valid @RequestBody TeamDto.TeamMemberAddRequest request
 	) {
+		adminAuthService.requireClubAdminForTeam(clubAdminToken, teamId);
 		TeamDto.TeamMemberResponse response = teamService.addTeamMember(teamId, request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
@@ -107,9 +122,11 @@ public class TeamController {
 	 */
 	@PatchMapping("/team-members/{teamMemberId}")
 	public ResponseEntity<TeamDto.TeamMemberResponse> updateTeamMember(
+			@RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
 			@PathVariable Long teamMemberId,
 			@Valid @RequestBody TeamDto.TeamMemberUpdateRequest request
 	) {
+		adminAuthService.requireClubAdminForTeamMember(clubAdminToken, teamMemberId);
 		return ResponseEntity.ok(teamService.updateTeamMember(teamMemberId, request));
 	}
 
@@ -136,7 +153,11 @@ public class TeamController {
 	 * 팀원 삭제(가능 시간도 함께 삭제)
 	 */
 	@DeleteMapping("/team-members/{teamMemberId}")
-	public ResponseEntity<Void> deleteTeamMember(@PathVariable Long teamMemberId) {
+	public ResponseEntity<Void> deleteTeamMember(
+			@RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
+			@PathVariable Long teamMemberId
+	) {
+		adminAuthService.requireClubAdminForTeamMember(clubAdminToken, teamMemberId);
 		teamService.deleteTeamMember(teamMemberId);
 		return ResponseEntity.noContent().build();
 	}
@@ -145,7 +166,11 @@ public class TeamController {
 	 * 팀 삭제(팀 하위 데이터도 함께 삭제)
 	 */
 	@DeleteMapping("/teams/{teamId}")
-	public ResponseEntity<Void> deleteTeam(@PathVariable Long teamId) {
+	public ResponseEntity<Void> deleteTeam(
+			@RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
+			@PathVariable Long teamId
+	) {
+		adminAuthService.requireClubAdminForTeam(clubAdminToken, teamId);
 		teamService.deleteTeam(teamId);
 		return ResponseEntity.noContent().build();
 	}

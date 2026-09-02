@@ -186,7 +186,15 @@ class AvailableTimeServiceTest {
 	@Test
 	void replaceAvailableTimesByTeamMemberWithLinkRejectsTeamMemberFromDifferentPerformance() {
 		TeamMember teamMember = createTeamMemberWithScheduleWindow();
-		TeamMember otherTeamMember = createTeamMemberWithScheduleWindow();
+		Performance otherPerformance = performanceRepository.save(Performance.create(
+				"2026 Winter Concert",
+				LocalDate.of(2026, 12, 20),
+				"Main Hall",
+				LocalDate.of(2026, 12, 1),
+				LocalDate.of(2026, 12, 20)
+		));
+		Team otherTeam = teamRepository.save(Team.create(otherPerformance, "Team B", "Song B"));
+		TeamMember otherTeamMember = createTeamMember(otherPerformance, otherTeam, "Lee Guitar", "20261235", Part.GUITAR);
 		inputLinkRepository.save(InputLink.create(
 				"available-token",
 				teamMember.getTeam().getPerformance(),

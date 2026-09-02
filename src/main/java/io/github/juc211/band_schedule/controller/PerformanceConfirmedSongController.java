@@ -1,6 +1,7 @@
 package io.github.juc211.band_schedule.controller;
 
 import io.github.juc211.band_schedule.dto.PerformanceConfirmedSongDto;
+import io.github.juc211.band_schedule.service.AdminAuthService;
 import io.github.juc211.band_schedule.service.PerformanceConfirmedSongService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,15 +27,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class PerformanceConfirmedSongController {
 
 	private final PerformanceConfirmedSongService performanceConfirmedSongService;
+	private final AdminAuthService adminAuthService;
 
 	/**
 	 * 공연 단위 확정곡 추가
 	 */
 	@PostMapping("/performances/{performanceId}/performance-confirmed-songs")
 	public ResponseEntity<PerformanceConfirmedSongDto.PerformanceConfirmedSongResponse> createPerformanceConfirmedSong(
+			@RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
 			@PathVariable Long performanceId,
 			@Valid @RequestBody PerformanceConfirmedSongDto.PerformanceConfirmedSongCreateRequest request
 	) {
+		adminAuthService.requireClubAdminForPerformance(clubAdminToken, performanceId);
 		PerformanceConfirmedSongDto.PerformanceConfirmedSongResponse response = performanceConfirmedSongService.createPerformanceConfirmedSong(performanceId, request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
@@ -59,9 +64,11 @@ public class PerformanceConfirmedSongController {
 	 */
 	@PatchMapping("/performance-confirmed-songs/{performanceConfirmedSongId}")
 	public ResponseEntity<PerformanceConfirmedSongDto.PerformanceConfirmedSongResponse> updatePerformanceConfirmedSong(
+			@RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
 			@PathVariable Long performanceConfirmedSongId,
 			@Valid @RequestBody PerformanceConfirmedSongDto.PerformanceConfirmedSongUpdateRequest request
 	) {
+		adminAuthService.requireClubAdminForPerformanceConfirmedSong(clubAdminToken, performanceConfirmedSongId);
 		return ResponseEntity.ok(performanceConfirmedSongService.updatePerformanceConfirmedSong(performanceConfirmedSongId, request));
 	}
 
@@ -69,7 +76,11 @@ public class PerformanceConfirmedSongController {
 	 * 공연 단위 확정곡 삭제
 	 */
 	@DeleteMapping("/performance-confirmed-songs/{performanceConfirmedSongId}")
-	public ResponseEntity<Void> deletePerformanceConfirmedSong(@PathVariable Long performanceConfirmedSongId) {
+	public ResponseEntity<Void> deletePerformanceConfirmedSong(
+			@RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
+			@PathVariable Long performanceConfirmedSongId
+	) {
+		adminAuthService.requireClubAdminForPerformanceConfirmedSong(clubAdminToken, performanceConfirmedSongId);
 		performanceConfirmedSongService.deletePerformanceConfirmedSong(performanceConfirmedSongId);
 		return ResponseEntity.noContent().build();
 	}

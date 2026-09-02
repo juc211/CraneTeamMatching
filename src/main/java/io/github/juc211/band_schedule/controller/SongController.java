@@ -1,6 +1,7 @@
 package io.github.juc211.band_schedule.controller;
 
 import io.github.juc211.band_schedule.dto.SongDto;
+import io.github.juc211.band_schedule.service.AdminAuthService;
 import io.github.juc211.band_schedule.service.SongService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class SongController {
 
 	private final SongService songService;
+	private final AdminAuthService adminAuthService;
 
 	/**
 	 * 희망곡 신청
@@ -75,9 +78,11 @@ public class SongController {
 	 */
 	@PatchMapping("/song-requests/{songRequestId}")
 	public ResponseEntity<SongDto.SongRequestResponse> updateSongRequest(
+			@RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
 			@PathVariable Long songRequestId,
 			@Valid @RequestBody SongDto.SongRequestUpdateRequest request
 	) {
+		adminAuthService.requireClubAdminForSongRequest(clubAdminToken, songRequestId);
 		return ResponseEntity.ok(songService.updateSongRequest(songRequestId, request));
 	}
 
@@ -85,7 +90,11 @@ public class SongController {
 	 * 희망곡 삭제
 	 */
 	@DeleteMapping("/song-requests/{songRequestId}")
-	public ResponseEntity<Void> deleteSongRequest(@PathVariable Long songRequestId) {
+	public ResponseEntity<Void> deleteSongRequest(
+			@RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
+			@PathVariable Long songRequestId
+	) {
+		adminAuthService.requireClubAdminForSongRequest(clubAdminToken, songRequestId);
 		songService.deleteSongRequest(songRequestId);
 		return ResponseEntity.noContent().build();
 	}
@@ -114,7 +123,11 @@ public class SongController {
 	 * 희망곡 투표 삭제
 	 */
 	@DeleteMapping("/song-votes/{songVoteId}")
-	public ResponseEntity<Void> deleteSongVote(@PathVariable Long songVoteId) {
+	public ResponseEntity<Void> deleteSongVote(
+			@RequestHeader(value = "X-Club-Admin-Token", required = false) String clubAdminToken,
+			@PathVariable Long songVoteId
+	) {
+		adminAuthService.requireClubAdminForSongVote(clubAdminToken, songVoteId);
 		songService.deleteSongVote(songVoteId);
 		return ResponseEntity.noContent().build();
 	}

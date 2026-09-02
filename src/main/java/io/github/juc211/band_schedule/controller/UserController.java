@@ -2,6 +2,7 @@ package io.github.juc211.band_schedule.controller;
 
 import io.github.juc211.band_schedule.domain.UserStatus;
 import io.github.juc211.band_schedule.dto.UserDto;
+import io.github.juc211.band_schedule.service.AdminAuthService;
 import io.github.juc211.band_schedule.service.UserService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,12 +26,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
 	private final UserService userService;
+	private final AdminAuthService adminAuthService;
 
 	/**
 	 * 밴드 멤버 생성
 	 */
 	@PostMapping
-	public ResponseEntity<UserDto.UserCreateResponse> createUser(@Valid @RequestBody UserDto.UserCreateRequest request) {
+	public ResponseEntity<UserDto.UserCreateResponse> createUser(
+			@RequestHeader(value = "X-Master-Admin-Token", required = false) String masterAdminToken,
+			@Valid @RequestBody UserDto.UserCreateRequest request
+	) {
+		adminAuthService.requireMasterAdmin(masterAdminToken);
 		UserDto.UserCreateResponse response = userService.createUser(request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
@@ -55,9 +62,11 @@ public class UserController {
 	 */
 	@PatchMapping("/{userId}")
 	public ResponseEntity<UserDto.UserResponse> updateUser(
+			@RequestHeader(value = "X-Master-Admin-Token", required = false) String masterAdminToken,
 			@PathVariable Long userId,
 			@Valid @RequestBody UserDto.UserUpdateRequest request
 	) {
+		adminAuthService.requireMasterAdmin(masterAdminToken);
 		return ResponseEntity.ok(userService.updateUser(userId, request));
 	}
 
@@ -66,9 +75,11 @@ public class UserController {
 	 */
 	@PatchMapping("/{userId}/status")
 	public ResponseEntity<UserDto.UserResponse> updateUserStatus(
+			@RequestHeader(value = "X-Master-Admin-Token", required = false) String masterAdminToken,
 			@PathVariable Long userId,
 			@Valid @RequestBody UserDto.UserStatusUpdateRequest request
 	) {
+		adminAuthService.requireMasterAdmin(masterAdminToken);
 		return ResponseEntity.ok(userService.updateUserStatus(userId, request));
 	}
 
@@ -76,7 +87,11 @@ public class UserController {
 	 * 잘못 생성된 유저 삭제(참조가 없을 때만 가능)
 	 */
 	@DeleteMapping("/{userId}")
-	public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
+	public ResponseEntity<Void> deleteUser(
+			@RequestHeader(value = "X-Master-Admin-Token", required = false) String masterAdminToken,
+			@PathVariable Long userId
+	) {
+		adminAuthService.requireMasterAdmin(masterAdminToken);
 		userService.deleteUser(userId);
 		return ResponseEntity.noContent().build();
 	}

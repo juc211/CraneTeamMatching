@@ -73,6 +73,13 @@ public enum ErrorCode {
     DUPLICATE_SETLIST_TEAM(HttpStatus.BAD_REQUEST, "SL004", "셋리스트에 중복된 팀이 있습니다."),
     DUPLICATE_SETLIST_SEQUENCE(HttpStatus.BAD_REQUEST, "SL005", "셋리스트에 중복된 순서가 있습니다."),
 
+    // 401 Unauthorized
+    MASTER_ADMIN_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "A001", "마스터 관리자 토큰이 없거나 올바르지 않습니다."),
+    CLUB_ADMIN_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "A002", "동아리 관리자 토큰이 없거나 올바르지 않습니다."),
+
+    // 403 Forbidden
+    CLUB_ADMIN_FORBIDDEN(HttpStatus.FORBIDDEN, "A003", "다른 동아리의 리소스에 접근할 수 없습니다."),
+
     // 404 Not Found
     RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "C002", "요청한 리소스를 찾을 수 없습니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "U001", "존재하지 않는 유저입니다."),
@@ -88,6 +95,7 @@ public enum ErrorCode {
     FINAL_SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "FS004", "존재하지 않는 최종 합주 일정입니다."),
     INPUT_LINK_NOT_FOUND(HttpStatus.NOT_FOUND, "L005", "존재하지 않는 입력 링크입니다."),
     PERFORMANCE_SETLIST_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "SL006", "존재하지 않는 셋리스트 항목입니다."),
+    CLUB_NOT_FOUND(HttpStatus.NOT_FOUND, "CB001", "존재하지 않는 동아리입니다."),
 
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "S001", "서버 내부 오류가 발생했습니다.");

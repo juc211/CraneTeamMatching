@@ -1,5 +1,6 @@
 package io.github.juc211.band_schedule.service;
 
+import io.github.juc211.band_schedule.domain.Club;
 import io.github.juc211.band_schedule.domain.Performance;
 import io.github.juc211.band_schedule.domain.PerformanceMember;
 import io.github.juc211.band_schedule.domain.User;
@@ -9,6 +10,7 @@ import io.github.juc211.band_schedule.dto.PerformanceDto;
 import io.github.juc211.band_schedule.exception.BusinessException;
 import io.github.juc211.band_schedule.exception.ErrorCode;
 import io.github.juc211.band_schedule.repository.AvailableTimeRepository;
+import io.github.juc211.band_schedule.repository.ClubRepository;
 import io.github.juc211.band_schedule.repository.FinalScheduleRepository;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.PerformanceConfirmedSongRepository;
@@ -49,11 +51,21 @@ public class PerformanceService {
     private final PerformanceConfirmedSongRepository performanceConfirmedSongRepository;
     private final PerformanceSetlistItemRepository performanceSetlistItemRepository;
     private final SongPreferenceRepository songPreferenceRepository;
+    private final ClubRepository clubRepository;
 
     /**
      * 공연 생성
      */
     public PerformanceDto.PerformanceCreateResponse createPerformance(PerformanceDto.PerformanceCreateRequest request) {
+        Long clubId = request.clubId();
+        Club club = clubId == null
+                ? Club.create("Default Club")
+                : clubRepository.findById(clubId)
+                        .orElseThrow(() -> new BusinessException(ErrorCode.CLUB_NOT_FOUND, "Club not found: " + clubId));
+        return createPerformance(club, request);
+    }
+
+    public PerformanceDto.PerformanceCreateResponse createPerformance(Club club, PerformanceDto.PerformanceCreateRequest request) {
         validateScheduleWindowFields(
                 request.performanceDate(),
                 request.scheduleWindowStartDate(),
@@ -61,6 +73,7 @@ public class PerformanceService {
         );
 
         Performance performance = Performance.create(
+                club,
                 request.title(),
                 request.performanceDate(),
                 request.location(),
@@ -74,6 +87,17 @@ public class PerformanceService {
                 savedPerformance.getId(),
                 savedPerformance.getTitle()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<PerformanceDto.PerformanceResponse> getPerformancesByClub(Long clubId) {
+        if (!clubRepository.existsById(clubId)) {
+            throw new BusinessException(ErrorCode.CLUB_NOT_FOUND, "Club not found: " + clubId);
+        }
+        return performanceRepository.findByClubIdOrderByIdAsc(clubId)
+                .stream()
+                .map(this::toPerformanceResponse)
+                .toList();
     }
 
     /**
@@ -325,6 +349,14 @@ public class PerformanceService {
         teamRepository.deleteByPerformanceId(performanceId);
         performanceMemberRepository.deleteByPerformanceId(performanceId);
         performanceRepository.delete(performance);
+    }
+
+    public void deletePerformancesByClub(Long clubId) {
+        List<Long> performanceIds = performanceRepository.findByClubIdOrderByIdAsc(clubId)
+                .stream()
+                .map(Performance::getId)
+                .toList();
+        performanceIds.forEach(this::deletePerformance);
     }
 
     /**

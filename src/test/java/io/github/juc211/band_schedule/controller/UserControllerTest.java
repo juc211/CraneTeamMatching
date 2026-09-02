@@ -43,6 +43,34 @@ class UserControllerTest {
 	}
 
 	@Test
+	void createUserRejectsStudentNumberShorterThanEightDigits() throws Exception {
+		mockMvc.perform(post("/api/users")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "name": "Kim Band",
+								  "studentNumber": "2026123"
+								}
+								"""))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("학번은 8자리 숫자여야 합니다."));
+	}
+
+	@Test
+	void createUserRejectsStudentNumberContainingNonDigit() throws Exception {
+		mockMvc.perform(post("/api/users")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "name": "Kim Band",
+								  "studentNumber": "2026A234"
+								}
+								"""))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("학번은 8자리 숫자여야 합니다."));
+	}
+
+	@Test
 	void getUsersReturnsOkStatus() throws Exception {
 		mockMvc.perform(post("/api/users")
 						.contentType(MediaType.APPLICATION_JSON)
@@ -143,6 +171,33 @@ class UserControllerTest {
 				.andExpect(jsonPath("$.name").value("Kim Vocal"))
 				.andExpect(jsonPath("$.studentNumber").value("20269999"))
 				.andExpect(jsonPath("$.status").value("ACTIVE"));
+	}
+
+	@Test
+	void updateUserRejectsInvalidStudentNumber() throws Exception {
+		String createResponse = mockMvc.perform(post("/api/users")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "name": "Kim Band",
+								  "studentNumber": "20261234"
+								}
+								"""))
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+		Long userId = Long.valueOf(createResponse.replaceAll(".*\\\"userId\\\":(\\d+).*", "$1"));
+
+		mockMvc.perform(patch("/api/users/{userId}", userId)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "name": "Kim Vocal",
+								  "studentNumber": "2026999A"
+								}
+								"""))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").value("학번은 8자리 숫자여야 합니다."));
 	}
 
 	@Test

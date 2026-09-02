@@ -2,6 +2,7 @@ package io.github.juc211.band_schedule.exception;
 
 import io.github.juc211.band_schedule.dto.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -63,5 +64,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .badRequest()
                 .body(ErrorResponse.of("VALIDATION_ERROR", message));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(
+            DataIntegrityViolationException e
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.of(
+                        "DATA_CONFLICT",
+                        "이미 존재하거나 다른 데이터에서 사용 중인 값입니다."
+                ));
     }
 }

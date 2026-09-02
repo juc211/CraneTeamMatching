@@ -1,6 +1,7 @@
 package io.github.juc211.band_schedule.controller;
 
 import io.github.juc211.band_schedule.dto.UserSessionDto;
+import io.github.juc211.band_schedule.service.AdminAuthService;
 import io.github.juc211.band_schedule.service.UserSessionService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,15 +23,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserSessionController {
 
 	private final UserSessionService userSessionService;
+	private final AdminAuthService adminAuthService;
 
 	/**
 	 * 유저 세션 추가
 	 */
 	@PostMapping("/users/{userId}/sessions")
 	public ResponseEntity<UserSessionDto.UserSessionResponse> createUserSession(
+			@RequestHeader(value = "X-Master-Admin-Token", required = false) String masterAdminToken,
 			@PathVariable Long userId,
 			@Valid @RequestBody UserSessionDto.UserSessionCreateRequest request
 	) {
+		adminAuthService.requireMasterAdmin(masterAdminToken);
 		UserSessionDto.UserSessionResponse response = userSessionService.createUserSession(userId, request);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
@@ -46,7 +51,11 @@ public class UserSessionController {
 	 * 유저 세션 삭제
 	 */
 	@DeleteMapping("/user-sessions/{userSessionId}")
-	public ResponseEntity<Void> deleteUserSession(@PathVariable Long userSessionId) {
+	public ResponseEntity<Void> deleteUserSession(
+			@RequestHeader(value = "X-Master-Admin-Token", required = false) String masterAdminToken,
+			@PathVariable Long userSessionId
+	) {
+		adminAuthService.requireMasterAdmin(masterAdminToken);
 		userSessionService.deleteUserSession(userSessionId);
 		return ResponseEntity.noContent().build();
 	}
