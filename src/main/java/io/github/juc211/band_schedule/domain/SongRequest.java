@@ -1,13 +1,7 @@
 package io.github.juc211.band_schedule.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Column;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -27,20 +21,25 @@ public class SongRequest {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "performance_id", nullable = false)
 	private Performance performance;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "team_id")
 	private Team team;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "requested_by_member_id", nullable = false)
 	private PerformanceMember requestedByMember;
 
 	//song ([곡 명 - 가수] 형식)
+	@Column(nullable = false, length = 200)
 	private String song;
 
-	@Column(length = 2048)
+	@Column(length = 500)
 	private String youtubeUrl;
 
+	@Column(nullable = false)
 	private LocalDateTime createdAt;
 
 	public static SongRequest create(Performance performance, Team team, PerformanceMember requestedByMember, String song) {

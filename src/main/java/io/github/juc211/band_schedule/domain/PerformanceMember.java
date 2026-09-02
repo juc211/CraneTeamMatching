@@ -1,18 +1,23 @@
 package io.github.juc211.band_schedule.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "performance_members")
+@Table(
+		name = "performance_members",
+		uniqueConstraints = {
+				@UniqueConstraint(
+						name = "uk_performance_members_performance_user",
+						columnNames = {
+								"performance_id",
+								"user_id"
+						}
+				)
+		}
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PerformanceMember {
@@ -22,9 +27,11 @@ public class PerformanceMember {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "performance_id", nullable = false)
 	private Performance performance;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 
 	public static PerformanceMember create(Performance performance, User user) {

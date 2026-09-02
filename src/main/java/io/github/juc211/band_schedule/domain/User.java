@@ -1,12 +1,6 @@
 package io.github.juc211.band_schedule.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,17 +13,19 @@ import lombok.NoArgsConstructor;
  * 밴드 멤버 전원(동아리 세션 인원 전원) - 인원 변경 시 db 수정
  */
 public class User {
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	@Column(nullable = false, length = 50)
 	private String name;
 
 	//8개 숫자로 이루어진 학번
+	@Column(nullable = false, length = 10, unique = true)
 	private String studentNumber;
 
 	@Enumerated(EnumType.STRING)
+	@Column(nullable = false, length = 30)
 	private UserStatus status;
 
 	public static User create(String name, String studentNumber) {
