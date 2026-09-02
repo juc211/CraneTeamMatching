@@ -45,7 +45,11 @@ public class UserController {
 	 * 유저 조회(status가 있으면 상태별 조회)
 	 */
 	@GetMapping
-	public ResponseEntity<List<UserDto.UserResponse>> getUsers(@RequestParam(required = false) UserStatus status) {
+	public ResponseEntity<List<UserDto.UserResponse>> getUsers(
+			@RequestHeader(value = "X-Master-Admin-Token", required = false) String masterAdminToken,
+			@RequestParam(required = false) UserStatus status
+	) {
+		adminAuthService.requireMasterAdmin(masterAdminToken);
 		return ResponseEntity.ok(userService.getUsersByStatus(status));
 	}
 
@@ -53,7 +57,11 @@ public class UserController {
 	 * 유저 단건 조회
 	 */
 	@GetMapping("/{userId}")
-	public ResponseEntity<UserDto.UserResponse> getUser(@PathVariable Long userId) {
+	public ResponseEntity<UserDto.UserResponse> getUser(
+			@RequestHeader(value = "X-Master-Admin-Token", required = false) String masterAdminToken,
+			@PathVariable Long userId
+	) {
+		adminAuthService.requireMasterAdmin(masterAdminToken);
 		return ResponseEntity.ok(userService.getUser(userId));
 	}
 

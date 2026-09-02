@@ -53,6 +53,7 @@ class FinalScheduleControllerTest {
 		Team team = createTeam();
 
 		mockMvc.perform(post("/api/teams/{teamId}/final-schedules", team.getId())
+						.header("X-Club-Admin-Token", team.getPerformance().getClub().getAdminToken())
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -175,6 +176,7 @@ class FinalScheduleControllerTest {
 		));
 
 		mockMvc.perform(patch("/api/final-schedules/{finalScheduleId}", finalSchedule.getId())
+						.header("X-Club-Admin-Token", team.getPerformance().getClub().getAdminToken())
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{

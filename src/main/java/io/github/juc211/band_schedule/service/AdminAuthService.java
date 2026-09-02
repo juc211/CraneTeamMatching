@@ -17,11 +17,8 @@ import io.github.juc211.band_schedule.repository.SongRequestRepository;
 import io.github.juc211.band_schedule.repository.SongVoteRepository;
 import io.github.juc211.band_schedule.repository.TeamMemberRepository;
 import io.github.juc211.band_schedule.repository.TeamRepository;
-import jakarta.servlet.http.HttpServletRequest;
-import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -44,27 +41,17 @@ public class AdminAuthService {
 	private final AvailableTimeRepository availableTimeRepository;
 	private final FinalScheduleRepository finalScheduleRepository;
 	private final InputLinkRepository inputLinkRepository;
-	private final Environment environment;
-	private final HttpServletRequest request;
 
 	@Value("${admin.master-token:}")
 	private String masterAdminToken;
 
 	public void requireMasterAdmin(String token) {
-		if (allowsMissingLegacyAdminTokenInTests()) {
-			return;
-		}
 		if (!StringUtils.hasText(masterAdminToken) || !masterAdminToken.equals(token)) {
 			throw new BusinessException(ErrorCode.MASTER_ADMIN_UNAUTHORIZED, "Master admin token is missing or invalid");
 		}
 	}
 
 	public Club requireClubAdmin(String token) {
-		if (allowsMissingLegacyAdminTokenInTests()) {
-			return clubRepository.findAll().stream()
-					.findFirst()
-					.orElseThrow(() -> new BusinessException(ErrorCode.CLUB_ADMIN_UNAUTHORIZED, "Club admin token is missing or invalid"));
-		}
 		if (!StringUtils.hasText(token)) {
 			throw new BusinessException(ErrorCode.CLUB_ADMIN_UNAUTHORIZED, "Club admin token is missing or invalid");
 		}
@@ -75,9 +62,6 @@ public class AdminAuthService {
 	public Club requireClubAdminForPerformance(String token, Long performanceId) {
 		Performance performance = performanceRepository.findById(performanceId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND, "Performance not found: " + performanceId));
-		if (allowsMissingLegacyAdminTokenInTests()) {
-			return performance.getClub();
-		}
 		Club club = requireClubAdmin(token);
 		if (!performance.getClub().getId().equals(club.getId())) {
 			throw new BusinessException(ErrorCode.CLUB_ADMIN_FORBIDDEN, "Club admin cannot access another club resource");
@@ -147,12 +131,5 @@ public class AdminAuthService {
 		requireClubAdminForPerformance(token, inputLinkRepository.findById(inputLinkId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.INPUT_LINK_NOT_FOUND, "InputLink not found: " + inputLinkId))
 				.getPerformance().getId());
-	}
-
-	private boolean allowsMissingLegacyAdminTokenInTests() {
-		return !StringUtils.hasText(request.getHeader("X-Master-Admin-Token"))
-				&& !StringUtils.hasText(request.getHeader("X-Club-Admin-Token"))
-				&& !request.getRequestURI().startsWith("/api/admin/")
-				&& Arrays.asList(environment.getActiveProfiles()).contains("test");
 	}
 }

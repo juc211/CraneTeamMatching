@@ -42,7 +42,7 @@ class PerformanceControllerTest {
 	private UserRepository userRepository;
 
 	@Test
-	void createPerformanceReturnsCreatedStatus() throws Exception {
+	void createPerformanceEndpointIsRemoved() throws Exception {
 		mockMvc.perform(post("/api/performances")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
@@ -54,9 +54,7 @@ class PerformanceControllerTest {
 								  "scheduleWindowEndDate": "2026-08-14"
 								}
 								"""))
-				.andExpect(status().isCreated())
-				.andExpect(jsonPath("$.performanceId").isNumber())
-				.andExpect(jsonPath("$.title").value("2026 Summer Concert"));
+				.andExpect(status().isMethodNotAllowed());
 	}
 
 	@Test
@@ -103,7 +101,8 @@ class PerformanceControllerTest {
 		));
 
 		mockMvc.perform(patch("/api/performances/{performanceId}", performance.getId())
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken())
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 						{
 						  "title": "2026 Winter Concert",
@@ -131,7 +130,8 @@ class PerformanceControllerTest {
 		));
 
 		mockMvc.perform(patch("/api/performances/{performanceId}/schedule-window", performance.getId())
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken())
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "scheduleWindowStartDate": "2026-08-01",

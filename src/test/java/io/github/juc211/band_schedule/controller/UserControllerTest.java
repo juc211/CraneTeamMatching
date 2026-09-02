@@ -28,7 +28,8 @@ class UserControllerTest {
 	@Test
 	void createUserReturnsCreatedStatus() throws Exception {
 		mockMvc.perform(post("/api/users")
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Master-Admin-Token", "test-master-token")
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "name": "Kim Band",
@@ -45,7 +46,8 @@ class UserControllerTest {
 	@Test
 	void createUserRejectsStudentNumberShorterThanEightDigits() throws Exception {
 		mockMvc.perform(post("/api/users")
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Master-Admin-Token", "test-master-token")
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "name": "Kim Band",
@@ -59,7 +61,8 @@ class UserControllerTest {
 	@Test
 	void createUserRejectsStudentNumberContainingNonDigit() throws Exception {
 		mockMvc.perform(post("/api/users")
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Master-Admin-Token", "test-master-token")
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "name": "Kim Band",
@@ -73,7 +76,8 @@ class UserControllerTest {
 	@Test
 	void getUsersReturnsOkStatus() throws Exception {
 		mockMvc.perform(post("/api/users")
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Master-Admin-Token", "test-master-token")
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "name": "Kim Band",
@@ -92,7 +96,8 @@ class UserControllerTest {
 	@Test
 	void getUsersByStatusReturnsOkStatus() throws Exception {
 		String createResponse = mockMvc.perform(post("/api/users")
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Master-Admin-Token", "test-master-token")
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "name": "Kim Band",
@@ -105,7 +110,8 @@ class UserControllerTest {
 		Long userId = Long.valueOf(createResponse.replaceAll(".*\\\"userId\\\":(\\d+).*", "$1"));
 
 		mockMvc.perform(patch("/api/users/{userId}/status", userId)
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Master-Admin-Token", "test-master-token")
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "status": "ON_LEAVE"
@@ -114,7 +120,8 @@ class UserControllerTest {
 				.andExpect(status().isOk());
 
 		mockMvc.perform(get("/api/users")
-						.param("status", "ON_LEAVE"))
+						.header("X-Master-Admin-Token", "test-master-token")
+							.param("status", "ON_LEAVE"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].userId").value(userId))
 				.andExpect(jsonPath("$[0].status").value("ON_LEAVE"));
@@ -123,7 +130,8 @@ class UserControllerTest {
 	@Test
 	void getUserReturnsOkStatus() throws Exception {
 		String createResponse = mockMvc.perform(post("/api/users")
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Master-Admin-Token", "test-master-token")
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "name": "Kim Band",
@@ -146,7 +154,8 @@ class UserControllerTest {
 	@Test
 	void updateUserReturnsOkStatus() throws Exception {
 		String createResponse = mockMvc.perform(post("/api/users")
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Master-Admin-Token", "test-master-token")
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "name": "Kim Band",
@@ -159,7 +168,8 @@ class UserControllerTest {
 		Long userId = Long.valueOf(createResponse.replaceAll(".*\\\"userId\\\":(\\d+).*", "$1"));
 
 		mockMvc.perform(patch("/api/users/{userId}", userId)
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Master-Admin-Token", "test-master-token")
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "name": "Kim Vocal",
@@ -176,7 +186,8 @@ class UserControllerTest {
 	@Test
 	void updateUserRejectsInvalidStudentNumber() throws Exception {
 		String createResponse = mockMvc.perform(post("/api/users")
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Master-Admin-Token", "test-master-token")
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "name": "Kim Band",
@@ -189,7 +200,8 @@ class UserControllerTest {
 		Long userId = Long.valueOf(createResponse.replaceAll(".*\\\"userId\\\":(\\d+).*", "$1"));
 
 		mockMvc.perform(patch("/api/users/{userId}", userId)
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Master-Admin-Token", "test-master-token")
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "name": "Kim Vocal",
@@ -203,7 +215,8 @@ class UserControllerTest {
 	@Test
 	void updateUserStatusReturnsOkStatus() throws Exception {
 		String createResponse = mockMvc.perform(post("/api/users")
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Master-Admin-Token", "test-master-token")
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "name": "Kim Band",
@@ -216,7 +229,8 @@ class UserControllerTest {
 		Long userId = Long.valueOf(createResponse.replaceAll(".*\\\"userId\\\":(\\d+).*", "$1"));
 
 		mockMvc.perform(patch("/api/users/{userId}/status", userId)
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Master-Admin-Token", "test-master-token")
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "status": "GRADUATED"
@@ -230,7 +244,8 @@ class UserControllerTest {
 	@Test
 	void updateUserStatusCanWithdrawAndRestoreUser() throws Exception {
 		String createResponse = mockMvc.perform(post("/api/users")
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Master-Admin-Token", "test-master-token")
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "name": "Kim Band",
@@ -243,7 +258,8 @@ class UserControllerTest {
 		Long userId = Long.valueOf(createResponse.replaceAll(".*\\\"userId\\\":(\\d+).*", "$1"));
 
 		mockMvc.perform(patch("/api/users/{userId}/status", userId)
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Master-Admin-Token", "test-master-token")
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "status": "WITHDRAWN"
@@ -254,7 +270,8 @@ class UserControllerTest {
 				.andExpect(jsonPath("$.status").value("WITHDRAWN"));
 
 		mockMvc.perform(patch("/api/users/{userId}/status", userId)
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Master-Admin-Token", "test-master-token")
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "status": "ACTIVE"
@@ -268,7 +285,8 @@ class UserControllerTest {
 	@Test
 	void deleteUserReturnsNoContentStatus() throws Exception {
 		String createResponse = mockMvc.perform(post("/api/users")
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Master-Admin-Token", "test-master-token")
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "name": "Kim Band",

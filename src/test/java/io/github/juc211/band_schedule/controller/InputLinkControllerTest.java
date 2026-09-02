@@ -64,7 +64,8 @@ class InputLinkControllerTest {
 		Performance performance = createPerformance();
 
 		mockMvc.perform(post("/api/performances/{performanceId}/input-links", performance.getId())
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken())
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "type": "AVAILABLE_TIME",
@@ -101,7 +102,8 @@ class InputLinkControllerTest {
 		);
 
 		mockMvc.perform(patch("/api/input-links/{inputLinkId}/active", inputLink.getId())
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken())
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "active": false
@@ -126,7 +128,8 @@ class InputLinkControllerTest {
 		);
 
 		mockMvc.perform(patch("/api/input-links/{inputLinkId}/expires-at", inputLink.getId())
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken())
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "expiresAt": "2026-08-05T23:59:00"
@@ -151,7 +154,8 @@ class InputLinkControllerTest {
 		);
 
 		mockMvc.perform(patch("/api/input-links/{inputLinkId}/expires-at", inputLink.getId())
-						.contentType(MediaType.APPLICATION_JSON)
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken())
+							.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
 								  "expiresAt": null
