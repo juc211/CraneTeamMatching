@@ -1,5 +1,6 @@
 package io.github.juc211.band_schedule.controller;
 
+import static io.github.juc211.band_schedule.support.TestEntityFactory.createPerformance;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -10,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import io.github.juc211.band_schedule.domain.Performance;
 import io.github.juc211.band_schedule.domain.PerformanceMember;
 import io.github.juc211.band_schedule.domain.User;
+import io.github.juc211.band_schedule.repository.ClubRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
 import io.github.juc211.band_schedule.repository.UserRepository;
@@ -36,6 +38,9 @@ class PerformanceControllerTest {
 	private PerformanceRepository performanceRepository;
 
 	@Autowired
+	private ClubRepository clubRepository;
+
+	@Autowired
 	private PerformanceMemberRepository performanceMemberRepository;
 
 	@Autowired
@@ -59,7 +64,7 @@ class PerformanceControllerTest {
 
 	@Test
 	void getPerformancesReturnsOkStatus() throws Exception {
-		performanceRepository.save(Performance.create(
+		performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 15),
 				"Main Hall"
@@ -76,7 +81,7 @@ class PerformanceControllerTest {
 
 	@Test
 	void getPerformanceReturnsOkStatus() throws Exception {
-		Performance performance = performanceRepository.save(Performance.create(
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 15),
 				"Main Hall"
@@ -94,7 +99,7 @@ class PerformanceControllerTest {
 
 	@Test
 	void updatePerformanceReturnsOkStatus() throws Exception {
-		Performance performance = performanceRepository.save(Performance.create(
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 15),
 				"Main Hall"
@@ -123,7 +128,7 @@ class PerformanceControllerTest {
 
 	@Test
 	void updatePerformanceScheduleWindowReturnsOkStatus() throws Exception {
-		Performance performance = performanceRepository.save(Performance.create(
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 20),
 				"Main Hall"
@@ -149,7 +154,7 @@ class PerformanceControllerTest {
 
 	@Test
 	void getPerformanceScheduleWindowReturnsOkStatus() throws Exception {
-		Performance performance = performanceRepository.save(Performance.create(
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 20),
 				"Main Hall",
@@ -166,7 +171,7 @@ class PerformanceControllerTest {
 
 	@Test
 	void deletePerformanceScheduleWindowReturnsNoContentStatus() throws Exception {
-		Performance performance = performanceRepository.save(Performance.create(
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 20),
 				"Main Hall",
@@ -174,25 +179,27 @@ class PerformanceControllerTest {
 				LocalDate.of(2026, 8, 20)
 		));
 
-		mockMvc.perform(delete("/api/performances/{performanceId}/schedule-window", performance.getId()))
+		mockMvc.perform(delete("/api/performances/{performanceId}/schedule-window", performance.getId())
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken()))
 				.andExpect(status().isNoContent());
 	}
 
 	@Test
 	void deletePerformanceReturnsNoContentStatus() throws Exception {
-		Performance performance = performanceRepository.save(Performance.create(
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 20),
 				"Main Hall"
 		));
 
-		mockMvc.perform(delete("/api/performances/{performanceId}", performance.getId()))
+		mockMvc.perform(delete("/api/performances/{performanceId}", performance.getId())
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken()))
 				.andExpect(status().isNoContent());
 	}
 
 	@Test
 	void getPerformanceMembersReturnsOkStatus() throws Exception {
-		Performance performance = performanceRepository.save(Performance.create(
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 15),
 				"Main Hall"

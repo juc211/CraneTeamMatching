@@ -1,11 +1,13 @@
 package io.github.juc211.band_schedule.service;
 
+import static io.github.juc211.band_schedule.support.TestEntityFactory.createPerformance;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.juc211.band_schedule.domain.Performance;
 import io.github.juc211.band_schedule.domain.PerformanceMember;
 import io.github.juc211.band_schedule.domain.User;
 import io.github.juc211.band_schedule.dto.PerformanceDto;
+import io.github.juc211.band_schedule.repository.ClubRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
 import io.github.juc211.band_schedule.repository.UserRepository;
@@ -29,6 +31,9 @@ class PerformanceMemberServiceTest {
 	private PerformanceRepository performanceRepository;
 
 	@Autowired
+	private ClubRepository clubRepository;
+
+	@Autowired
 	private PerformanceMemberRepository performanceMemberRepository;
 
 	@Autowired
@@ -37,7 +42,7 @@ class PerformanceMemberServiceTest {
 	@Test
 	void addPerformanceMembersPersistsSelectedUsersAsPerformanceMembers() {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		User vocal = userRepository.save(User.create("Kim Vocal", "20261234"));
 		User bass = userRepository.save(User.create("Lee Bass", "20261235"));

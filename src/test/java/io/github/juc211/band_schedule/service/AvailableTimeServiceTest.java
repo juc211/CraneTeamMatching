@@ -1,5 +1,6 @@
 package io.github.juc211.band_schedule.service;
 
+import static io.github.juc211.band_schedule.support.TestEntityFactory.createPerformance;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -14,6 +15,7 @@ import io.github.juc211.band_schedule.domain.TeamMember;
 import io.github.juc211.band_schedule.domain.User;
 import io.github.juc211.band_schedule.dto.AvailableTimeDto;
 import io.github.juc211.band_schedule.exception.BusinessException;
+import io.github.juc211.band_schedule.repository.ClubRepository;
 import io.github.juc211.band_schedule.repository.AvailableTimeRepository;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
@@ -43,6 +45,9 @@ class AvailableTimeServiceTest {
 
 	@Autowired
 	private PerformanceRepository performanceRepository;
+
+	@Autowired
+	private ClubRepository clubRepository;
 
 	@Autowired
 	private TeamRepository teamRepository;
@@ -186,7 +191,7 @@ class AvailableTimeServiceTest {
 	@Test
 	void replaceAvailableTimesByTeamMemberWithLinkRejectsTeamMemberFromDifferentPerformance() {
 		TeamMember teamMember = createTeamMemberWithScheduleWindow();
-		Performance otherPerformance = performanceRepository.save(Performance.create(
+		Performance otherPerformance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Winter Concert",
 				LocalDate.of(2026, 12, 20),
 				"Main Hall",
@@ -248,7 +253,7 @@ class AvailableTimeServiceTest {
 
 	@Test
 	void replaceAvailableTimesByTeamMemberAllowsEndAtNextDayMidnightOfScheduleWindowEndDate() {
-		Performance performance = performanceRepository.save(Performance.create(
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 20),
 				"Main Hall",
@@ -315,7 +320,7 @@ class AvailableTimeServiceTest {
 
 	@Test
 	void getAvailableTimeOverlapsByTeamReturnsCommonAvailableTimesForAllTeamMembers() {
-		Performance performance = performanceRepository.save(Performance.create(
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 20),
 				"Main Hall",
@@ -356,7 +361,7 @@ class AvailableTimeServiceTest {
 
 	@Test
 	void getAvailableTimeOverlapsByTeamReturnsEmptyListWhenAnyTeamMemberHasNoAvailableTime() {
-		Performance performance = performanceRepository.save(Performance.create(
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 20),
 				"Main Hall",
@@ -376,7 +381,7 @@ class AvailableTimeServiceTest {
 	}
 
 	private TeamMember createTeamMemberWithScheduleWindow() {
-		Performance performance = performanceRepository.save(Performance.create(
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 20),
 				"Main Hall",
@@ -387,7 +392,7 @@ class AvailableTimeServiceTest {
 	}
 
 	private TeamMember createTeamMemberWithoutScheduleWindow() {
-		Performance performance = performanceRepository.save(Performance.create(
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 20),
 				"Main Hall"

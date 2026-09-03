@@ -1,5 +1,6 @@
 package io.github.juc211.band_schedule.controller;
 
+import static io.github.juc211.band_schedule.support.TestEntityFactory.createPerformance;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -13,12 +14,14 @@ import io.github.juc211.band_schedule.domain.PerformanceConfirmedSong;
 import io.github.juc211.band_schedule.domain.PerformanceMember;
 import io.github.juc211.band_schedule.domain.SongPreference;
 import io.github.juc211.band_schedule.domain.User;
+import io.github.juc211.band_schedule.repository.ClubRepository;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.PerformanceConfirmedSongRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
 import io.github.juc211.band_schedule.repository.SongPreferenceRepository;
 import io.github.juc211.band_schedule.repository.UserRepository;
+import io.github.juc211.band_schedule.support.TestEntityFactory;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +49,9 @@ class SongPreferenceControllerTest {
 
 	@Autowired
 	private PerformanceRepository performanceRepository;
+
+	@Autowired
+	private ClubRepository clubRepository;
 
 	@Autowired
 	private PerformanceConfirmedSongRepository performanceConfirmedSongRepository;
@@ -141,12 +147,13 @@ class SongPreferenceControllerTest {
 		PerformanceConfirmedSong confirmedSong = performanceConfirmedSongRepository.save(PerformanceConfirmedSong.create(performance, "Song A"));
 		SongPreference songPreference = songPreferenceRepository.save(SongPreference.create(confirmedSong, performanceMember, 2));
 
-		mockMvc.perform(delete("/api/song-preferences/{songPreferenceId}", songPreference.getId()))
+		mockMvc.perform(delete("/api/song-preferences/{songPreferenceId}", songPreference.getId())
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken()))
 				.andExpect(status().isNoContent());
 	}
 
 	private Performance createPerformance() {
-		return performanceRepository.save(Performance.create(
+		return performanceRepository.save(TestEntityFactory.createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 20),
 				"Main Hall"

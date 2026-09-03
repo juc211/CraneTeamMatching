@@ -1,10 +1,12 @@
 package io.github.juc211.band_schedule.service;
 
+import static io.github.juc211.band_schedule.support.TestEntityFactory.createPerformance;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.github.juc211.band_schedule.domain.PerformanceConfirmedSong;
 import io.github.juc211.band_schedule.domain.Performance;
 import io.github.juc211.band_schedule.dto.PerformanceConfirmedSongDto;
+import io.github.juc211.band_schedule.repository.ClubRepository;
 import io.github.juc211.band_schedule.repository.PerformanceConfirmedSongRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
 import java.time.LocalDate;
@@ -28,10 +30,13 @@ class PerformanceConfirmedSongServiceTest {
 	@Autowired
 	private PerformanceRepository performanceRepository;
 
+	@Autowired
+	private ClubRepository clubRepository;
+
 	@Test
 	void createPerformanceConfirmedSongPersistsPerformanceConfirmedSongInPerformance() {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 
 		PerformanceConfirmedSongDto.PerformanceConfirmedSongResponse response = performanceConfirmedSongService.createPerformanceConfirmedSong(
@@ -51,7 +56,7 @@ class PerformanceConfirmedSongServiceTest {
 	@Test
 	void getPerformanceConfirmedSongsByPerformanceReturnsPerformanceConfirmedSongsInPerformance() {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		performanceConfirmedSongRepository.save(PerformanceConfirmedSong.create(performance, "Confirmed Song A - Artist A"));
 		performanceConfirmedSongRepository.save(PerformanceConfirmedSong.create(performance, "Confirmed Song B - Artist B"));
@@ -64,7 +69,7 @@ class PerformanceConfirmedSongServiceTest {
 	@Test
 	void updatePerformanceConfirmedSongChangesSongAndAdminMemo() {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		PerformanceConfirmedSong confirmedSong = performanceConfirmedSongRepository.save(
 				PerformanceConfirmedSong.create(performance, "Old Song", "Old memo")
@@ -85,7 +90,7 @@ class PerformanceConfirmedSongServiceTest {
 	@Test
 	void deletePerformanceConfirmedSongRemovesPerformanceConfirmedSong() {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		PerformanceConfirmedSong confirmedSong = performanceConfirmedSongRepository.save(
 				PerformanceConfirmedSong.create(performance, "Confirmed Song - Artist A")

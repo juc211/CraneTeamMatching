@@ -1,5 +1,6 @@
 package io.github.juc211.band_schedule.controller;
 
+import static io.github.juc211.band_schedule.support.TestEntityFactory.createPerformance;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -11,6 +12,7 @@ import io.github.juc211.band_schedule.domain.PerformanceConfirmedSong;
 import io.github.juc211.band_schedule.domain.Performance;
 import io.github.juc211.band_schedule.domain.InputLink;
 import io.github.juc211.band_schedule.domain.InputLinkType;
+import io.github.juc211.band_schedule.repository.ClubRepository;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.PerformanceConfirmedSongRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
@@ -40,12 +42,15 @@ class PerformanceConfirmedSongControllerTest {
 	private PerformanceRepository performanceRepository;
 
 	@Autowired
+	private ClubRepository clubRepository;
+
+	@Autowired
 	private InputLinkRepository inputLinkRepository;
 
 	@Test
 	void createPerformanceConfirmedSongReturnsCreatedStatus() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 
 		mockMvc.perform(post("/api/performances/{performanceId}/performance-confirmed-songs", performance.getId())
@@ -67,7 +72,7 @@ class PerformanceConfirmedSongControllerTest {
 	@Test
 	void getPerformanceConfirmedSongsByPerformanceReturnsOkStatus() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		performanceConfirmedSongRepository.save(PerformanceConfirmedSong.create(performance, "Confirmed Song A - Artist A"));
 		performanceConfirmedSongRepository.save(PerformanceConfirmedSong.create(performance, "Confirmed Song B - Artist B"));
@@ -81,7 +86,7 @@ class PerformanceConfirmedSongControllerTest {
 	@Test
 	void getPerformanceConfirmedSongsByLinkDoesNotExposeAdminMemo() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		inputLinkRepository.save(InputLink.create("preference-token", performance, InputLinkType.SONG_PREFERENCE, true, null));
 		performanceConfirmedSongRepository.save(PerformanceConfirmedSong.create(performance, "Confirmed Song A - Artist A", "관리자 메모"));
@@ -95,7 +100,7 @@ class PerformanceConfirmedSongControllerTest {
 	@Test
 	void updatePerformanceConfirmedSongReturnsOkStatus() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		PerformanceConfirmedSong confirmedSong = performanceConfirmedSongRepository.save(
 				PerformanceConfirmedSong.create(performance, "Old Song", "Old memo")
@@ -118,13 +123,14 @@ class PerformanceConfirmedSongControllerTest {
 	@Test
 	void deletePerformanceConfirmedSongReturnsNoContentStatus() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		PerformanceConfirmedSong confirmedSong = performanceConfirmedSongRepository.save(
 				PerformanceConfirmedSong.create(performance, "Confirmed Song - Artist A")
 		);
 
-		mockMvc.perform(delete("/api/performance-confirmed-songs/{performanceConfirmedSongId}", confirmedSong.getId()))
+		mockMvc.perform(delete("/api/performance-confirmed-songs/{performanceConfirmedSongId}", confirmedSong.getId())
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken()))
 				.andExpect(status().isNoContent());
 	}
 }

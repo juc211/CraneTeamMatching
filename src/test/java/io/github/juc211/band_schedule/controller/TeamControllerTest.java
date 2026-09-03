@@ -1,5 +1,6 @@
 package io.github.juc211.band_schedule.controller;
 
+import static io.github.juc211.band_schedule.support.TestEntityFactory.createPerformance;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -16,6 +17,7 @@ import io.github.juc211.band_schedule.domain.PerformanceMember;
 import io.github.juc211.band_schedule.domain.Team;
 import io.github.juc211.band_schedule.domain.TeamMember;
 import io.github.juc211.band_schedule.domain.User;
+import io.github.juc211.band_schedule.repository.ClubRepository;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.PerformanceConfirmedSongRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
@@ -46,6 +48,9 @@ class TeamControllerTest {
 	private PerformanceRepository performanceRepository;
 
 	@Autowired
+	private ClubRepository clubRepository;
+
+	@Autowired
 	private TeamRepository teamRepository;
 
 	@Autowired
@@ -66,7 +71,7 @@ class TeamControllerTest {
 	@Test
 	void createAndUpdateTeam() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 
 		String createdTeamResponse = mockMvc.perform(post("/api/performances/{performanceId}/teams", performance.getId())
@@ -105,7 +110,7 @@ class TeamControllerTest {
 	@Test
 	void createTeamFromPerformanceConfirmedSong() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		PerformanceConfirmedSong confirmedSong = performanceConfirmedSongRepository.save(
 				PerformanceConfirmedSong.create(performance, "Confirmed Song A - Artist A")
@@ -128,7 +133,7 @@ class TeamControllerTest {
 	@Test
 	void updateTeamConfirmedSongCanSetConfirmedSongWhenEmpty() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		Team team = teamRepository.save(Team.create(performance, "Team A", null));
 
@@ -149,7 +154,7 @@ class TeamControllerTest {
 	@Test
 	void updateTeamConfirmedSongCanChangeExistingConfirmedSong() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		Team team = teamRepository.save(Team.create(performance, "Team A", "Old Song"));
 
@@ -170,7 +175,7 @@ class TeamControllerTest {
 	@Test
 	void getTeamConfirmedSongReturnsOkStatus() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		Team team = teamRepository.save(Team.create(performance, "Team A", "Confirmed Song - Artist A"));
 
@@ -183,18 +188,19 @@ class TeamControllerTest {
 	@Test
 	void deleteTeamConfirmedSongReturnsNoContentStatus() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		Team team = teamRepository.save(Team.create(performance, "Team A", "Confirmed Song - Artist A"));
 
-		mockMvc.perform(delete("/api/teams/{teamId}/confirmed-song", team.getId()))
+		mockMvc.perform(delete("/api/teams/{teamId}/confirmed-song", team.getId())
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken()))
 				.andExpect(status().isNoContent());
 	}
 
 	@Test
 	void getTeamsByPerformanceReturnsOkStatus() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		Team team = teamRepository.save(Team.create(performance, "Team A", "Song A"));
 
@@ -209,7 +215,7 @@ class TeamControllerTest {
 	@Test
 	void getTeamsByLinkReturnsOkStatus() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		inputLinkRepository.save(InputLink.create("available-token", performance, InputLinkType.AVAILABLE_TIME, true, null));
 		Team team = teamRepository.save(Team.create(performance, "Team A", "Song A"));
@@ -224,7 +230,7 @@ class TeamControllerTest {
 	@Test
 	void addTeamMember() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		User user = userRepository.save(User.create("Kim Multi", "20261234"));
 		PerformanceMember performanceMember = performanceMemberRepository.save(PerformanceMember.create(performance, user));
@@ -248,7 +254,7 @@ class TeamControllerTest {
 	@Test
 	void getTeamMembersReturnsOkStatus() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		User user = userRepository.save(User.create("Kim Multi", "20261234"));
 		PerformanceMember performanceMember = performanceMemberRepository.save(PerformanceMember.create(performance, user));
@@ -268,7 +274,7 @@ class TeamControllerTest {
 	@Test
 	void getTeamMembersByLinkReturnsOkStatus() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		inputLinkRepository.save(InputLink.create("available-token", performance, InputLinkType.AVAILABLE_TIME, true, null));
 		User user = userRepository.save(User.create("Kim Multi", "20261234"));
@@ -286,25 +292,27 @@ class TeamControllerTest {
 	@Test
 	void deleteTeamMemberReturnsNoContentStatus() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		User user = userRepository.save(User.create("Kim Multi", "20261234"));
 		PerformanceMember performanceMember = performanceMemberRepository.save(PerformanceMember.create(performance, user));
 		Team team = teamRepository.save(Team.create(performance, "Team A", "Song A"));
 		TeamMember teamMember = teamMemberRepository.save(TeamMember.create(team, performanceMember, Part.VOCAL));
 
-		mockMvc.perform(delete("/api/team-members/{teamMemberId}", teamMember.getId()))
+		mockMvc.perform(delete("/api/team-members/{teamMemberId}", teamMember.getId())
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken()))
 				.andExpect(status().isNoContent());
 	}
 
 	@Test
 	void deleteTeamReturnsNoContentStatus() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		Team team = teamRepository.save(Team.create(performance, "Team A", "Song A"));
 
-		mockMvc.perform(delete("/api/teams/{teamId}", team.getId()))
+		mockMvc.perform(delete("/api/teams/{teamId}", team.getId())
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken()))
 				.andExpect(status().isNoContent());
 	}
 }

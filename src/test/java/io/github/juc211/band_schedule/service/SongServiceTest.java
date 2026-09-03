@@ -1,5 +1,6 @@
 package io.github.juc211.band_schedule.service;
 
+import static io.github.juc211.band_schedule.support.TestEntityFactory.createPerformance;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -14,6 +15,7 @@ import io.github.juc211.band_schedule.domain.User;
 import io.github.juc211.band_schedule.domain.Vote;
 import io.github.juc211.band_schedule.dto.SongDto;
 import io.github.juc211.band_schedule.exception.BusinessException;
+import io.github.juc211.band_schedule.repository.ClubRepository;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
@@ -50,6 +52,9 @@ class SongServiceTest {
 	private PerformanceRepository performanceRepository;
 
 	@Autowired
+	private ClubRepository clubRepository;
+
+	@Autowired
 	private PerformanceMemberRepository performanceMemberRepository;
 
 	@Autowired
@@ -61,7 +66,7 @@ class SongServiceTest {
 	@Test
 	void createSongRequestWithoutSelectedTeamStoresNullTeam() {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		User user = userRepository.save(User.create("Kim Band", "20261234"));
 		PerformanceMember performanceMember = performanceMemberRepository.save(PerformanceMember.create(performance, user));
@@ -87,7 +92,7 @@ class SongServiceTest {
 	@Test
 	void createSongRequestStoresYoutubeUrl() {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		User user = userRepository.save(User.create("Kim Band", "20261234"));
 		PerformanceMember performanceMember = performanceMemberRepository.save(PerformanceMember.create(performance, user));
@@ -113,7 +118,7 @@ class SongServiceTest {
 	@Test
 	void createSongRequestWithSelectedTeamStoresTeam() {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		Team team = teamRepository.save(Team.create(performance, "Team A", "Confirmed Song"));
 		User user = userRepository.save(User.create("Kim Band", "20261234"));
@@ -136,7 +141,7 @@ class SongServiceTest {
 	@Test
 	void createSongRequestRejectsExpiredSongRequestLink() {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		User user = userRepository.save(User.create("Kim Band", "20261234"));
 		PerformanceMember performanceMember = performanceMemberRepository.save(PerformanceMember.create(performance, user));
@@ -161,7 +166,7 @@ class SongServiceTest {
 	@Test
 	void getSongRequestsByPerformanceReturnsAllSongRequestsInPerformance() {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		Team team = teamRepository.save(Team.create(performance, "Team A", "Confirmed Song"));
 		User user = userRepository.save(User.create("Kim Band", "20261234"));
@@ -177,7 +182,7 @@ class SongServiceTest {
 	@Test
 	void getSongRequestsByTeamReturnsOnlySelectedTeamSongRequests() {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		Team firstTeam = teamRepository.save(Team.create(performance, "Team A", "Confirmed Song A"));
 		Team secondTeam = teamRepository.save(Team.create(performance, "Team B", "Confirmed Song B"));
@@ -194,7 +199,7 @@ class SongServiceTest {
 	@Test
 	void updateSongRequestChangesTeamAndSong() {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		Team team = teamRepository.save(Team.create(performance, "Team A", "Confirmed Song"));
 		User user = userRepository.save(User.create("Kim Band", "20261234"));
@@ -225,10 +230,10 @@ class SongServiceTest {
 	@Test
 	void updateSongRequestRejectsTeamFromDifferentPerformance() {
 		Performance firstPerformance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		Performance secondPerformance = performanceRepository.save(
-				Performance.create("2026 Winter Concert", LocalDate.of(2026, 12, 20), "Club Room")
+				createPerformance(clubRepository, "2026 Winter Concert", LocalDate.of(2026, 12, 20), "Club Room")
 		);
 		Team otherTeam = teamRepository.save(Team.create(secondPerformance, "Team B", "Confirmed Song"));
 		User user = userRepository.save(User.create("Kim Band", "20261234"));
@@ -248,7 +253,7 @@ class SongServiceTest {
 	@Test
 	void deleteSongRequestRemovesSongRequest() {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		User user = userRepository.save(User.create("Kim Band", "20261234"));
 		PerformanceMember performanceMember = performanceMemberRepository.save(PerformanceMember.create(performance, user));
@@ -264,7 +269,7 @@ class SongServiceTest {
 	@Test
 	void deleteSongRequestRemovesSongVotesTogether() {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		User user = userRepository.save(User.create("Kim Band", "20261234"));
 		PerformanceMember performanceMember = performanceMemberRepository.save(PerformanceMember.create(performance, user));
@@ -282,7 +287,7 @@ class SongServiceTest {
 	@Test
 	void deleteSongVoteRemovesSongVote() {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		User user = userRepository.save(User.create("Kim Band", "20261234"));
 		PerformanceMember performanceMember = performanceMemberRepository.save(PerformanceMember.create(performance, user));
@@ -300,7 +305,7 @@ class SongServiceTest {
 	@Test
 	void submitSongVoteAllowsVotingOwnAndOthersSongRequests() {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		User requesterUser = userRepository.save(User.create("Kim Requester", "20261234"));
 		User voterUser = userRepository.save(User.create("Lee Voter", "20261235"));
@@ -336,7 +341,7 @@ class SongServiceTest {
 	@Test
 	void submitSongVoteUpdatesExistingVoteForSameSongRequestAndVoter() {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		User user = userRepository.save(User.create("Kim Band", "20261234"));
 		PerformanceMember voterMember = performanceMemberRepository.save(PerformanceMember.create(performance, user));
@@ -365,7 +370,7 @@ class SongServiceTest {
 	@Test
 	void getSongVotesBySongRequestReturnsVotesForSongRequest() {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		User firstUser = userRepository.save(User.create("Kim Vocal", "20261234"));
 		User secondUser = userRepository.save(User.create("Lee Guitar", "20261235"));
@@ -385,10 +390,10 @@ class SongServiceTest {
 	@Test
 	void submitSongVoteRejectsSongRequestFromDifferentPerformance() {
 		Performance firstPerformance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		Performance secondPerformance = performanceRepository.save(
-				Performance.create("2026 Winter Concert", LocalDate.of(2026, 12, 20), "Club Room")
+				createPerformance(clubRepository, "2026 Winter Concert", LocalDate.of(2026, 12, 20), "Club Room")
 		);
 		User user = userRepository.save(User.create("Kim Band", "20261234"));
 		PerformanceMember voterMember = performanceMemberRepository.save(PerformanceMember.create(firstPerformance, user));
@@ -410,10 +415,10 @@ class SongServiceTest {
 	@Test
 	void createSongRequestRejectsSelectedTeamFromDifferentPerformance() {
 		Performance firstPerformance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		Performance secondPerformance = performanceRepository.save(
-				Performance.create("2026 Winter Concert", LocalDate.of(2026, 12, 20), "Club Room")
+				createPerformance(clubRepository, "2026 Winter Concert", LocalDate.of(2026, 12, 20), "Club Room")
 		);
 		Team otherTeam = teamRepository.save(Team.create(secondPerformance, "Team B", "Confirmed Song"));
 		User user = userRepository.save(User.create("Kim Band", "20261234"));
@@ -433,10 +438,10 @@ class SongServiceTest {
 	@Test
 	void createSongRequestRejectsMemberFromDifferentPerformance() {
 		Performance firstPerformance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		Performance secondPerformance = performanceRepository.save(
-				Performance.create("2026 Winter Concert", LocalDate.of(2026, 12, 20), "Club Room")
+				createPerformance(clubRepository, "2026 Winter Concert", LocalDate.of(2026, 12, 20), "Club Room")
 		);
 		User user = userRepository.save(User.create("Kim Band", "20261234"));
 		PerformanceMember otherPerformanceMember = performanceMemberRepository.save(PerformanceMember.create(secondPerformance, user));
