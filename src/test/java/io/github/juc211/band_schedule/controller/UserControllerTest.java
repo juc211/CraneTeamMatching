@@ -86,7 +86,8 @@ class UserControllerTest {
 								"""))
 				.andExpect(status().isCreated());
 
-		mockMvc.perform(get("/api/users"))
+		mockMvc.perform(get("/api/users")
+						.header("X-Master-Admin-Token", "test-master-token"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].name").value("Kim Band"))
 				.andExpect(jsonPath("$[0].studentNumber").value("20261234"))
@@ -143,7 +144,8 @@ class UserControllerTest {
 				.getContentAsString();
 		Long userId = Long.valueOf(createResponse.replaceAll(".*\\\"userId\\\":(\\d+).*", "$1"));
 
-		mockMvc.perform(get("/api/users/{userId}", userId))
+		mockMvc.perform(get("/api/users/{userId}", userId)
+						.header("X-Master-Admin-Token", "test-master-token"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.userId").value(userId))
 				.andExpect(jsonPath("$.name").value("Kim Band"))
@@ -298,7 +300,8 @@ class UserControllerTest {
 				.getContentAsString();
 		Long userId = Long.valueOf(createResponse.replaceAll(".*\\\"userId\\\":(\\d+).*", "$1"));
 
-		mockMvc.perform(delete("/api/users/{userId}", userId))
+		mockMvc.perform(delete("/api/users/{userId}", userId)
+						.header("X-Master-Admin-Token", "test-master-token"))
 				.andExpect(status().isNoContent());
 	}
 }

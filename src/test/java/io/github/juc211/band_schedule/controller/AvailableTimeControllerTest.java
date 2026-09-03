@@ -1,5 +1,6 @@
 package io.github.juc211.band_schedule.controller;
 
+import static io.github.juc211.band_schedule.support.TestEntityFactory.createPerformance;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -14,6 +15,7 @@ import io.github.juc211.band_schedule.domain.PerformanceMember;
 import io.github.juc211.band_schedule.domain.Team;
 import io.github.juc211.band_schedule.domain.TeamMember;
 import io.github.juc211.band_schedule.domain.User;
+import io.github.juc211.band_schedule.repository.ClubRepository;
 import io.github.juc211.band_schedule.repository.AvailableTimeRepository;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
@@ -46,6 +48,9 @@ class AvailableTimeControllerTest {
 
 	@Autowired
 	private PerformanceRepository performanceRepository;
+
+	@Autowired
+	private ClubRepository clubRepository;
 
 	@Autowired
 	private TeamRepository teamRepository;
@@ -128,7 +133,7 @@ class AvailableTimeControllerTest {
 
 	@Test
 	void getAvailableTimeOverlapsByTeamReturnsOkStatus() throws Exception {
-		Performance performance = performanceRepository.save(Performance.create(
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 20),
 				"Main Hall",
@@ -215,7 +220,7 @@ class AvailableTimeControllerTest {
 	}
 
 	private TeamMember createTeamMemberWithScheduleWindow() {
-		Performance performance = performanceRepository.save(Performance.create(
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 20),
 				"Main Hall",

@@ -63,20 +63,6 @@ public class Performance {
 		return performance;
 	}
 
-	public static Performance create(String title, LocalDate performanceDate, String location) {
-		return create(Club.create("Default Club"), title, performanceDate, location, null, null);
-	}
-
-	public static Performance create(
-			String title,
-			LocalDate performanceDate,
-			String location,
-			LocalDate scheduleWindowStartDate,
-			LocalDate scheduleWindowEndDate
-	) {
-		return create(Club.create("Default Club"), title, performanceDate, location, scheduleWindowStartDate, scheduleWindowEndDate);
-	}
-
 	public void update(
 			String title,
 			LocalDate performanceDate,

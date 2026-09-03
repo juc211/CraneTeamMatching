@@ -1,5 +1,6 @@
 package io.github.juc211.band_schedule.service;
 
+import static io.github.juc211.band_schedule.support.TestEntityFactory.createPerformance;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -110,12 +111,12 @@ class PerformanceServiceTest {
 
 	@Test
 	void getPerformancesReturnsRegisteredPerformances() {
-		performanceRepository.save(Performance.create(
+		performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 15),
 				"Main Hall"
 		));
-		performanceRepository.save(Performance.create(
+		performanceRepository.save(createPerformance(clubRepository,
 				"2026 Winter Concert",
 				LocalDate.of(2026, 12, 20),
 				"Club Room"
@@ -128,7 +129,7 @@ class PerformanceServiceTest {
 
 	@Test
 	void getPerformanceReturnsSinglePerformance() {
-		Performance performance = performanceRepository.save(Performance.create(
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 15),
 				"Main Hall"
@@ -146,7 +147,7 @@ class PerformanceServiceTest {
 
 	@Test
 	void updatePerformanceChangesPerformanceFields() {
-		Performance performance = performanceRepository.save(Performance.create(
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 15),
 				"Main Hall"
@@ -175,7 +176,7 @@ class PerformanceServiceTest {
 
 	@Test
 	void updatePerformanceScheduleWindowChangesOnlyScheduleWindow() {
-		Performance performance = performanceRepository.save(Performance.create(
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 20),
 				"Main Hall"
@@ -199,7 +200,7 @@ class PerformanceServiceTest {
 
 	@Test
 	void addPerformanceMembersRejectsDuplicateUserInSameRequest() {
-		Performance performance = performanceRepository.save(Performance.create(
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 20),
 				"Main Hall"
@@ -216,7 +217,7 @@ class PerformanceServiceTest {
 
 	@Test
 	void addPerformanceMembersRejectsUserAlreadyAddedToPerformance() {
-		Performance performance = performanceRepository.save(Performance.create(
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 20),
 				"Main Hall"
@@ -234,7 +235,7 @@ class PerformanceServiceTest {
 
 	@Test
 	void getPerformanceScheduleWindowReturnsScheduleWindow() {
-		Performance performance = performanceRepository.save(Performance.create(
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 20),
 				"Main Hall",
@@ -252,7 +253,7 @@ class PerformanceServiceTest {
 
 	@Test
 	void deletePerformanceScheduleWindowClearsScheduleWindow() {
-		Performance performance = performanceRepository.save(Performance.create(
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 20),
 				"Main Hall",
@@ -270,7 +271,7 @@ class PerformanceServiceTest {
 
 	@Test
 	void deletePerformanceScheduleWindowRejectsWhenAvailableTimesExist() {
-		Performance performance = performanceRepository.save(Performance.create(
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 20),
 				"Main Hall",
@@ -310,7 +311,7 @@ class PerformanceServiceTest {
 
 	@Test
 	void getPerformanceMembersReturnsMembersInPerformance() {
-		Performance performance = performanceRepository.save(Performance.create(
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 15),
 				"Main Hall"
@@ -329,7 +330,7 @@ class PerformanceServiceTest {
 
 	@Test
 	void deletePerformanceMemberDeletesChildrenButKeepsUser() {
-		Performance performance = performanceRepository.save(Performance.create(
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 15),
 				"Main Hall"
@@ -359,7 +360,7 @@ class PerformanceServiceTest {
 
 	@Test
 	void deletePerformanceDeletesAllPerformanceChildrenButKeepsUsers() {
-		Performance performance = performanceRepository.save(Performance.create(
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 15),
 				"Main Hall"

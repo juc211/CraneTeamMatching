@@ -1,5 +1,6 @@
 package io.github.juc211.band_schedule.service;
 
+import static io.github.juc211.band_schedule.support.TestEntityFactory.createPerformance;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -10,10 +11,12 @@ import io.github.juc211.band_schedule.domain.Performance;
 import io.github.juc211.band_schedule.domain.Team;
 import io.github.juc211.band_schedule.dto.FinalScheduleDto;
 import io.github.juc211.band_schedule.exception.BusinessException;
+import io.github.juc211.band_schedule.repository.ClubRepository;
 import io.github.juc211.band_schedule.repository.FinalScheduleRepository;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
 import io.github.juc211.band_schedule.repository.TeamRepository;
+import io.github.juc211.band_schedule.support.TestEntityFactory;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
@@ -35,6 +38,9 @@ class FinalScheduleServiceTest {
 
 	@Autowired
 	private PerformanceRepository performanceRepository;
+
+	@Autowired
+	private ClubRepository clubRepository;
 
 	@Autowired
 	private TeamRepository teamRepository;
@@ -323,7 +329,7 @@ class FinalScheduleServiceTest {
 	}
 
 	private Performance createPerformance() {
-		return performanceRepository.save(Performance.create(
+		return performanceRepository.save(TestEntityFactory.createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 20),
 				"Main Hall",

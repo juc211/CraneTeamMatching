@@ -1,5 +1,6 @@
 package io.github.juc211.band_schedule.service;
 
+import static io.github.juc211.band_schedule.support.TestEntityFactory.createPerformance;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -9,6 +10,7 @@ import io.github.juc211.band_schedule.domain.User;
 import io.github.juc211.band_schedule.domain.UserStatus;
 import io.github.juc211.band_schedule.dto.UserDto;
 import io.github.juc211.band_schedule.exception.BusinessException;
+import io.github.juc211.band_schedule.repository.ClubRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
 import io.github.juc211.band_schedule.repository.UserRepository;
@@ -32,6 +34,9 @@ class UserServiceTest {
 
 	@Autowired
 	private PerformanceRepository performanceRepository;
+
+	@Autowired
+	private ClubRepository clubRepository;
 
 	@Autowired
 	private PerformanceMemberRepository performanceMemberRepository;
@@ -182,7 +187,7 @@ class UserServiceTest {
 	void deleteUserRejectsUserWithPerformanceMemberReference() {
 		User user = userRepository.save(User.create("Kim Band", "20261234"));
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 20), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 20), "Main Hall")
 		);
 		performanceMemberRepository.save(PerformanceMember.create(performance, user));
 

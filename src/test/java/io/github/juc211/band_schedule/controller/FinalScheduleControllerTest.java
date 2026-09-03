@@ -1,5 +1,6 @@
 package io.github.juc211.band_schedule.controller;
 
+import static io.github.juc211.band_schedule.support.TestEntityFactory.createPerformance;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -12,10 +13,12 @@ import io.github.juc211.band_schedule.domain.InputLink;
 import io.github.juc211.band_schedule.domain.InputLinkType;
 import io.github.juc211.band_schedule.domain.Performance;
 import io.github.juc211.band_schedule.domain.Team;
+import io.github.juc211.band_schedule.repository.ClubRepository;
 import io.github.juc211.band_schedule.repository.FinalScheduleRepository;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
 import io.github.juc211.band_schedule.repository.TeamRepository;
+import io.github.juc211.band_schedule.support.TestEntityFactory;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
@@ -41,6 +44,9 @@ class FinalScheduleControllerTest {
 
 	@Autowired
 	private PerformanceRepository performanceRepository;
+
+	@Autowired
+	private ClubRepository clubRepository;
 
 	@Autowired
 	private TeamRepository teamRepository;
@@ -202,7 +208,8 @@ class FinalScheduleControllerTest {
 				null
 		));
 
-		mockMvc.perform(delete("/api/final-schedules/{finalScheduleId}", finalSchedule.getId()))
+		mockMvc.perform(delete("/api/final-schedules/{finalScheduleId}", finalSchedule.getId())
+						.header("X-Club-Admin-Token", team.getPerformance().getClub().getAdminToken()))
 				.andExpect(status().isNoContent());
 	}
 
@@ -211,7 +218,7 @@ class FinalScheduleControllerTest {
 	}
 
 	private Performance createPerformance() {
-		return performanceRepository.save(Performance.create(
+		return performanceRepository.save(TestEntityFactory.createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 20),
 				"Main Hall",

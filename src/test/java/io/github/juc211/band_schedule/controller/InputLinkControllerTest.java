@@ -1,5 +1,6 @@
 package io.github.juc211.band_schedule.controller;
 
+import static io.github.juc211.band_schedule.support.TestEntityFactory.createPerformance;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -15,12 +16,14 @@ import io.github.juc211.band_schedule.domain.PerformanceMember;
 import io.github.juc211.band_schedule.domain.Team;
 import io.github.juc211.band_schedule.domain.TeamMember;
 import io.github.juc211.band_schedule.domain.User;
+import io.github.juc211.band_schedule.repository.ClubRepository;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
 import io.github.juc211.band_schedule.repository.TeamMemberRepository;
 import io.github.juc211.band_schedule.repository.TeamRepository;
 import io.github.juc211.band_schedule.repository.UserRepository;
+import io.github.juc211.band_schedule.support.TestEntityFactory;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
@@ -46,6 +49,9 @@ class InputLinkControllerTest {
 
 	@Autowired
 	private PerformanceRepository performanceRepository;
+
+	@Autowired
+	private ClubRepository clubRepository;
 
 	@Autowired
 	private PerformanceMemberRepository performanceMemberRepository;
@@ -173,7 +179,8 @@ class InputLinkControllerTest {
 				InputLink.create("available-token", performance, InputLinkType.AVAILABLE_TIME, true, null)
 		);
 
-		mockMvc.perform(delete("/api/input-links/{inputLinkId}", inputLink.getId()))
+		mockMvc.perform(delete("/api/input-links/{inputLinkId}", inputLink.getId())
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken()))
 				.andExpect(status().isNoContent());
 	}
 
@@ -228,7 +235,7 @@ class InputLinkControllerTest {
 	}
 
 	private Performance createPerformance() {
-		return performanceRepository.save(Performance.create(
+		return performanceRepository.save(TestEntityFactory.createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 20),
 				"Main Hall"

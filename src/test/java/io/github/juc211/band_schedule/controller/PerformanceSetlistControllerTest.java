@@ -1,5 +1,6 @@
 package io.github.juc211.band_schedule.controller;
 
+import static io.github.juc211.band_schedule.support.TestEntityFactory.createPerformance;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -9,9 +10,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import io.github.juc211.band_schedule.domain.Performance;
 import io.github.juc211.band_schedule.domain.PerformanceSetlistItem;
 import io.github.juc211.band_schedule.domain.Team;
+import io.github.juc211.band_schedule.repository.ClubRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
 import io.github.juc211.band_schedule.repository.PerformanceSetlistItemRepository;
 import io.github.juc211.band_schedule.repository.TeamRepository;
+import io.github.juc211.band_schedule.support.TestEntityFactory;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +39,9 @@ class PerformanceSetlistControllerTest {
 
 	@Autowired
 	private PerformanceRepository performanceRepository;
+
+	@Autowired
+	private ClubRepository clubRepository;
 
 	@Autowired
 	private TeamRepository teamRepository;
@@ -106,12 +112,13 @@ class PerformanceSetlistControllerTest {
 		Team team = teamRepository.save(Team.create(performance, "Team A", "Song A"));
 		performanceSetlistItemRepository.save(PerformanceSetlistItem.create(performance, team, 1));
 
-		mockMvc.perform(delete("/api/performances/{performanceId}/setlist", performance.getId()))
+		mockMvc.perform(delete("/api/performances/{performanceId}/setlist", performance.getId())
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken()))
 				.andExpect(status().isNoContent());
 	}
 
 	private Performance createPerformance() {
-		return performanceRepository.save(Performance.create(
+		return performanceRepository.save(TestEntityFactory.createPerformance(clubRepository,
 				"2026 Summer Concert",
 				LocalDate.of(2026, 8, 20),
 				"Main Hall"

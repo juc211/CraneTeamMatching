@@ -1,5 +1,6 @@
 package io.github.juc211.band_schedule.controller;
 
+import static io.github.juc211.band_schedule.support.TestEntityFactory.createPerformance;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -16,6 +17,7 @@ import io.github.juc211.band_schedule.domain.SongVote;
 import io.github.juc211.band_schedule.domain.Team;
 import io.github.juc211.band_schedule.domain.User;
 import io.github.juc211.band_schedule.domain.Vote;
+import io.github.juc211.band_schedule.repository.ClubRepository;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
@@ -50,6 +52,9 @@ class SongControllerTest {
 	private PerformanceRepository performanceRepository;
 
 	@Autowired
+	private ClubRepository clubRepository;
+
+	@Autowired
 	private PerformanceMemberRepository performanceMemberRepository;
 
 	@Autowired
@@ -67,7 +72,7 @@ class SongControllerTest {
 	@Test
 	void createSongRequestWithoutSelectedTeamReturnsCreatedStatus() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		User user = userRepository.save(User.create("Kim Band", "20261234"));
 		PerformanceMember performanceMember = performanceMemberRepository.save(PerformanceMember.create(performance, user));
@@ -97,7 +102,7 @@ class SongControllerTest {
 	@Test
 	void createSongRequestWithSelectedTeamReturnsCreatedStatus() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		Team team = teamRepository.save(Team.create(performance, "Team A", "Confirmed Song"));
 		User user = userRepository.save(User.create("Kim Band", "20261234"));
@@ -126,7 +131,7 @@ class SongControllerTest {
 	@Test
 	void getSongRequestsByPerformanceReturnsOkStatus() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		Team team = teamRepository.save(Team.create(performance, "Team A", "Confirmed Song"));
 		User user = userRepository.save(User.create("Kim Band", "20261234"));
@@ -143,7 +148,7 @@ class SongControllerTest {
 	@Test
 	void getSongRequestsByTeamReturnsOkStatus() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		Team firstTeam = teamRepository.save(Team.create(performance, "Team A", "Confirmed Song A"));
 		Team secondTeam = teamRepository.save(Team.create(performance, "Team B", "Confirmed Song B"));
@@ -161,7 +166,7 @@ class SongControllerTest {
 	@Test
 	void updateSongRequestReturnsOkStatus() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		Team team = teamRepository.save(Team.create(performance, "Team A", "Confirmed Song"));
 		User user = userRepository.save(User.create("Kim Band", "20261234"));
@@ -192,7 +197,7 @@ class SongControllerTest {
 	@Test
 	void deleteSongRequestReturnsNoContentStatus() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		User user = userRepository.save(User.create("Kim Band", "20261234"));
 		PerformanceMember performanceMember = performanceMemberRepository.save(PerformanceMember.create(performance, user));
@@ -200,14 +205,15 @@ class SongControllerTest {
 				SongRequest.create(performance, null, performanceMember, "Song A - Artist A")
 		);
 
-		mockMvc.perform(delete("/api/song-requests/{songRequestId}", songRequest.getId()))
+		mockMvc.perform(delete("/api/song-requests/{songRequestId}", songRequest.getId())
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken()))
 				.andExpect(status().isNoContent());
 	}
 
 	@Test
 	void submitSongVoteReturnsCreatedStatus() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		User requesterUser = userRepository.save(User.create("Kim Requester", "20261234"));
 		User voterUser = userRepository.save(User.create("Lee Voter", "20261235"));
@@ -241,7 +247,7 @@ class SongControllerTest {
 	@Test
 	void getSongVotesBySongRequestReturnsOkStatus() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		User user = userRepository.save(User.create("Kim Band", "20261234"));
 		PerformanceMember performanceMember = performanceMemberRepository.save(PerformanceMember.create(performance, user));
@@ -262,7 +268,7 @@ class SongControllerTest {
 	@Test
 	void deleteSongVoteReturnsNoContentStatus() throws Exception {
 		Performance performance = performanceRepository.save(
-				Performance.create("2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
+				createPerformance(clubRepository, "2026 Summer Concert", LocalDate.of(2026, 8, 15), "Main Hall")
 		);
 		User user = userRepository.save(User.create("Kim Band", "20261234"));
 		PerformanceMember performanceMember = performanceMemberRepository.save(PerformanceMember.create(performance, user));
@@ -271,7 +277,8 @@ class SongControllerTest {
 		);
 		SongVote songVote = songVoteRepository.save(SongVote.create(songRequest, performanceMember, Vote.POSSIBLE, "가능"));
 
-		mockMvc.perform(delete("/api/song-votes/{songVoteId}", songVote.getId()))
+		mockMvc.perform(delete("/api/song-votes/{songVoteId}", songVote.getId())
+						.header("X-Club-Admin-Token", performance.getClub().getAdminToken()))
 				.andExpect(status().isNoContent());
 	}
 
