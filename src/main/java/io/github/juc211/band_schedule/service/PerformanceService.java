@@ -61,17 +61,18 @@ public class PerformanceService {
         if (clubId == null) {
             throw new BusinessException(ErrorCode.CLUB_NOT_FOUND, "Club id is required");
         }
-        Club club = clubRepository.findById(clubId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.CLUB_NOT_FOUND, "Club not found: " + clubId));
-        return createPerformance(club, request);
+        return createPerformance(clubId, request);
     }
 
-    public PerformanceDto.PerformanceCreateResponse createPerformance(Club club, PerformanceDto.PerformanceCreateRequest request) {
+    public PerformanceDto.PerformanceCreateResponse createPerformance(Long clubId, PerformanceDto.PerformanceCreateRequest request) {
         validateScheduleWindowFields(
                 request.performanceDate(),
                 request.scheduleWindowStartDate(),
                 request.scheduleWindowEndDate()
         );
+
+        Club club = clubRepository.findById(clubId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CLUB_NOT_FOUND, "Club not found: " + clubId));
 
         Performance performance = Performance.create(
                 club,

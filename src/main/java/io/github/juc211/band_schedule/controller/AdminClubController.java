@@ -117,6 +117,6 @@ public class AdminClubController {
 			@Valid @RequestBody PerformanceDto.PerformanceCreateRequest request
 	) {
 		Club club = adminAuthService.requireClubAdmin(clubAdminToken);
-		return ResponseEntity.status(HttpStatus.CREATED).body(performanceService.createPerformance(club, request));
+		return ResponseEntity.status(HttpStatus.CREATED).body(performanceService.createPerformance(club.getId(), request));
 	}
 }
