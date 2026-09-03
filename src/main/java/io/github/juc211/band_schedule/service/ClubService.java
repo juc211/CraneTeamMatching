@@ -19,10 +19,16 @@ public class ClubService {
 	private final ClubRepository clubRepository;
 	private final PerformanceService performanceService;
 
+	/**
+	 * 동아리 생성
+	 */
 	public ClubDto.ClubResponse createClub(ClubDto.ClubCreateRequest request) {
 		return toClubResponse(clubRepository.save(Club.create(request.name())));
 	}
 
+	/**
+	 * 동아리 목록 조회
+	 */
 	@Transactional(readOnly = true)
 	public List<ClubDto.ClubResponse> getClubs() {
 		return clubRepository.findAll(Sort.by(Sort.Direction.ASC, "id"))
@@ -31,6 +37,9 @@ public class ClubService {
 				.toList();
 	}
 
+	/**
+	 * 현재 동아리 조회
+	 */
 	@Transactional(readOnly = true)
 	public ClubDto.ClubResponse getCurrentClub(String adminToken) {
 		Club club = clubRepository.findByAdminToken(adminToken)
@@ -38,6 +47,9 @@ public class ClubService {
 		return toClubResponse(club);
 	}
 
+	/**
+	 * 현재 동아리 관리자 토큰 재발급
+	 */
 	public ClubDto.ClubResponse reissueCurrentClubAdminToken(String adminToken) {
 		Club club = clubRepository.findByAdminToken(adminToken)
 				.orElseThrow(() -> new BusinessException(ErrorCode.CLUB_ADMIN_UNAUTHORIZED, "Club admin token is missing or invalid"));
@@ -45,6 +57,9 @@ public class ClubService {
 		return toClubResponse(club);
 	}
 
+	/**
+	 * 동아리 삭제
+	 */
 	public void deleteClub(Long clubId) {
 		Club club = clubRepository.findById(clubId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.CLUB_NOT_FOUND, "Club not found: " + clubId));

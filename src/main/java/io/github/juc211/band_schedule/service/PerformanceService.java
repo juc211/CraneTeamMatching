@@ -64,6 +64,9 @@ public class PerformanceService {
         return createPerformance(clubId, request);
     }
 
+    /**
+     * 동아리 공연 생성
+     */
     public PerformanceDto.PerformanceCreateResponse createPerformance(Long clubId, PerformanceDto.PerformanceCreateRequest request) {
         validateScheduleWindowFields(
                 request.performanceDate(),
@@ -91,6 +94,9 @@ public class PerformanceService {
         );
     }
 
+    /**
+     * 동아리별 공연 목록 조회
+     */
     @Transactional(readOnly = true)
     public List<PerformanceDto.PerformanceResponse> getPerformancesByClub(Long clubId) {
         if (!clubRepository.existsById(clubId)) {
@@ -353,6 +359,9 @@ public class PerformanceService {
         performanceRepository.delete(performance);
     }
 
+    /**
+     * 동아리별 공연 삭제
+     */
     public void deletePerformancesByClub(Long clubId) {
         List<Long> performanceIds = performanceRepository.findByClubIdOrderByIdAsc(clubId)
                 .stream()

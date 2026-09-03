@@ -45,12 +45,18 @@ public class AdminAuthService {
 	@Value("${admin.master-token:}")
 	private String masterAdminToken;
 
+	/**
+	 * 마스터 관리자 권한 검증
+	 */
 	public void requireMasterAdmin(String token) {
 		if (!StringUtils.hasText(masterAdminToken) || !masterAdminToken.equals(token)) {
 			throw new BusinessException(ErrorCode.MASTER_ADMIN_UNAUTHORIZED, "Master admin token is missing or invalid");
 		}
 	}
 
+	/**
+	 * 동아리 관리자 권한 검증
+	 */
 	public Club requireClubAdmin(String token) {
 		if (!StringUtils.hasText(token)) {
 			throw new BusinessException(ErrorCode.CLUB_ADMIN_UNAUTHORIZED, "Club admin token is missing or invalid");
@@ -59,6 +65,9 @@ public class AdminAuthService {
 				.orElseThrow(() -> new BusinessException(ErrorCode.CLUB_ADMIN_UNAUTHORIZED, "Club admin token is missing or invalid"));
 	}
 
+	/**
+	 * 공연에 대한 동아리 관리자 권한 검증
+	 */
 	public Club requireClubAdminForPerformance(String token, Long performanceId) {
 		Performance performance = performanceRepository.findById(performanceId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND, "Performance not found: " + performanceId));
@@ -69,64 +78,97 @@ public class AdminAuthService {
 		return club;
 	}
 
+	/**
+	 * 팀에 대한 동아리 관리자 권한 검증
+	 */
 	public void requireClubAdminForTeam(String token, Long teamId) {
 		requireClubAdminForPerformance(token, teamRepository.findById(teamId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_NOT_FOUND, "Team not found: " + teamId))
 				.getPerformance().getId());
 	}
 
+	/**
+	 * 팀 멤버에 대한 동아리 관리자 권한 검증
+	 */
 	public void requireClubAdminForTeamMember(String token, Long teamMemberId) {
 		requireClubAdminForPerformance(token, teamMemberRepository.findById(teamMemberId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.TEAM_MEMBER_NOT_FOUND, "TeamMember not found: " + teamMemberId))
 				.getTeam().getPerformance().getId());
 	}
 
+	/**
+	 * 공연 참여 인원에 대한 동아리 관리자 권한 검증
+	 */
 	public void requireClubAdminForPerformanceMember(String token, Long performanceMemberId) {
 		requireClubAdminForPerformance(token, performanceMemberRepository.findById(performanceMemberId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_MEMBER_NOT_FOUND, "PerformanceMember not found: " + performanceMemberId))
 				.getPerformance().getId());
 	}
 
+	/**
+	 * 공연 확정곡에 대한 동아리 관리자 권한 검증
+	 */
 	public void requireClubAdminForPerformanceConfirmedSong(String token, Long performanceConfirmedSongId) {
 		requireClubAdminForPerformance(token, performanceConfirmedSongRepository.findById(performanceConfirmedSongId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_CONFIRMED_SONG_NOT_FOUND, "PerformanceConfirmedSong not found: " + performanceConfirmedSongId))
 				.getPerformance().getId());
 	}
 
+	/**
+	 * 셋리스트 항목에 대한 동아리 관리자 권한 검증
+	 */
 	public void requireClubAdminForSetlistItem(String token, Long performanceSetlistItemId) {
 		requireClubAdminForPerformance(token, performanceSetlistItemRepository.findById(performanceSetlistItemId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_SETLIST_ITEM_NOT_FOUND, "PerformanceSetlistItem not found: " + performanceSetlistItemId))
 				.getPerformance().getId());
 	}
 
+	/**
+	 * 신청곡에 대한 동아리 관리자 권한 검증
+	 */
 	public void requireClubAdminForSongRequest(String token, Long songRequestId) {
 		requireClubAdminForPerformance(token, songRequestRepository.findById(songRequestId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.SONG_REQUEST_NOT_FOUND, "SongRequest not found: " + songRequestId))
 				.getPerformance().getId());
 	}
 
+	/**
+	 * 신청곡 투표에 대한 동아리 관리자 권한 검증
+	 */
 	public void requireClubAdminForSongVote(String token, Long songVoteId) {
 		requireClubAdminForPerformance(token, songVoteRepository.findById(songVoteId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.SONG_VOTE_NOT_FOUND, "SongVote not found: " + songVoteId))
 				.getSongRequest().getPerformance().getId());
 	}
 
+	/**
+	 * 곡 선호도에 대한 동아리 관리자 권한 검증
+	 */
 	public void requireClubAdminForSongPreference(String token, Long songPreferenceId) {
 		requireClubAdminForPerformance(token, songPreferenceRepository.findById(songPreferenceId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.SONG_PREFERENCE_NOT_FOUND, "SongPreference not found: " + songPreferenceId))
 				.getPerformanceConfirmedSong().getPerformance().getId());
 	}
 
+	/**
+	 * 가능 시간 입력 대상 팀 멤버에 대한 동아리 관리자 권한 검증
+	 */
 	public void requireClubAdminForAvailableTimeTeamMember(String token, Long teamMemberId) {
 		requireClubAdminForTeamMember(token, teamMemberId);
 	}
 
+	/**
+	 * 최종 합주 일정에 대한 동아리 관리자 권한 검증
+	 */
 	public void requireClubAdminForFinalSchedule(String token, Long finalScheduleId) {
 		requireClubAdminForPerformance(token, finalScheduleRepository.findById(finalScheduleId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.FINAL_SCHEDULE_NOT_FOUND, "FinalSchedule not found: " + finalScheduleId))
 				.getTeam().getPerformance().getId());
 	}
 
+	/**
+	 * 입력 링크에 대한 동아리 관리자 권한 검증
+	 */
 	public void requireClubAdminForInputLink(String token, Long inputLinkId) {
 		requireClubAdminForPerformance(token, inputLinkRepository.findById(inputLinkId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.INPUT_LINK_NOT_FOUND, "InputLink not found: " + inputLinkId))
