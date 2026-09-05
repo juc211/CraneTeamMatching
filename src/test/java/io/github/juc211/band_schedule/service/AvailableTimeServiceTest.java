@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.github.juc211.band_schedule.domain.AvailableTime;
 import io.github.juc211.band_schedule.domain.InputLink;
 import io.github.juc211.band_schedule.domain.InputLinkType;
+import io.github.juc211.band_schedule.domain.MemberAccessSession;
 import io.github.juc211.band_schedule.domain.Part;
 import io.github.juc211.band_schedule.domain.Performance;
 import io.github.juc211.band_schedule.domain.PerformanceMember;
@@ -63,6 +64,9 @@ class AvailableTimeServiceTest {
 
 	@Autowired
 	private InputLinkRepository inputLinkRepository;
+
+	@Autowired
+	private MemberAccessSessionService memberAccessSessionService;
 
 	@Test
 	void replaceAvailableTimesByTeamMemberCreatesAvailableTimesWhenEmpty() {
@@ -142,17 +146,22 @@ class AvailableTimeServiceTest {
 	@Test
 	void replaceAvailableTimesByTeamMemberWithLinkCreatesAvailableTimes() {
 		TeamMember teamMember = createTeamMemberWithScheduleWindow();
-		inputLinkRepository.save(InputLink.create(
+		InputLink inputLink = inputLinkRepository.save(InputLink.create(
 				"available-token",
 				teamMember.getTeam().getPerformance(),
 				InputLinkType.AVAILABLE_TIME,
 				true,
 				null
 		));
+		MemberAccessSession memberAccessSession = memberAccessSessionService.createSession(
+				inputLink,
+				teamMember.getPerformanceMember()
+		);
 
 		List<AvailableTimeDto.AvailableTimeResponse> responses = availableTimeService.replaceAvailableTimesByTeamMember(
 				"available-token",
 				teamMember.getId(),
+				memberAccessSession.getToken(),
 				new AvailableTimeDto.AvailableTimesReplaceRequest(
 						List.of(new AvailableTimeDto.AvailableTimeRequest(
 								LocalDateTime.of(2026, 8, 1, 15, 0),
@@ -182,6 +191,7 @@ class AvailableTimeServiceTest {
 		assertThatThrownBy(() -> availableTimeService.replaceAvailableTimesByTeamMember(
 				"view-token",
 				teamMember.getId(),
+				null,
 				new AvailableTimeDto.AvailableTimesReplaceRequest(List.of())
 		))
 				.isInstanceOf(BusinessException.class)
@@ -211,6 +221,7 @@ class AvailableTimeServiceTest {
 		assertThatThrownBy(() -> availableTimeService.replaceAvailableTimesByTeamMember(
 				"available-token",
 				otherTeamMember.getId(),
+				null,
 				new AvailableTimeDto.AvailableTimesReplaceRequest(List.of())
 		))
 				.isInstanceOf(BusinessException.class)

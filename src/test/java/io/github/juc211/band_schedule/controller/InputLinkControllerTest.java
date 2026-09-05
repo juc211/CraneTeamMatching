@@ -209,6 +209,7 @@ class InputLinkControllerTest {
 				.andExpect(jsonPath("$.userId").value(user.getId()))
 				.andExpect(jsonPath("$.name").value("김보컬"))
 				.andExpect(jsonPath("$.studentNumber").value("20260001"))
+				.andExpect(jsonPath("$.memberAccessToken").isString())
 				.andExpect(jsonPath("$.teamMembers[0].teamMemberId").value(teamMember.getId()))
 				.andExpect(jsonPath("$.teamMembers[0].teamId").value(team.getId()))
 				.andExpect(jsonPath("$.teamMembers[0].teamName").value("Team A"))

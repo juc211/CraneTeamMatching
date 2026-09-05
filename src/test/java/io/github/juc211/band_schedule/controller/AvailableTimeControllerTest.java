@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import io.github.juc211.band_schedule.domain.AvailableTime;
 import io.github.juc211.band_schedule.domain.InputLink;
 import io.github.juc211.band_schedule.domain.InputLinkType;
+import io.github.juc211.band_schedule.domain.MemberAccessSession;
 import io.github.juc211.band_schedule.domain.Part;
 import io.github.juc211.band_schedule.domain.Performance;
 import io.github.juc211.band_schedule.domain.PerformanceMember;
@@ -18,6 +19,7 @@ import io.github.juc211.band_schedule.domain.User;
 import io.github.juc211.band_schedule.repository.ClubRepository;
 import io.github.juc211.band_schedule.repository.AvailableTimeRepository;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
+import io.github.juc211.band_schedule.repository.MemberAccessSessionRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
 import io.github.juc211.band_schedule.repository.TeamMemberRepository;
@@ -66,6 +68,9 @@ class AvailableTimeControllerTest {
 
 	@Autowired
 	private InputLinkRepository inputLinkRepository;
+
+	@Autowired
+	private MemberAccessSessionRepository memberAccessSessionRepository;
 
 	@Test
 	void replaceAvailableTimesByTeamMemberReturnsOkStatus() throws Exception {
@@ -193,15 +198,17 @@ class AvailableTimeControllerTest {
 	@Test
 	void replaceAvailableTimesByTeamMemberWithLinkReturnsOkStatus() throws Exception {
 		TeamMember teamMember = createTeamMemberWithScheduleWindow();
-		inputLinkRepository.save(InputLink.create(
+		InputLink inputLink = inputLinkRepository.save(InputLink.create(
 				"available-token",
 				teamMember.getTeam().getPerformance(),
 				InputLinkType.AVAILABLE_TIME,
 				true,
 				null
 		));
+		String memberAccessToken = identifyMember(inputLink.getToken(), "Kim Vocal", "20261234");
 
 		mockMvc.perform(put("/api/input-links/{token}/team-members/{teamMemberId}/available-times", "available-token", teamMember.getId())
+						.header("X-Member-Access-Token", memberAccessToken)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("""
 								{
@@ -217,6 +224,189 @@ class AvailableTimeControllerTest {
 				.andExpect(jsonPath("$[0].teamMemberId").value(teamMember.getId()))
 				.andExpect(jsonPath("$[0].startDateTime").value("2026-08-01T15:00:00"))
 				.andExpect(jsonPath("$[0].endDateTime").value("2026-08-01T18:00:00"));
+	}
+
+	@Test
+	void replaceAvailableTimesByTeamMemberWithLinkRejectsAnotherMemberTeamMember() throws Exception {
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
+				"2026 Summer Concert",
+				LocalDate.of(2026, 8, 20),
+				"Main Hall",
+				LocalDate.of(2026, 8, 1),
+				LocalDate.of(2026, 8, 20)
+		));
+		Team team = teamRepository.save(Team.create(performance, "Team A", "Song A"));
+		TeamMember requester = createTeamMember(performance, team, "Jung Vocal", "20260001", Part.VOCAL);
+		TeamMember other = createTeamMember(performance, team, "Hong Guitar", "20260002", Part.GUITAR);
+		InputLink inputLink = inputLinkRepository.save(InputLink.create(
+				"available-token",
+				performance,
+				InputLinkType.AVAILABLE_TIME,
+				true,
+				null
+		));
+		String memberAccessToken = identifyMember(inputLink.getToken(), "Jung Vocal", "20260001");
+
+		mockMvc.perform(put("/api/input-links/{token}/team-members/{teamMemberId}/available-times", inputLink.getToken(), other.getId())
+						.header("X-Member-Access-Token", memberAccessToken)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "availableTimes": []
+								}
+								"""))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value("A005"));
+	}
+
+	@Test
+	void replaceAvailableTimesByTeamMemberWithLinkRejectsMissingMemberAccessToken() throws Exception {
+		TeamMember teamMember = createTeamMemberWithScheduleWindow();
+		inputLinkRepository.save(InputLink.create(
+				"available-token",
+				teamMember.getTeam().getPerformance(),
+				InputLinkType.AVAILABLE_TIME,
+				true,
+				null
+		));
+
+		mockMvc.perform(put("/api/input-links/{token}/team-members/{teamMemberId}/available-times", "available-token", teamMember.getId())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "availableTimes": []
+								}
+								"""))
+				.andExpect(status().isUnauthorized())
+				.andExpect(jsonPath("$.code").value("A004"));
+	}
+
+	@Test
+	void replaceAvailableTimesByTeamMemberWithLinkRejectsInvalidMemberAccessToken() throws Exception {
+		TeamMember teamMember = createTeamMemberWithScheduleWindow();
+		inputLinkRepository.save(InputLink.create(
+				"available-token",
+				teamMember.getTeam().getPerformance(),
+				InputLinkType.AVAILABLE_TIME,
+				true,
+				null
+		));
+
+		mockMvc.perform(put("/api/input-links/{token}/team-members/{teamMemberId}/available-times", "available-token", teamMember.getId())
+						.header("X-Member-Access-Token", "invalid-member-token")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "availableTimes": []
+								}
+								"""))
+				.andExpect(status().isUnauthorized())
+				.andExpect(jsonPath("$.code").value("A004"));
+	}
+
+	@Test
+	void replaceAvailableTimesByTeamMemberWithLinkRejectsMemberAccessTokenFromAnotherInputLink() throws Exception {
+		TeamMember teamMember = createTeamMemberWithScheduleWindow();
+		Performance performance = teamMember.getTeam().getPerformance();
+		InputLink firstLink = inputLinkRepository.save(InputLink.create(
+				"available-token-a",
+				performance,
+				InputLinkType.AVAILABLE_TIME,
+				true,
+				null
+		));
+		InputLink secondLink = inputLinkRepository.save(InputLink.create(
+				"available-token-b",
+				performance,
+				InputLinkType.AVAILABLE_TIME,
+				true,
+				null
+		));
+		String memberAccessToken = identifyMember(firstLink.getToken(), "Kim Vocal", "20261234");
+
+		mockMvc.perform(put("/api/input-links/{token}/team-members/{teamMemberId}/available-times", secondLink.getToken(), teamMember.getId())
+						.header("X-Member-Access-Token", memberAccessToken)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "availableTimes": []
+								}
+								"""))
+				.andExpect(status().isUnauthorized())
+				.andExpect(jsonPath("$.code").value("A004"));
+	}
+
+	@Test
+	void replaceAvailableTimesByTeamMemberWithLinkRejectsExpiredMemberAccessToken() throws Exception {
+		TeamMember teamMember = createTeamMemberWithScheduleWindow();
+		InputLink inputLink = inputLinkRepository.save(InputLink.create(
+				"available-token",
+				teamMember.getTeam().getPerformance(),
+				InputLinkType.AVAILABLE_TIME,
+				true,
+				null
+		));
+		MemberAccessSession expiredSession = memberAccessSessionRepository.save(MemberAccessSession.create(
+				"expired-member-token",
+				teamMember.getPerformanceMember(),
+				inputLink,
+				LocalDateTime.now().minusMinutes(1)
+		));
+
+		mockMvc.perform(put("/api/input-links/{token}/team-members/{teamMemberId}/available-times", inputLink.getToken(), teamMember.getId())
+						.header("X-Member-Access-Token", expiredSession.getToken())
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "availableTimes": []
+								}
+								"""))
+				.andExpect(status().isUnauthorized())
+				.andExpect(jsonPath("$.code").value("A004"));
+	}
+
+	@Test
+	void getAvailableTimesByTeamMemberWithLinkRejectsAnotherMemberTeamMember() throws Exception {
+		Performance performance = performanceRepository.save(createPerformance(clubRepository,
+				"2026 Summer Concert",
+				LocalDate.of(2026, 8, 20),
+				"Main Hall",
+				LocalDate.of(2026, 8, 1),
+				LocalDate.of(2026, 8, 20)
+		));
+		Team team = teamRepository.save(Team.create(performance, "Team A", "Song A"));
+		createTeamMember(performance, team, "Jung Vocal", "20260001", Part.VOCAL);
+		TeamMember other = createTeamMember(performance, team, "Hong Guitar", "20260002", Part.GUITAR);
+		InputLink inputLink = inputLinkRepository.save(InputLink.create(
+				"available-token",
+				performance,
+				InputLinkType.AVAILABLE_TIME,
+				true,
+				null
+		));
+		String memberAccessToken = identifyMember(inputLink.getToken(), "Jung Vocal", "20260001");
+
+		mockMvc.perform(get("/api/input-links/{token}/team-members/{teamMemberId}/available-times", inputLink.getToken(), other.getId())
+						.header("X-Member-Access-Token", memberAccessToken))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value("A005"));
+	}
+
+	private String identifyMember(String inputLinkToken, String name, String studentNumber) throws Exception {
+		String response = mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/input-links/{token}/identify", inputLinkToken)
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{
+								  "name": "%s",
+								  "studentNumber": "%s"
+								}
+								""".formatted(name, studentNumber)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.memberAccessToken").isString())
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+		return response.replaceAll(".*\\\"memberAccessToken\\\":\\\"([^\\\"]+)\\\".*", "$1");
 	}
 
 	private TeamMember createTeamMemberWithScheduleWindow() {

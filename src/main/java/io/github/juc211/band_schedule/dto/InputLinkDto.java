@@ -58,6 +58,7 @@ public abstract class InputLinkDto {
 			Long userId,
 			String name,
 			String studentNumber,
+			String memberAccessToken,
 			List<InputLinkIdentifyTeamMemberResponse> teamMembers
 	) {
 	}

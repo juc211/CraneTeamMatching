@@ -30,6 +30,7 @@ public class AvailableTimeService {
 	private final TeamMemberRepository teamMemberRepository;
 	private final TeamRepository teamRepository;
 	private final InputLinkRepository inputLinkRepository;
+	private final MemberAccessSessionService memberAccessSessionService;
 
 	/**
 	 * 팀원 가능 시간 목록 전체 저장/교체 - (관리자용)
@@ -50,6 +51,7 @@ public class AvailableTimeService {
 	public List<AvailableTimeDto.AvailableTimeResponse> replaceAvailableTimesByTeamMember(
 			String token,
 			Long teamMemberId,
+			String memberAccessToken,
 			AvailableTimeDto.AvailableTimesReplaceRequest request
 	) {
 		InputLink inputLink = inputLinkRepository.findByToken(token)
@@ -65,6 +67,7 @@ public class AvailableTimeService {
 
 		// 접근한 링크의 공연과 해당 팀원이 속한 공연이 같은지 검증
 		validateSamePerformance(inputLink, teamMember);
+		memberAccessSessionService.requireOwnerSession(memberAccessToken, inputLink, teamMember);
 
 		return replaceAvailableTimes(teamMember, request);
 	}
@@ -118,7 +121,7 @@ public class AvailableTimeService {
 	 * 링크 기반 팀원별 가능 시간 목록 조회
 	 */
 	@Transactional(readOnly = true)
-	public List<AvailableTimeDto.AvailableTimeResponse> getAvailableTimesByTeamMember(String token, Long teamMemberId) {
+	public List<AvailableTimeDto.AvailableTimeResponse> getAvailableTimesByTeamMember(String token, Long teamMemberId, String memberAccessToken) {
 		InputLink inputLink = inputLinkRepository.findByToken(token)
 				.orElseThrow(() -> new BusinessException(ErrorCode.INPUT_LINK_NOT_FOUND, "InputLink not found: " + token));
 		TeamMember teamMember = teamMemberRepository.findById(teamMemberId)
@@ -127,6 +130,7 @@ public class AvailableTimeService {
 		validateUsableLink(inputLink);
 		validateLinkType(inputLink, InputLinkType.AVAILABLE_TIME);
 		validateSamePerformance(inputLink, teamMember);
+		memberAccessSessionService.requireOwnerSession(memberAccessToken, inputLink, teamMember);
 
 		return availableTimeRepository.findByTeamMemberIdOrderByStartDateTimeAscIdAsc(teamMemberId)
 				.stream()

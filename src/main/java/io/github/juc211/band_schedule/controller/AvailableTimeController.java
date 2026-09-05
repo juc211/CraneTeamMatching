@@ -43,9 +43,10 @@ public class AvailableTimeController {
 	public ResponseEntity<List<AvailableTimeDto.AvailableTimeResponse>> replaceAvailableTimesByTeamMember(
 			@PathVariable String token,
 			@PathVariable Long teamMemberId,
+			@RequestHeader(value = "X-Member-Access-Token", required = false) String memberAccessToken,
 			@Valid @RequestBody AvailableTimeDto.AvailableTimesReplaceRequest request
 	) {
-		return ResponseEntity.ok(availableTimeService.replaceAvailableTimesByTeamMember(token, teamMemberId, request));
+		return ResponseEntity.ok(availableTimeService.replaceAvailableTimesByTeamMember(token, teamMemberId, memberAccessToken, request));
 	}
 
 	/**
@@ -62,9 +63,10 @@ public class AvailableTimeController {
 	@GetMapping("/input-links/{token}/team-members/{teamMemberId}/available-times")
 	public ResponseEntity<List<AvailableTimeDto.AvailableTimeResponse>> getAvailableTimesByTeamMember(
 			@PathVariable String token,
-			@PathVariable Long teamMemberId
+			@PathVariable Long teamMemberId,
+			@RequestHeader(value = "X-Member-Access-Token", required = false) String memberAccessToken
 	) {
-		return ResponseEntity.ok(availableTimeService.getAvailableTimesByTeamMember(token, teamMemberId));
+		return ResponseEntity.ok(availableTimeService.getAvailableTimesByTeamMember(token, teamMemberId, memberAccessToken));
 	}
 
 	/**

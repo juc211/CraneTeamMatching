@@ -13,6 +13,7 @@ import io.github.juc211.band_schedule.repository.AvailableTimeRepository;
 import io.github.juc211.band_schedule.repository.ClubRepository;
 import io.github.juc211.band_schedule.repository.FinalScheduleRepository;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
+import io.github.juc211.band_schedule.repository.MemberAccessSessionRepository;
 import io.github.juc211.band_schedule.repository.PerformanceConfirmedSongRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
@@ -52,6 +53,7 @@ public class PerformanceService {
     private final PerformanceSetlistItemRepository performanceSetlistItemRepository;
     private final SongPreferenceRepository songPreferenceRepository;
     private final ClubRepository clubRepository;
+    private final MemberAccessSessionRepository memberAccessSessionRepository;
 
     /**
      * 공연 생성
@@ -329,6 +331,7 @@ public class PerformanceService {
         PerformanceMember performanceMember = performanceMemberRepository.findById(performanceMemberId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_MEMBER_NOT_FOUND, "PerformanceMember not found: " + performanceMemberId));
 
+        memberAccessSessionRepository.deleteByPerformanceMemberId(performanceMemberId);
         songVoteRepository.deleteBySongRequestRequestedByMemberId(performanceMemberId);
         songRequestRepository.deleteByRequestedByMemberId(performanceMemberId);
         songVoteRepository.deleteByVoterMemberId(performanceMemberId);
@@ -345,6 +348,7 @@ public class PerformanceService {
         Performance performance = performanceRepository.findById(performanceId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND, "Performance not found: " + performanceId));
 
+        memberAccessSessionRepository.deleteByInputLinkPerformanceId(performanceId);
         inputLinkRepository.deleteByPerformanceId(performanceId);
         songPreferenceRepository.deleteByPerformanceConfirmedSongPerformanceId(performanceId);
         performanceConfirmedSongRepository.deleteByPerformanceId(performanceId);

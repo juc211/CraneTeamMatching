@@ -76,9 +76,11 @@ public enum ErrorCode {
     // 401 Unauthorized
     MASTER_ADMIN_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "A001", "마스터 관리자 토큰이 없거나 올바르지 않습니다."),
     CLUB_ADMIN_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "A002", "동아리 관리자 토큰이 없거나 올바르지 않습니다."),
+    MEMBER_ACCESS_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "A004", "멤버 접근 토큰이 없거나 올바르지 않습니다."),
 
     // 403 Forbidden
     CLUB_ADMIN_FORBIDDEN(HttpStatus.FORBIDDEN, "A003", "다른 동아리의 리소스에 접근할 수 없습니다."),
+    MEMBER_ACCESS_FORBIDDEN(HttpStatus.FORBIDDEN, "A005", "다른 멤버의 리소스에 접근할 수 없습니다."),
 
     // 404 Not Found
     RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "C002", "요청한 리소스를 찾을 수 없습니다."),

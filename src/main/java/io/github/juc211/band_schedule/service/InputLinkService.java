@@ -2,6 +2,7 @@ package io.github.juc211.band_schedule.service;
 
 import io.github.juc211.band_schedule.domain.InputLink;
 import io.github.juc211.band_schedule.domain.InputLinkType;
+import io.github.juc211.band_schedule.domain.MemberAccessSession;
 import io.github.juc211.band_schedule.domain.Performance;
 import io.github.juc211.band_schedule.domain.PerformanceMember;
 import io.github.juc211.band_schedule.domain.TeamMember;
@@ -9,11 +10,12 @@ import io.github.juc211.band_schedule.dto.InputLinkDto;
 import io.github.juc211.band_schedule.exception.BusinessException;
 import io.github.juc211.band_schedule.exception.ErrorCode;
 import io.github.juc211.band_schedule.repository.InputLinkRepository;
+import io.github.juc211.band_schedule.repository.MemberAccessSessionRepository;
 import io.github.juc211.band_schedule.repository.PerformanceMemberRepository;
 import io.github.juc211.band_schedule.repository.PerformanceRepository;
 import io.github.juc211.band_schedule.repository.TeamMemberRepository;
-import java.time.LocalDateTime;
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +33,8 @@ public class InputLinkService {
 	private final PerformanceRepository performanceRepository;
 	private final PerformanceMemberRepository performanceMemberRepository;
 	private final TeamMemberRepository teamMemberRepository;
+	private final MemberAccessSessionRepository memberAccessSessionRepository;
+	private final MemberAccessSessionService memberAccessSessionService;
 	private final SecureRandom secureRandom = new SecureRandom();
 
 	/**
@@ -96,13 +100,13 @@ public class InputLinkService {
 		InputLink inputLink = inputLinkRepository.findById(inputLinkId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.INPUT_LINK_NOT_FOUND, "InputLink not found: " + inputLinkId));
 
+		memberAccessSessionRepository.deleteByInputLinkId(inputLinkId);
 		inputLinkRepository.delete(inputLink);
 	}
 
 	/**
 	 * 링크 기반 이름/학번 공연 참여 인원 식별
 	 */
-	@Transactional(readOnly = true)
 	public InputLinkDto.InputLinkIdentifyResponse identifyPerformanceMember(String token, InputLinkDto.InputLinkIdentifyRequest request) {
 		InputLink inputLink = inputLinkRepository.findByToken(token)
 				.orElseThrow(() -> new BusinessException(ErrorCode.INPUT_LINK_NOT_FOUND, "InputLink not found: " + token));
@@ -122,8 +126,10 @@ public class InputLinkService {
 				)
 				.orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_MEMBER_NOT_FOUND, "PerformanceMember not found by name and student number"));
 
+		MemberAccessSession memberAccessSession = memberAccessSessionService.createSession(inputLink, performanceMember);
+
 		//식별된 부원이 속한 팀 목록 조회 후 응답 반환
-		return toInputLinkIdentifyResponse(inputLink, performanceMember);
+		return toInputLinkIdentifyResponse(inputLink, performanceMember, memberAccessSession);
 	}
 
 	/**
@@ -190,13 +196,18 @@ public class InputLinkService {
 	/**
 	 * 링크 기반 공연 참여 인원 식별 응답 변환
 	 */
-	private InputLinkDto.InputLinkIdentifyResponse toInputLinkIdentifyResponse(InputLink inputLink, PerformanceMember performanceMember) {
+	private InputLinkDto.InputLinkIdentifyResponse toInputLinkIdentifyResponse(
+			InputLink inputLink,
+			PerformanceMember performanceMember,
+			MemberAccessSession memberAccessSession
+	) {
 		return new InputLinkDto.InputLinkIdentifyResponse(
 				inputLink.getPerformance().getId(),
 				performanceMember.getId(),
 				performanceMember.getUser().getId(),
 				performanceMember.getUser().getName(),
 				performanceMember.getUser().getStudentNumber(),
+				memberAccessSession.getToken(),
 				teamMemberRepository.findByPerformanceMemberIdOrderByIdAsc(performanceMember.getId())
 						.stream()
 						.map(this::toInputLinkIdentifyTeamMemberResponse)
